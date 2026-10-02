@@ -4,7 +4,9 @@ The website's instructions come from `manuals/*.md`. Topic membership, concepts,
 repository guides, acceptance steps and baseline mappings live in
 `catalog.json`. Keep tool IDs stable: they are manual filenames, deep links and
 browser adoption keys. `public/data.js` is generated and committed so the site
-still needs no runtime dependencies or build service.
+still needs no runtime dependencies or build service. The generator also updates
+content-based asset versions in `public/index.html`, so a changed catalog,
+renderer or stylesheet receives a fresh browser URL.
 
 ```bash
 python3 tools/roadmap/sync.py
@@ -16,7 +18,8 @@ node --check public/app.js
 
 The checker rejects duplicate/orphan topics, missing manuals or repository
 resources, duplicated instructions in the catalog, and baseline controls without
-a topic. `--check` also fails if a manual changed without regenerating the site.
+a topic. `--check` also fails if a manual, app or stylesheet changed without
+regenerating the data and asset versions.
 GitHub kit and Pages workflows run this check. Add a new manual's catalog entry
 and baseline mapping before publishing its generated data.
 

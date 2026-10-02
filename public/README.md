@@ -17,7 +17,7 @@ wrap visually; the Copy button preserves the original command.
 
 | File | Purpose |
 | :--- | :--- |
-| `index.html` | Page shell |
+| `index.html` | Page shell with generated asset versions |
 | `styles.css` | Layout and light/dark themes |
 | `app.js` | Map, detail panel, search, and progress |
 | `data.js` | Generated areas, topics, manual commands, guides and baseline controls |
@@ -42,7 +42,9 @@ source is **GitHub Actions**. Deployment uses the workflow's `GITHUB_TOKEN`;
 no personal access token or repository secret is needed.
 
 Edit manuals and the [topic catalog](../tools/roadmap/catalog.json), then run
-`python3 tools/roadmap/sync.py`. CI rejects missing tools/controls, broken repository
+`python3 tools/roadmap/sync.py`. Run it after editing `app.js` or `styles.css` too;
+content hashes in asset URLs prevent old cached cards from surviving an update.
+CI rejects missing tools/controls, broken repository
 resources and stale generated instructions. See [the maintenance guide](../tools/roadmap/README.md).
 Tool IDs also name the linked files in
 [`manuals/`](../manuals/). Supported deep links include `#area=code`,

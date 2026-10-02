@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from sync import build, inline, narrative
+from sync import build, inline, narrative, versioned_index
 
 
 class RoadmapSyncTest(unittest.TestCase):
@@ -80,6 +80,32 @@ class RoadmapSyncTest(unittest.TestCase):
         output = build(self.root, self.catalog)
         payload = json.loads(output.split('window.ROADMAP = ', 1)[1].removesuffix(';\n'))
         self.assertIn('Only use the scoped account.', payload['stages'][0]['tools'][0]['runNotes'])
+
+    def test_changed_manual_changes_the_data_url(self):
+        public = self.root / 'public'
+        public.mkdir()
+        index = public / 'index.html'
+        index.write_text('<link href="styles.css"><script src="data.js"></script>'
+                         '<script src="app.js"></script>')
+        (public / 'styles.css').write_text('body { color: green; }')
+        (public / 'app.js').write_text('console.log("ready");')
+        before = versioned_index(self.root, build(self.root, self.catalog))
+        index.write_text(before)
+        self.assertEqual(before, versioned_index(self.root, build(self.root, self.catalog)))
+        self.manual.write_text(self.manual.read_text().replace('demo --check', 'demo --strict'))
+        after = versioned_index(self.root, build(self.root, self.catalog))
+        self.assertNotEqual(before, after)
+        self.assertEqual(before.split('<script src="data.js', 1)[0],
+                         after.split('<script src="data.js', 1)[0])
+
+    def test_missing_asset_reference_fails(self):
+        public = self.root / 'public'
+        public.mkdir()
+        (public / 'index.html').write_text('<script src="app.js"></script>')
+        (public / 'styles.css').write_text('')
+        (public / 'app.js').write_text('')
+        with self.assertRaisesRegex(ValueError, 'must reference data.js exactly once'):
+            versioned_index(self.root, 'data')
 
 
 if __name__ == "__main__":
