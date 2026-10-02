@@ -5,98 +5,134 @@
 
   ### The DevSecOps Swiss Army knife
 
-  Practical security rules, AI skills, field guides, and a growing workspace for the tools that connect them.
-
-  **320 mobile rules** · **3 Python starter rules** · **a growing library of security skills**
-
-  [Open the toolbox](#the-toolbox) · [Start scanning](#start-here) · [Explore the roadmap](ROADMAP.md) · [Contribute](CONTRIBUTING.md)
 </div>
 
-<br>
+DevSecOps for All collects security checks, policies, standards, and guidance in one place, so a team can scan its code, enforce controls in its pipelines and clusters, and know what to do with each finding.
 
-<img align="right" width="43%" src="profile/assets/security-illustration.png" alt="Security engineer tracing a finding from code to a verified fix">
+**[Quick start](#quick-start)** · **[Find by task](#find-by-task)** · **[What's inside](#whats-inside)** · **[How the repository is organized](#how-the-repository-is-organized)** · **[Roadmap](ROADMAP.md)** · **[Contributing](#contributing)**
 
-### 🧭 One kit, from signal to fix
+## Quick start
 
-Security work crosses code, pipelines, infrastructure, and operations. This repository brings the pieces together so a finding can lead to a clear next step.
-
-- 🔎 **Find it:** Semgrep rules for Python and mobile applications.
-- 🧠 **Understand it:** reusable AI skills and practical review guides.
-- 🛠️ **Improve it:** planned scanner presets, policies, CI integrations, and reporting.
-- 🧪 **Prove it:** tests, reproducible labs, and evidence-based playbooks as the toolbox grows.
-
-The goal is simple: make useful security checks easy to discover, run, review, and improve.
-
-<br clear="all">
-
----
-
-<a id="the-toolbox"></a>
-
-### 🧰 The toolbox
-
-**Ready to use**
-
-- **[Mobile Semgrep rules](semgrep-rules/mobile_custom/README.md)** — 320 checks for Android, iOS, React Native / Expo, and Flutter / Dart. Includes test cases, known limitations, and upstream license notices.
-- **[Python starter rules](rules/README.md)** — three focused checks for shell execution, disabled TLS verification, and unsafe YAML loading, with match and non-match tests.
-- **[AI security skills](skills/README.md)** — workflows across AppSec, AI security, supply chain, CI/CD, cloud, host hardening, and incident response.
-- **[Field guides](guides/README.md)** — security review and pentest planning you can use alongside the rules.
-
-**On the workbench**
-
-- **[Scanner presets](scanners/README.md) + [manuals](manuals/README.md)** — planned configurations and practical instructions for external tools.
-- **[Policies](policies/README.md) + [integrations](integrations/README.md)** — planned controls for infrastructure and delivery workflows.
-- **[`dso` CLI](tools/dso/README.md) + [reporting](reporting/README.md)** — a planned entry point and common finding format; `dso` is design only today.
-- **[Detections](detections/README.md), [playbooks](playbooks/README.md), and [labs](labs/README.md)** — space for operational content and reproducible exercises.
-- **[Curated upstream material](THIRD_PARTY_NOTICES.md)** — new rule packs, skills, and references are being reviewed with their sources and licenses recorded.
-
-The [roadmap](ROADMAP.md) tracks the order in which these areas become runnable. A directory or design document is not a released tool.
-
-<a id="start-here"></a>
-
-### 🚀 Start here
-
-Install [Semgrep](https://semgrep.dev/docs/getting-started/quickstart/), then run from the repository root against a project you are authorized to assess.
-
-**Scan Python**
+Install [Semgrep](https://semgrep.dev/docs/getting-started/quickstart/), clone this repository, and run from its root against a project you are authorized to assess.
 
 ```bash
+# Mobile app: Android, iOS, React Native, Flutter
+semgrep scan --metrics=off --config semgrep-rules/mobile_custom/rules/ path/to/mobile-app
+
+# Python project
 semgrep scan --metrics=off --config rules/ path/to/python-project
+
+# Backend code with the imported Trail of Bits rules
+semgrep scan --metrics=off --config semgrep-rules/trailofbits/ path/to/project
 ```
 
-**Scan a mobile app**
+Add `--sarif -o results.sarif` to get a file for GitHub code scanning or DefectDojo. Treat every finding as a lead to verify, not as proof of a vulnerability.
 
-```bash
-semgrep scan --metrics=off --config semgrep-rules/mobile_custom/rules/ path/to/mobile-project
+## Find by task
+
+| I want to… | Start here |
+| :--- | :--- |
+| Scan source code for vulnerabilities | [Semgrep rule packs](semgrep-rules/README.md) · [Python rules](rules/README.md) |
+| Review a mobile app | [Mobile rules](semgrep-rules/mobile_custom/README.md) · [OWASP MASTG](guides/owasp-mastg/SOURCE.md) · [MobSF notes](scanners/mobsf/README.md) |
+| Find leaked secrets | [gitleaks](scanners/gitleaks/README.md) · [Secret pattern database](scanners/secrets-patterns-db/SOURCE.md) |
+| Check dependencies and SBOMs | [osv-scanner](scanners/osv-scanner/README.md) · [Trivy](scanners/trivy/README.md) · [Supply chain policies](policies/supply-chain/README.md) |
+| Secure CI/CD pipelines | [CI/CD policies](policies/cicd/README.md) · [CI integrations](integrations/README.md) |
+| Check Terraform and other IaC | [Terraform policies](policies/terraform/README.md) |
+| Harden containers and Kubernetes | [Container policies](policies/containers/README.md) · [Kyverno and Gatekeeper libraries](policies/kubernetes/README.md) |
+| Audit a cloud account | [Cloud policies](policies/cloud/README.md) · [Prowler frameworks](reporting/compliance-mapping/prowler/SOURCE.md) |
+| Test a running web app or API | [ZAP](scanners/zap/README.md) · [nuclei](scanners/nuclei/README.md) |
+| Map work to a standard (MASVS, ASVS, PCI DSS, CIS) | [Compliance mapping](reporting/compliance-mapping/README.md) |
+| Model threats for a feature | [Threat model templates and examples](templates/threat-models/README.md) |
+| Fix or triage a finding | [OWASP Cheat Sheets](guides/owasp-cheatsheets/SOURCE.md) · [Playbooks](playbooks/README.md) · [Severity scale](reporting/severity-and-metadata.md) |
+| Respond to an incident | [Playbooks](playbooks/README.md) · [Incident response skill](skills/detection-response/incident-response/SKILL.md) |
+| Give an AI agent security skills | [Skill catalog](skills/README.md) · [Trail of Bits plugins](skills/trailofbits/README.md) |
+| Learn how to run a tool | [Manuals](manuals/README.md) |
+
+## What's inside
+
+**Status:** ✅ ready — our own content, documented and tested · 📦 imported — upstream content with its license and source recorded · 🗺️ planned — structure and plan only.
+
+### Scan
+
+| Directory | Contents | Status |
+| :--- | :--- | :--- |
+| [`rules/`](rules/README.md) | 3 Python Semgrep rules with tests | ✅ |
+| [`semgrep-rules/mobile_custom/`](semgrep-rules/mobile_custom/README.md) | 320 rules for Android, iOS, React Native / Expo, and Flutter / Dart | ✅ |
+| [`semgrep-rules/trailofbits/`](semgrep-rules/trailofbits/SOURCE.md) | 120 rules for Go, Python, JavaScript, JVM, Rust, Ruby, HCL, and more | 📦 |
+| [`semgrep-rules/elttam/`](semgrep-rules/elttam/SOURCE.md) | 107 rules for Java, Go, PHP, YAML, and generic code; some Java rules need fixes ([details](semgrep-rules/README.md)) | 📦 |
+| [`semgrep-rules/profiles/`](semgrep-rules/profiles/README.md) | Rule selections for CI gates, merge request comments, and audits | 🗺️ |
+| [`scanners/`](scanners/README.md) | gitleaks default config, secret pattern database, apkleaks patterns, 200+ ZAP scripts, nuclei fuzzing templates; our own scanner configs | 📦 · 🗺️ |
+
+### Enforce
+
+| Directory | Contents | Status |
+| :--- | :--- | :--- |
+| [`policies/kubernetes/`](policies/kubernetes/README.md) | Kyverno community library with tests; 49 Gatekeeper constraint templates | 📦 |
+| [`policies/cicd/`](policies/cicd/README.md) | 26 poutine Rego rules for GitHub Actions, GitLab CI, Azure Pipelines, Tekton | 📦 |
+| [`policies/terraform/`](policies/terraform/README.md) | conftest example policies for Terraform, Kubernetes, Dockerfiles | 📦 |
+| [`policies/containers/`](policies/containers/README.md) | Reference distroless Dockerfiles | 📦 |
+| [`policies/supply-chain/`](policies/supply-chain/README.md) | Sigstore policy-controller examples for signature checks | 📦 |
+| [`policies/cloud/`](policies/cloud/README.md) | AWS, GCP, and Azure checks | 🗺️ |
+| [`integrations/`](integrations/README.md) | GitHub Actions workflow, GitLab CI template, pre-commit hooks, DefectDojo import | 🗺️ |
+| [`tools/`](tools/README.md) | Standalone utilities, starting with the [`dso`](tools/dso/README.md) command-line entry point | 🗺️ |
+
+### Know
+
+| Directory | Contents | Status |
+| :--- | :--- | :--- |
+| [`guides/`](guides/README.md) | Security review and pentest planning checklists | ✅ |
+| [`guides/owasp-cheatsheets/`](guides/owasp-cheatsheets/SOURCE.md) | All 127 OWASP Cheat Sheets | 📦 |
+| [`guides/owasp-mastg/`](guides/owasp-mastg/SOURCE.md) | OWASP MASTG tests, techniques, knowledge, and best practices | 📦 |
+| [`reporting/`](reporting/README.md) | Normalized severity scale and rule metadata (draft, awaiting agreement) | 🗺️ |
+| [`reporting/compliance-mapping/`](reporting/compliance-mapping/README.md) | MASVS, ASVS 5.0, and 88 Prowler frameworks including PCI DSS 4.0, CIS, ISO 27001 | 📦 |
+| [`templates/threat-models/`](templates/threat-models/README.md) | OWASP Threat Model Cookbook, Threagile and threatcl examples | 📦 |
+| [`manuals/`](manuals/README.md) | How to install, run, and tune each scanner | 🗺️ |
+| [`docs/research/`](docs/research/README.md) | Tool evaluations, including the [map of 96 open-source projects](docs/research/open-source-map.md) | ✅ |
+
+### Act
+
+| Directory | Contents | Status |
+| :--- | :--- | :--- |
+| [`skills/`](skills/README.md) | 51 AI agent skills in 10 security domains | ✅ |
+| [`skills/trailofbits/`](skills/trailofbits/README.md) | 23 Claude Code plugins (38 skills): Semgrep rule creation, SARIF analysis, variant analysis, supply-chain risk | 📦 |
+| [`playbooks/`](playbooks/README.md) | Leaked secrets, compromised dependencies, finding triage | 🗺️ |
+| [`detections/`](detections/README.md) | Sigma, YARA, Falco, and osquery rules | 🗺️ |
+| [`labs/`](labs/README.md) | Reproducible vulnerable-and-fixed exercises | 🗺️ |
+
+## How the repository is organized
+
+- **Every directory has a README** that says what belongs there, what is already in it, and its status.
+- **Imported content stays in its own directory** with the upstream license and a `SOURCE.md` naming the project, commit, and any changes. All imports are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+- **Research comes first.** A new scanner, policy pack, or imported rule set starts with a note in [`docs/research/`](docs/research/README.md).
+- **One severity scale** across tools is defined in [reporting/severity-and-metadata.md](reporting/severity-and-metadata.md).
+- **The order of work** is in the [roadmap](ROADMAP.md).
+
+```text
+devsecopsforall/
+├── rules/  semgrep-rules/  scanners/        scan
+├── policies/  integrations/  tools/         enforce
+├── guides/  reporting/  templates/
+│   manuals/  docs/research/                 know
+├── skills/  playbooks/  detections/  labs/  act
+├── ROADMAP.md  CONTRIBUTING.md  SECURITY.md
+└── THIRD_PARTY_NOTICES.md  LICENSE
 ```
 
-Choose a single platform or category from the [mobile rule guide](semgrep-rules/mobile_custom/README.md) when you need a narrower scan. Rule authors can run `semgrep test rules/` for the Python starter pack; the mobile pack has its [own test instructions](semgrep-rules/mobile_custom/README.md#testing).
+## Contributing
 
-**Working with an AI agent?** Try [secure code review](skills/appsec-testing/secure-code-review/SKILL.md), [authorized pentest](skills/appsec-testing/authorized-pentest/SKILL.md), or [prompt injection defense](skills/ai-security/prompt-injection-defense/SKILL.md). Browse the [full skill catalog](skills/README.md) for more.
+A precise rule, a tested policy, a clearer manual, or a fixed link are all welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the README of the directory you are changing, include tests or examples that show the behavior, and record the source and license of anything you import. The [roadmap](ROADMAP.md) lists open work.
 
-### 🗂️ Find your way around
-
-- **Scan and evaluate:** [`rules/`](rules/README.md) · [`semgrep-rules/`](semgrep-rules/README.md) · [`scanners/`](scanners/README.md) · [`docs/research/`](docs/research/README.md)
-- **Automate and enforce:** [`integrations/`](integrations/README.md) · [`policies/`](policies/README.md) · [`tools/`](tools/README.md) · [`reporting/`](reporting/README.md)
-- **Learn and respond:** [`skills/`](skills/README.md) · [`guides/`](guides/README.md) · [`manuals/`](manuals/README.md) · [`playbooks/`](playbooks/README.md) · [`labs/`](labs/README.md)
-- **Share reusable work:** [`templates/`](templates/README.md) · [`detections/`](detections/README.md) · [`CONTRIBUTING.md`](CONTRIBUTING.md)
-
-### 🤝 Build with us
-
-Have a rule, skill, guide, or tool that makes a security task easier to repeat? Read the [contribution guide](CONTRIBUTING.md), choose the right directory, and include examples, tests where applicable, limitations, and source/license information. The [roadmap](ROADMAP.md) lists good starting points; [research notes](docs/research/README.md) record decisions behind new additions.
+## Responsible use
 
 > [!IMPORTANT]
-> Use security tools only on systems you own or are authorized to assess. Treat findings as leads for review, and keep credentials, customer data, and sensitive scan output out of the repository.
+> Use these tools only on systems you own or are authorized to assess. Never commit credentials, customer data, or unredacted scan results.
 
-Found a vulnerability here? Use the [security policy](SECURITY.md) for private reporting.
+Report vulnerabilities in this repository privately, following the [security policy](SECURITY.md).
 
-### 📜 License and credits
+## License
 
-Original material is under [MIT](LICENSE). Imported rules, skills, and reference material keep their own terms; see the [repository notices](THIRD_PARTY_NOTICES.md), [mobile rule notices](semgrep-rules/mobile_custom/NOTICE.md), and [skill notices](skills/THIRD_PARTY_NOTICES.md).
-
----
+Original material is under the [MIT License](LICENSE). Imported content keeps its own license — including GPL-3.0, AGPL-3.0, and CC-BY-SA-4.0 in the directories that carry them; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), the [mobile rule notices](semgrep-rules/mobile_custom/NOTICE.md), and the [skill notices](skills/THIRD_PARTY_NOTICES.md).
 
 <div align="center">
-  <strong>Build · Verify · Secure</strong><br>
   Maintained by <a href="https://github.com/1ega">@1ega</a> with contributions from the community.
 </div>
