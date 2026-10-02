@@ -40,4 +40,5 @@ The order in which the empty directories get filled. Each item should start with
 - [ ] [Compliance mapping](reporting/compliance-mapping/README.md): standards and Prowler cloud mappings are imported; map this repository's rules to MASVS, ASVS, and PCI DSS 4.0.
 - [ ] [Playbooks](playbooks/README.md) for leaked secrets, compromised dependencies, and triage.
 - [ ] [Threat model templates](templates/threat-models/README.md) for login, biometrics, payments, and deep links (examples are imported).
-- [ ] First [detection](detections/README.md) packs and [labs](labs/README.md).
+- [x] Import open-source [YARA rule sets](detections/yara/README.md).
+- [ ] Tuned [detection](detections/README.md) packs of our own (YARA with fixtures, Sigma, Falco) and first [labs](labs/README.md).

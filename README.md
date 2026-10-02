@@ -7,7 +7,7 @@
 
 </div>
 
-DevSecOps for All collects security checks, policies, standards, and guidance in one place, so a team can scan its code, enforce controls in its pipelines and clusters, and know what to do with each finding.
+DevSecOps for All collects security checks, policies, detection rules, standards, and manuals in one place, so a team can scan its code, cloud accounts, and clusters, enforce controls, hunt for malware, and know what to do with each finding.
 
 **[Quick start](#quick-start)** · **[Find by task](#find-by-task)** · **[What's inside](#whats-inside)** · **[How the repository is organized](#how-the-repository-is-organized)** · **[Roadmap](ROADMAP.md)** · **[Contributing](#contributing)**
 
@@ -28,6 +28,9 @@ conftest test --policy policies/terraform/conftest-examples/examples/kubernetes/
 
 # Scan a mobile app's source code
 semgrep scan --metrics=off --config semgrep-rules/mobile_custom/rules/ path/to/mobile-app
+
+# Look for known malware in a directory with one YARA rule file
+yara -r detections/yara/bartblaze/rules/crimeware/AveMaria.yar path/to/files
 ```
 
 Run tools only against systems you are authorized to assess, and treat every finding as a lead to verify.
@@ -43,14 +46,15 @@ Run tools only against systems you are authorized to assess, and treat every fin
 | Secure CI/CD pipelines | [CI/CD policies](policies/cicd/README.md) · [CI integrations](integrations/README.md) |
 | Check Terraform and other IaC | [Terraform policies](policies/terraform/README.md) |
 | Harden containers and Kubernetes | [Container policies](policies/containers/README.md) · [Kyverno and Gatekeeper libraries](policies/kubernetes/README.md) |
-| Audit a cloud account | [Cloud policies](policies/cloud/README.md) · [Prowler frameworks](reporting/compliance-mapping/prowler/SOURCE.md) |
+| Audit a cloud account | [Prowler manual](manuals/prowler.md) · [Prowler frameworks](reporting/compliance-mapping/prowler/SOURCE.md) · [Cloud policies](policies/cloud/README.md) |
+| Hunt for malware and malicious code | [YARA rules](detections/yara/README.md) · [GuardDog](manuals/guarddog.md) · [ClamAV](manuals/clamav.md) |
 | Test a running web app or API | [ZAP](scanners/zap/README.md) · [nuclei](scanners/nuclei/README.md) |
 | Map work to a standard (MASVS, ASVS, PCI DSS, CIS) | [Compliance mapping](reporting/compliance-mapping/README.md) |
 | Model threats for a feature | [Threat model templates and examples](templates/threat-models/README.md) |
 | Fix or triage a finding | [OWASP Cheat Sheets](guides/owasp-cheatsheets/SOURCE.md) · [Playbooks](playbooks/README.md) · [Severity scale](reporting/severity-and-metadata.md) |
 | Respond to an incident | [Playbooks](playbooks/README.md) · [Incident response skill](skills/detection-response/incident-response/SKILL.md) |
 | Give an AI agent security skills | [Skill catalog](skills/README.md) · [Trail of Bits plugins](skills/trailofbits/README.md) |
-| Learn how to run a tool | [Manuals](manuals/README.md) |
+| Learn how to install and run a tool | [Manuals for 91 tools](manuals/README.md), each linked to its GitHub repository |
 
 ## What's inside
 
@@ -97,7 +101,8 @@ Run tools only against systems you are authorized to assess, and treat every fin
 | [`skills/`](skills/README.md) | 51 AI agent skills in 10 security domains | ✅ |
 | [`skills/trailofbits/`](skills/trailofbits/README.md) | 23 Claude Code plugins (38 skills): Semgrep rule creation, SARIF analysis, variant analysis, supply-chain risk | 📦 |
 | [`playbooks/`](playbooks/README.md) | Leaked secrets, compromised dependencies, finding triage | 🗺️ |
-| [`detections/`](detections/README.md) | Sigma, YARA, Falco, and osquery rules | 🗺️ |
+| [`detections/yara/`](detections/yara/README.md) | Five YARA rule sets, about 2,700 rule files: signature-base, Elastic, ReversingLabs, bartblaze, Yara-Rules community | 📦 |
+| [`detections/`](detections/README.md) | Sigma, Falco, and osquery rules | 🗺️ |
 | [`labs/`](labs/README.md) | Reproducible vulnerable-and-fixed exercises | 🗺️ |
 
 ## How the repository is organized
@@ -132,7 +137,7 @@ Report vulnerabilities in this repository privately, following the [security pol
 
 ## License
 
-Original material is under the [MIT License](LICENSE). Imported content keeps its own license — including GPL-3.0, AGPL-3.0, and CC-BY-SA-4.0 in the directories that carry them; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), the [mobile rule notices](semgrep-rules/mobile_custom/NOTICE.md), and the [skill notices](skills/THIRD_PARTY_NOTICES.md).
+Original material is under the [MIT License](LICENSE). Imported content keeps its own license — including GPL, AGPL-3.0, CC-BY-SA-4.0, DRL 1.1, and the Elastic License 2.0 in the directories that carry them; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), the [mobile rule notices](semgrep-rules/mobile_custom/NOTICE.md), and the [skill notices](skills/THIRD_PARTY_NOTICES.md).
 
 <div align="center">
   Maintained by <a href="https://github.com/1ega">@1ega</a> with contributions from the community.
