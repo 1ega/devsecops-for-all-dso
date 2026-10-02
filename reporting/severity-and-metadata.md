@@ -2,7 +2,7 @@
 
 **Status:** Draft. Agree on it before normalizing rule metadata or building CI gates.
 
-Rules keep their native severity — Semgrep uses `ERROR`, `WARNING`, and `INFO`, as described in the [mobile rule pack](../semgrep-rules/mobile_custom/README.md#adding-a-rule). Reports and CI gates use one normalized scale so results from different tools can be compared.
+Rules keep their native severity — Semgrep uses `ERROR`, `WARNING`, and `INFO`, as described in the [mobile rule pack](../rules/semgrep/mobile/README.md#adding-a-rule). Reports and CI gates use one normalized scale so results from different tools can be compared.
 
 ## Normalized scale
 
@@ -44,4 +44,4 @@ metadata:
   license: <SPDX identifier>
 ```
 
-`cwe`, `masvs`, and `owasp` drive the [compliance mapping](compliance-mapping/README.md); `confidence` and `impact` drive the CI profiles in [semgrep-rules/profiles](../semgrep-rules/profiles/README.md).
+`cwe`, `masvs`, and `owasp` drive the [compliance mapping](compliance-mapping/README.md); `confidence` and `impact` drive the CI profiles in [rules/semgrep/profiles](../rules/semgrep/profiles/README.md).

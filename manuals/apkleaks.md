@@ -3,7 +3,7 @@
 **Area:** 7. Test what runs → Mobile app builds  
 **License:** Apache-2.0
 
-[GitHub: dwisiswant0/apkleaks](https://github.com/dwisiswant0/apkleaks) · [Documentation](https://github.com/dwisiswant0/apkleaks) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/scanners/apkleaks)
+[GitHub: dwisiswant0/apkleaks](https://github.com/dwisiswant0/apkleaks) · [Documentation](https://github.com/dwisiswant0/apkleaks) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/rules/secrets/apkleaks)
 
 ## What it is for
 

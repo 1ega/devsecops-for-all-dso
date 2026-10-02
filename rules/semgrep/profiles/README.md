@@ -8,6 +8,6 @@ Ready-made rule selections so a project does not have to pick rules by hand.
 | `pr-diff` | `ci-blocking` plus `WARNING`, changed files only | Review comments on a merge request |
 | `audit` | Every rule, including `INFO` | Scheduled scans and manual audits |
 
-Profiles depend on consistent rule metadata; see [severity-and-metadata.md](../../reporting/severity-and-metadata.md).
+Profiles depend on consistent rule metadata; see [severity-and-metadata.md](../../../reporting/severity-and-metadata.md).
 
 **Status:** Structure only; no profiles are published yet.

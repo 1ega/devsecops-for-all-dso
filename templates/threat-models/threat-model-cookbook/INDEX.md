@@ -10,7 +10,7 @@ A generic model with generic name that doesn't represent a particular system. Us
 
 [![BLANK Attack Tree](https://raw.githubusercontent.com/OWASP/threat-model-cookbook/master/Attack%20Tree/BLANK.plantuml.svg "BLANK Attack Tree")](./Attack%20Tree/BLANK.plantuml)
 
-[![BLANK Template](https://raw.githubusercontent.com/OWASP/threat-model-cookbook/master/Template/BLANK/BLANK-draw.io.onepager.xml.svg "BLANK Template")](./Template/BLANK)
+[![BLANK Template](https://raw.githubusercontent.com/OWASP/threat-model-cookbook/master/Template/BLANK/BLANK-draw.io.onepager.xml.svg "BLANK Template")](Template/BLANK)
 
 
 
@@ -103,5 +103,5 @@ A sample model of a web application, with a queue-decoupled background process. 
 ## 3-Tier-Web-App
 This fictitious application exposes a Web UI on the internet and has a Web API and Database hosted on a public cloud provider. This is a full example using the IriusRisk threat modeling tool from ContinuumSecurity.
 
-[![3-Tier-Web-App Flow Diagram](https://raw.githubusercontent.com/OWASP/threat-model-cookbook/master/IriusRisk/3-Tier-Web-App/Dataflow%20Diagram.png "3-Tier-Web-App Flow Diagram")](./IriusRisk/3-Tier-Web-App)
+[![3-Tier-Web-App Flow Diagram](https://raw.githubusercontent.com/OWASP/threat-model-cookbook/master/IriusRisk/3-Tier-Web-App/Dataflow%20Diagram.png "3-Tier-Web-App Flow Diagram")](IriusRisk/3-Tier-Web-App)
 

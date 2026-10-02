@@ -4,7 +4,7 @@
 
 Welcome to [elttam][]'s public semgrep rules repository.
 
-![semgrep rules](./docs/semgrep-rules.png)
+![semgrep rules](docs/semgrep-rules.png)
 
 We regularly develop rules during our code-assisted security audits and software security research. We will be frequently adding new rules and improving what's here for the semgrep community. We hope product security engineers and code auditors who use semgrep find these useful!
 

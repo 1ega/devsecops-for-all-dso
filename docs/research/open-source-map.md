@@ -38,11 +38,11 @@ Stars and activity reflect the state on the survey date. Security notes come fro
 | Project | Role | License | Activity | Stars | In this repo |
 | :--- | :--- | :--- | :--- | ---: | :--- |
 | [betterleaks/betterleaks](https://github.com/betterleaks/betterleaks) **(core)** | Successor to gitleaks by its author. Reads .gitleaks.toml, rules with CEL validation, pure Go. | MIT | active (last push 2026-09-30) | 2,083 | — |
-| [gitleaks/gitleaks](https://github.com/gitleaks/gitleaks) **(core)** | Custom rules in TOML ([extend] useDefault), composite rules since v8.28.0, pre-commit hook and Action. *Note: The author has stated he lost full control of the repository.* | MIT | active (last push 2026-09-30) | 29,608 | [`scanners/gitleaks/default-config/`](../../scanners/gitleaks/default-config/SOURCE.md) |
+| [gitleaks/gitleaks](https://github.com/gitleaks/gitleaks) **(core)** | Custom rules in TOML ([extend] useDefault), composite rules since v8.28.0, pre-commit hook and Action. *Note: The author has stated he lost full control of the repository.* | MIT | active (last push 2026-09-30) | 29,608 | [`rules/secrets/gitleaks-default/`](../../rules/secrets/gitleaks-default/SOURCE.md) |
 | [trufflesecurity/trufflehog](https://github.com/trufflesecurity/trufflehog) | Finds, verifies, and analyzes leaked credentials. | AGPL-3.0 | active (last push 2026-10-01) | 28,239 | — |
 | [Yelp/detect-secrets](https://github.com/Yelp/detect-secrets) | Enterprise approach with a baseline file of known findings. | Apache-2.0 | slow (last push 2026-04-02) | 4,647 | — |
-| [dwisiswant0/apkleaks](https://github.com/dwisiswant0/apkleaks) | Finds URIs, endpoints, and secrets in a built APK. *Note: Last activity August 2025.* | Apache-2.0 | stale (last push 2025-08-20) | 6,328 | [`scanners/apkleaks/`](../../scanners/apkleaks/SOURCE.md) |
-| [mazen160/secrets-patterns-db](https://github.com/mazen160/secrets-patterns-db) | The largest open database of patterns for keys, tokens, and passwords — raw material for custom rules. | CC-BY-SA-4.0 | stale (last push 2025-08-06) | 1,618 | [`scanners/secrets-patterns-db/`](../../scanners/secrets-patterns-db/SOURCE.md) |
+| [dwisiswant0/apkleaks](https://github.com/dwisiswant0/apkleaks) | Finds URIs, endpoints, and secrets in a built APK. *Note: Last activity August 2025.* | Apache-2.0 | stale (last push 2025-08-20) | 6,328 | [`rules/secrets/apkleaks/`](../../rules/secrets/apkleaks/SOURCE.md) |
+| [mazen160/secrets-patterns-db](https://github.com/mazen160/secrets-patterns-db) | The largest open database of patterns for keys, tokens, and passwords — raw material for custom rules. | CC-BY-SA-4.0 | stale (last push 2025-08-06) | 1,618 | [`rules/secrets/secrets-patterns-db/`](../../rules/secrets/secrets-patterns-db/SOURCE.md) |
 | [praetorian-inc/noseyparker](https://github.com/praetorian-inc/noseyparker) | Secret detection in text and git history. | Apache-2.0 | archived (last push 2026-02-21) | 2,340 | — |
 | [Skyscanner/whispers](https://github.com/Skyscanner/whispers) | Secret detection in code and configuration. | Apache-2.0 | archived (last push 2023-10-11) | 506 | — |
 
@@ -71,7 +71,7 @@ Stars and activity reflect the state on the survey date. Security notes come fro
 
 | Project | Role | License | Activity | Stars | In this repo |
 | :--- | :--- | :--- | :--- | ---: | :--- |
-| [dwisiswant0/apkleaks](https://github.com/dwisiswant0/apkleaks) | Finds URIs, endpoints, and secrets in a built APK. *Note: Last activity August 2025.* | Apache-2.0 | stale (last push 2025-08-20) | 6,328 | [`scanners/apkleaks/`](../../scanners/apkleaks/SOURCE.md) |
+| [dwisiswant0/apkleaks](https://github.com/dwisiswant0/apkleaks) | Finds URIs, endpoints, and secrets in a built APK. *Note: Last activity August 2025.* | Apache-2.0 | stale (last push 2025-08-20) | 6,328 | [`rules/secrets/apkleaks/`](../../rules/secrets/apkleaks/SOURCE.md) |
 | [MobSF/Mobile-Security-Framework-MobSF](https://github.com/MobSF/Mobile-Security-Framework-MobSF) **(core)** | Static and dynamic analysis of APK/IPA files, API fuzzing. | GPL-3.0 | active (last push 2026-09-30) | 21,867 | — |
 | [MobSF/mobsfscan](https://github.com/MobSF/mobsfscan) **(core)** | Android/iOS source SAST: Java, Kotlin, Android XML, Info.plist, Swift, Objective-C. Output: SARIF 2.1.0, GitLab SAST, SonarQube, JSON, HTML. | LGPL-3.0 | active (last push 2026-09-21) | 791 | — |
 | [skylot/jadx](https://github.com/skylot/jadx) | Decompiles APK/DEX to Java — input for Semgrep rules on decompiled code. | Apache-2.0 | active (last push 2026-10-01) | 50,708 | — |
@@ -106,8 +106,8 @@ Stars and activity reflect the state on the survey date. Security notes come fro
 | [find-sec-bugs/find-sec-bugs](https://github.com/find-sec-bugs/find-sec-bugs) | Security rules for Java (SpotBugs plugin). | LGPL-3.0 | slow (last push 2026-03-26) | 2,449 | — |
 | [securego/gosec](https://github.com/securego/gosec) | Security scanner for Go. | Apache-2.0 | active (last push 2026-10-02) | 8,961 | — |
 | [eslint-community/eslint-plugin-security](https://github.com/eslint-community/eslint-plugin-security) | ESLint security rules for JS/TS. | Apache-2.0 | active (last push 2026-10-01) | 2,379 | — |
-| [trailofbits/semgrep-rules](https://github.com/trailofbits/semgrep-rules) | Semgrep rules from Trail of Bits. *Note: AGPL-3.0.* | AGPL-3.0 | slow (last push 2026-05-07) | 531 | [`semgrep-rules/trailofbits/`](../../semgrep-rules/trailofbits/SOURCE.md) |
-| [elttam/semgrep-rules](https://github.com/elttam/semgrep-rules) | Additional Semgrep rules, MIT. | MIT | active (last push 2026-09-28) | 246 | [`semgrep-rules/elttam/`](../../semgrep-rules/elttam/SOURCE.md) |
+| [trailofbits/semgrep-rules](https://github.com/trailofbits/semgrep-rules) | Semgrep rules from Trail of Bits. *Note: AGPL-3.0.* | AGPL-3.0 | slow (last push 2026-05-07) | 531 | [`rules/semgrep/trailofbits/`](../../rules/semgrep/trailofbits/SOURCE.md) |
+| [elttam/semgrep-rules](https://github.com/elttam/semgrep-rules) | Additional Semgrep rules, MIT. | MIT | active (last push 2026-09-28) | 246 | [`rules/semgrep/elttam/`](../../rules/semgrep/elttam/SOURCE.md) |
 | [github/codeql](https://github.com/github/codeql) | CodeQL query libraries. *Note: Check the CodeQL CLI terms of use.* | MIT | active (last push 2026-10-02) | 10,155 | — |
 
 <a id="cicd"></a>
@@ -216,7 +216,7 @@ Stars and activity reflect the state on the survey date. Security notes come fro
 | [zaproxy/community-scripts](https://github.com/zaproxy/community-scripts) | Community scripts for ZAP. | Apache-2.0 | active (last push 2026-10-01) | 897 | [`scanners/zap/community-scripts/`](../../scanners/zap/community-scripts/SOURCE.md) |
 | [projectdiscovery/nuclei](https://github.com/projectdiscovery/nuclei) **(core)** | Scanner driven by YAML templates; convenient for writing templates for your own APIs. | MIT | active (last push 2026-10-01) | 31,673 | — |
 | [projectdiscovery/nuclei-templates](https://github.com/projectdiscovery/nuclei-templates) **(core)** | Community library of nuclei templates. | MIT | active (last push 2026-10-02) | 13,049 | — |
-| [projectdiscovery/fuzzing-templates](https://github.com/projectdiscovery/fuzzing-templates) | nuclei templates for fuzzing. | MIT | archived (last push 2024-05-02) | 108 | [`scanners/nuclei/fuzzing-templates/`](../../scanners/nuclei/fuzzing-templates/SOURCE.md) |
+| [projectdiscovery/fuzzing-templates](https://github.com/projectdiscovery/fuzzing-templates) | nuclei templates for fuzzing. | MIT | archived (last push 2024-05-02) | 108 | [`rules/nuclei/fuzzing-templates/`](../../rules/nuclei/fuzzing-templates/SOURCE.md) |
 | [schemathesis/schemathesis](https://github.com/schemathesis/schemathesis) **(core)** | Property-based API testing from OpenAPI/GraphQL schemas. | MIT | active (last push 2026-10-02) | 3,644 | — |
 | [microsoft/restler-fuzzer](https://github.com/microsoft/restler-fuzzer) | Stateful REST API fuzzing. | MIT | slow (last push 2026-06-10) | 2,950 | — |
 

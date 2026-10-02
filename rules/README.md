@@ -1,22 +1,36 @@
-# Semgrep rules
+# Rules
 
-Three focused Python rules with nearby test cases:
+Every rule set in the repository, grouped by the engine that runs it. Scanner wrappers and configuration live in [`scanners/`](../scanners/README.md); policy-as-code for Kubernetes, CI/CD, and infrastructure lives in [`policies/`](../policies/README.md).
 
-| Rule | Detects | Caveat |
-| :--- | :--- | :--- |
-| `python-subprocess-shell-true` | `subprocess` calls with `shell=True` | Review whether untrusted input can reach the command. |
-| `python-requests-verify-false` | `requests` calls disabling TLS verification | May be intentional in a controlled test environment. |
-| `python-yaml-unsafe-load` | `yaml.unsafe_load` or `yaml.load` with an unsafe loader | Safe loading can still require schema validation. |
+| Directory | Engine | Contents | Status |
+| :--- | :--- | :--- | :--- |
+| [semgrep/python](semgrep/python/README.md) | Semgrep | 3 Python starter rules with tests | ✅ |
+| [semgrep/mobile](semgrep/mobile/README.md) | Semgrep | 320 rules for Android, iOS, React Native / Expo, and Flutter / Dart | ✅ |
+| [semgrep/trailofbits](semgrep/trailofbits/SOURCE.md) | Semgrep | 120 rules from Trail of Bits audits (AGPL-3.0) | 📦 |
+| [semgrep/elttam](semgrep/elttam/SOURCE.md) | Semgrep | 107 rules for Java, Go, PHP, YAML, and generic code (MIT) | 📦 |
+| [semgrep/profiles](semgrep/profiles/README.md) | Semgrep | Rule selections for CI gates, pull request comments, and audits | 🗺️ |
+| [yara](yara/README.md) | YARA / YARA-X | Five malware rule sets, about 2,700 rule files: signature-base, Elastic, ReversingLabs, bartblaze, Yara-Rules community | 📦 |
+| [secrets/gitleaks-default](secrets/gitleaks-default/SOURCE.md) | gitleaks | Upstream default `gitleaks.toml` (MIT) | 📦 |
+| [secrets/secrets-patterns-db](secrets/secrets-patterns-db/SOURCE.md) | regex | Open database of secret patterns (CC-BY-SA-4.0) | 📦 |
+| [secrets/apkleaks](secrets/apkleaks/SOURCE.md) | apkleaks | Secret and endpoint patterns for APKs (Apache-2.0) | 📦 |
+| [nuclei](nuclei/fuzzing-templates/SOURCE.md) | nuclei | 21 fuzzing templates (MIT) | 📦 |
+| [falco](falco/README.md) | Falco | Deployment guidance and an alert triage runbook | ✅ |
+| `sigma/` | Sigma | Log detection rules | 🗺️ |
+
+✅ our own content · 📦 imported with its license and `SOURCE.md` · 🗺️ planned.
 
 ## Run
 
-Install [Semgrep](https://semgrep.dev/docs/getting-started/quickstart/) and run from the repository root:
-
 ```bash
-semgrep scan --config rules/ path/to/python-project
-semgrep test rules/
+# Semgrep: one pack, or several at once
+semgrep scan --metrics=off --config rules/semgrep/mobile/rules/ path/to/app
+semgrep scan --metrics=off --config rules/semgrep/trailofbits/ --config rules/semgrep/elttam/rules/ path/to/project
+
+# YARA: one rule file against a directory
+yara -r rules/yara/bartblaze/rules/crimeware/AveMaria.yar path/to/files
+
+# gitleaks with the upstream default rules
+gitleaks dir --config rules/secrets/gitleaks-default/gitleaks.toml path/to/project
 ```
 
-These are review prompts, not proof of exploitability. Check whether the data is trusted and whether the flagged behavior is required. A clean scan does not establish that a codebase is secure.
-
-When adding a rule, include at least one match and one non-match test. Explain the risk and an actionable alternative in its message.
+A rule of our own should include the rule, matching and non-matching examples, tuning notes, and its source and license. Keep environment-specific values out of shared rules.

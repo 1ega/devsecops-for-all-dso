@@ -1,11 +1,10 @@
 # Scanners
 
-Ready-to-use configurations for third-party scanners: which checks are enabled, documented exceptions, custom rules, and the command that produces SARIF or JSON for [reporting](../reporting/README.md). Semgrep rule packs live in [`semgrep-rules/`](../semgrep-rules/README.md); standalone utilities written for this repository live in [`tools/`](../tools/README.md).
+Ready-to-use configurations for third-party scanners: which checks are enabled, documented exceptions, custom rules, and the command that produces SARIF or JSON for [reporting](../reporting/README.md). Rule sets used by these scanners, including Semgrep packs and secret patterns, live in [`rules/`](../rules/README.md); standalone utilities written for this repository live in [`tools/`](../tools/README.md).
 
 | Directory | Covers | Tool |
 | :--- | :--- | :--- |
 | [gitleaks](gitleaks/README.md) | Secrets in code and git history | gitleaks |
-| [secrets-patterns-db](secrets-patterns-db/SOURCE.md) | Imported database of secret patterns | — |
 | [osv-scanner](osv-scanner/README.md) | Vulnerable dependencies in lockfiles | osv-scanner |
 | [grype](grype/README.md) | Vulnerabilities in filesystems, images, and SBOMs; SARIF and severity gate | Grype |
 | [prowler](prowler/README.md) | AWS, Azure, GCP, and Kubernetes posture; JSON OCSF and HTML | Prowler |
@@ -13,7 +12,6 @@ Ready-to-use configurations for third-party scanners: which checks are enabled, 
 | [zap](zap/README.md) | Dynamic testing of web apps and APIs | OWASP ZAP |
 | [nuclei](nuclei/README.md) | Template-based checks for exposed services | nuclei |
 | [mobsf](mobsf/README.md) | Built APK, AAB, and IPA files | MobSF |
-| [apkleaks](apkleaks/SOURCE.md) | Imported patterns for secrets and endpoints in APKs | apkleaks |
 
 Each configuration should pin the tool version, explain every disabled check or allowlist entry, and include a small synthetic fixture that shows the expected result.
 

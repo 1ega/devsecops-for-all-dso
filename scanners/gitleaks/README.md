@@ -13,7 +13,7 @@ Research candidates: [gitleaks/gitleaks](https://github.com/gitleaks/gitleaks), 
 
 Imported reference material:
 
-- [default-config](default-config/SOURCE.md) — the upstream default `gitleaks.toml` (MIT), to read before extending it.
-- [../secrets-patterns-db](../secrets-patterns-db/SOURCE.md) — over a thousand open secret patterns (CC-BY-SA-4.0), raw material for custom rules.
+- [gitleaks-default](../../rules/secrets/gitleaks-default/SOURCE.md) — the upstream default `gitleaks.toml` (MIT), to read before extending it.
+- [secrets-patterns-db](../../rules/secrets/secrets-patterns-db/SOURCE.md) — over a thousand open secret patterns (CC-BY-SA-4.0), raw material for custom rules.
 
 **Status:** Reference content imported; our extended configuration is not published yet.

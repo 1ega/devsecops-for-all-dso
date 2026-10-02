@@ -46,17 +46,17 @@ the repository root.
 Scan an application with every rule:
 
 ```bash
-semgrep scan --metrics=off --config semgrep-rules/mobile_custom/rules/ path/to/app
+semgrep scan --metrics=off --config rules/semgrep/mobile/rules/ path/to/app
 ```
 
 Scan one platform, or one category inside a platform:
 
 ```bash
-semgrep scan --config semgrep-rules/mobile_custom/rules/android/ path/to/android-app
-semgrep scan --config semgrep-rules/mobile_custom/rules/ios/ path/to/ios-app
-semgrep scan --config semgrep-rules/mobile_custom/rules/react-native/ path/to/rn-app
-semgrep scan --config semgrep-rules/mobile_custom/rules/flutter/ path/to/flutter-app
-semgrep scan --config semgrep-rules/mobile_custom/rules/android/cryptography/ path/to/android-app
+semgrep scan --config rules/semgrep/mobile/rules/android/ path/to/android-app
+semgrep scan --config rules/semgrep/mobile/rules/ios/ path/to/ios-app
+semgrep scan --config rules/semgrep/mobile/rules/react-native/ path/to/rn-app
+semgrep scan --config rules/semgrep/mobile/rules/flutter/ path/to/flutter-app
+semgrep scan --config rules/semgrep/mobile/rules/android/cryptography/ path/to/android-app
 ```
 
 Useful options:
@@ -90,7 +90,7 @@ jobs:
           path: .devsecopsforall
       - run: >
           semgrep scan --metrics=off
-          --config .devsecopsforall/semgrep-rules/mobile_custom/rules/
+          --config .devsecopsforall/rules/semgrep/mobile/rules/
           --sarif -o semgrep.sarif --error .
 ```
 
@@ -121,8 +121,8 @@ Known limitations:
 Run the test suite after changing any rule:
 
 ```bash
-cd semgrep-rules/mobile_custom
-semgrep scan --test --config rules/ tests/
+cd rules/semgrep/mobile
+semgrep scan --test --config rules/semgrep/python/ tests/
 semgrep scan --validate --config rules/
 ```
 

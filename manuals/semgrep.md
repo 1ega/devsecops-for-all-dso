@@ -5,7 +5,7 @@
 **Notes:** Writes GitLab SAST reports  
 **Recommended first choice in this topic.**
 
-[GitHub: semgrep/semgrep](https://github.com/semgrep/semgrep) · [Documentation](https://semgrep.dev/docs) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/semgrep-rules)
+[GitHub: semgrep/semgrep](https://github.com/semgrep/semgrep) · [Documentation](https://semgrep.dev/docs) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/rules/semgrep)
 
 ## What it is for
 
@@ -34,13 +34,13 @@ docker pull semgrep/semgrep
 **Scan with a local rule pack**
 
 ```bash
-semgrep scan --metrics=off --config semgrep-rules/trailofbits/ path/to/project
+semgrep scan --metrics=off --config rules/semgrep/trailofbits/ path/to/project
 ```
 
 **Write SARIF, JSON, and GitLab reports in one run**
 
 ```bash
-semgrep scan --metrics=off --config rules/ \
+semgrep scan --metrics=off --config rules/semgrep/python/ \
   --sarif-output=semgrep.sarif --json-output=semgrep.json \
   --gitlab-sast-output=gl-sast-report.json .
 ```

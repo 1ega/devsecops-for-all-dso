@@ -7,7 +7,7 @@
 
   I turn security checks into practical steps for the people who build and run software.
 
-  [DevSecOps for All](https://github.com/1ega/devsecopsforall) · [Security rules](https://github.com/1ega/devsecopsforall/tree/main/rules) · [Guides](https://github.com/1ega/devsecopsforall/tree/main/guides)
+  [DevSecOps for All](https://github.com/1ega/devsecopsforall) · [Security rules](https://github.com/1ega/devsecopsforall/tree/main/rules/semgrep/python) · [Guides](https://github.com/1ega/devsecopsforall/tree/main/guides)
 </div>
 
 <br>
@@ -27,8 +27,8 @@ My open-source home for this work is **[DevSecOps for All](https://github.com/1e
 
 ### 🧰 Explore the work
 
-- **[Semgrep rules](https://github.com/1ega/devsecopsforall/tree/main/rules)** — Python security checks with examples and tests.
-- **[Mobile security rules](https://github.com/1ega/devsecopsforall/tree/main/semgrep-rules/mobile_custom)** — Android, iOS, React Native, and Flutter.
+- **[Semgrep rules](https://github.com/1ega/devsecopsforall/tree/main/rules/semgrep/python)** — Python security checks with examples and tests.
+- **[Mobile security rules](https://github.com/1ega/devsecopsforall/tree/main/rules/semgrep/mobile)** — Android, iOS, React Native, and Flutter.
 - **[Security skills](https://github.com/1ega/devsecopsforall/tree/main/skills)** — reusable instructions for AppSec, supply chain, Kubernetes, AI security, detection, and compliance.
 - **[Field guides](https://github.com/1ega/devsecopsforall/tree/main/guides)** — security review and pentest planning checklists.
 

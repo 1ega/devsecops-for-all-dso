@@ -17,8 +17,8 @@ About 9,300 of the community rules are PEiD-style packer signatures. Rule sets o
 With [YARA-X](https://github.com/VirusTotal/yara-x) (`yr`), pass a rules directory or file, then the target:
 
 ```sh
-yr scan --recursive detections/yara/reversinglabs/yara path/to/target
-yr scan --recursive rl:detections/yara/reversinglabs/yara bb:detections/yara/bartblaze/rules path/to/target
+yr scan --recursive rules/yara/reversinglabs/yara path/to/target
+yr scan --recursive rl:rules/yara/reversinglabs/yara bb:rules/yara/bartblaze/rules path/to/target
 ```
 
 The `name:` prefix puts each set in its own namespace. Add `--relaxed-re-syntax` for `yara-rules-community`, which has a few regular expressions that only classic YARA accepts.
@@ -26,8 +26,8 @@ The `name:` prefix puts each set in its own namespace. Add `--relaxed-re-syntax`
 With classic [YARA](https://github.com/VirusTotal/yara), pass one or more rule files; `-r` scans a target directory recursively:
 
 ```sh
-yara -r detections/yara/bartblaze/rules/crimeware/AveMaria.yar path/to/target
-yara -r detections/yara/yara-rules-community/malware_index.yar path/to/target
+yara -r rules/yara/bartblaze/rules/crimeware/AveMaria.yar path/to/target
+yara -r rules/yara/yara-rules-community/malware_index.yar path/to/target
 ```
 
 The `*_index.yar` files in `yara-rules-community/` include a whole category at once. To scan with many files, compile them first with `yarac` or use `yr`.
