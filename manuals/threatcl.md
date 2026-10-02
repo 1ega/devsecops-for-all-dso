@@ -3,7 +3,7 @@
 **Area:** 9. Run the program → Threat modeling  
 **License:** MIT
 
-[GitHub: threatcl/threatcl](https://github.com/threatcl/threatcl) · [Documentation](https://threatcl.dev/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/templates/threat-models/threatcl)
+[GitHub: threatcl/threatcl](https://github.com/threatcl/threatcl) · [Documentation](https://threatcl.dev/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/templates/threat-models/threatcl)
 
 ## What it is for
 

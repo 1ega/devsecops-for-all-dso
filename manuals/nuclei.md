@@ -5,7 +5,7 @@
 **Area:** 7. Test what runs → Dynamic testing (DAST)  
 **License:** MIT
 
-[GitHub: projectdiscovery/nuclei](https://github.com/projectdiscovery/nuclei) · [Documentation](https://docs.projectdiscovery.io/tools/nuclei/overview) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/scanners/nuclei)
+[GitHub: projectdiscovery/nuclei](https://github.com/projectdiscovery/nuclei) · [Documentation](https://docs.projectdiscovery.io/tools/nuclei/overview) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/scanners/nuclei)
 
 ## What it is for
 

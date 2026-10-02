@@ -1,6 +1,6 @@
 # Roadmap
 
-The [published interactive roadmap](https://1ega.github.io/devsecopsforall/) is
+The [published interactive roadmap](https://1ega.github.io/devsecops-for-all-dso/) is
 part of this repository. Its current sources cover ten areas, 29 topics, 95 tool
 manuals and all 32 [company baseline controls](baseline/README.md). Start with
 [SMB adoption](guides/smb-security.md), then use [Find by task](README.md#find-by-task).

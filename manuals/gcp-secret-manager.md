@@ -3,7 +3,7 @@
 **Area:** 8. Secure the cloud → Cloud secrets and keys  
 **License:** Google Cloud service
 
-[Documentation](https://cloud.google.com/secret-manager/docs) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/skills/secrets-management/gcp-secret-manager)
+[Documentation](https://cloud.google.com/secret-manager/docs) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/skills/secrets-management/gcp-secret-manager)
 
 ## What it is for
 

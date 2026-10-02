@@ -3,7 +3,7 @@
 **Area:** 1. Protect your code → Malware and malicious code  
 **License:** MIT
 
-[GitHub: anthropics/claude-code-security-review](https://github.com/anthropics/claude-code-security-review) · [Documentation](https://github.com/anthropics/claude-code-security-review#readme) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/skills)
+[GitHub: anthropics/claude-code-security-review](https://github.com/anthropics/claude-code-security-review) · [Documentation](https://github.com/anthropics/claude-code-security-review#readme) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/skills)
 
 ## What it is for
 

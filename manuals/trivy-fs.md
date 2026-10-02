@@ -6,7 +6,7 @@
 **License:** Apache-2.0  
 **Notes:** GitLab report templates included
 
-[GitHub: aquasecurity/trivy](https://github.com/aquasecurity/trivy) · [Documentation](https://trivy.dev/docs/latest/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/scanners/trivy)
+[GitHub: aquasecurity/trivy](https://github.com/aquasecurity/trivy) · [Documentation](https://trivy.dev/docs/latest/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/scanners/trivy)
 
 ## What it is for
 

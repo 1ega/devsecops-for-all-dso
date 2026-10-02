@@ -4,7 +4,7 @@
 **License:** GPL-3.0  
 **Recommended first choice in this topic.**
 
-[GitHub: MobSF/Mobile-Security-Framework-MobSF](https://github.com/MobSF/Mobile-Security-Framework-MobSF) · [Documentation](https://mobsf.github.io/docs) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/scanners/mobsf)
+[GitHub: MobSF/Mobile-Security-Framework-MobSF](https://github.com/MobSF/Mobile-Security-Framework-MobSF) · [Documentation](https://mobsf.github.io/docs) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/scanners/mobsf)
 
 ## What it is for
 

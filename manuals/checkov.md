@@ -7,7 +7,7 @@
 **Notes:** GitLab SAST output  
 **Recommended first choice in this topic.**
 
-[GitHub: bridgecrewio/checkov](https://github.com/bridgecrewio/checkov) · [Documentation](https://www.checkov.io/1.Welcome/Quick%20Start.html) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/policies/terraform)
+[GitHub: bridgecrewio/checkov](https://github.com/bridgecrewio/checkov) · [Documentation](https://www.checkov.io/1.Welcome/Quick%20Start.html) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/policies/terraform)
 
 ## What it is for
 

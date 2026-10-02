@@ -5,7 +5,7 @@
 **Notes:** SARIF and JSON reports  
 **Recommended first choice in this topic.**
 
-[GitHub: gitleaks/gitleaks](https://github.com/gitleaks/gitleaks) · [Documentation](https://github.com/gitleaks/gitleaks#readme) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/scanners/gitleaks)
+[GitHub: gitleaks/gitleaks](https://github.com/gitleaks/gitleaks) · [Documentation](https://github.com/gitleaks/gitleaks#readme) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/scanners/gitleaks)
 
 ## What it is for
 

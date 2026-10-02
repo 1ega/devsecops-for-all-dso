@@ -4,7 +4,7 @@
 **License:** BSD-3-Clause  
 **Recommended first choice in this topic.**
 
-[GitHub: DefectDojo/django-DefectDojo](https://github.com/DefectDojo/django-DefectDojo) · [Documentation](https://docs.defectdojo.com/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/integrations/defectdojo)
+[GitHub: DefectDojo/django-DefectDojo](https://github.com/DefectDojo/django-DefectDojo) · [Documentation](https://docs.defectdojo.com/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/integrations/defectdojo)
 
 ## What it is for
 

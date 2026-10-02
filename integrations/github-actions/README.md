@@ -10,7 +10,7 @@ permissions:
   contents: read
 jobs:
   security:
-    uses: 1ega/devsecopsforall/.github/workflows/security.yml@FULL_COMMIT_SHA
+    uses: 1ega/devsecops-for-all-dso/.github/workflows/security.yml@FULL_COMMIT_SHA
     with:
       run_secrets: true
       run_sca: true
@@ -46,7 +46,7 @@ permissions:
   contents: read
 jobs:
   security:
-    uses: 1ega/devsecopsforall/.github/workflows/dso-gate.yml@FULL_COMMIT_SHA
+    uses: 1ega/devsecops-for-all-dso/.github/workflows/dso-gate.yml@FULL_COMMIT_SHA
     with:
       kit_ref: FULL_COMMIT_SHA
       # kit_branch: main         # protected kit branch that must contain kit_ref

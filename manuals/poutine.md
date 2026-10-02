@@ -7,7 +7,7 @@
 **Notes:** Understands GitLab CI; scans groups via the API  
 **Recommended first choice in this topic.**
 
-[GitHub: boostsecurityio/poutine](https://github.com/boostsecurityio/poutine) · [Documentation](https://boostsecurityio.github.io/poutine/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/policies/cicd/poutine-rego)
+[GitHub: boostsecurityio/poutine](https://github.com/boostsecurityio/poutine) · [Documentation](https://boostsecurityio.github.io/poutine/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/policies/cicd/poutine-rego)
 
 ## What it is for
 

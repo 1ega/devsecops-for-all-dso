@@ -3,7 +3,7 @@
 **Area:** 9. Run the program → People, standards, and maturity  
 **License:** CC-BY-SA-4.0
 
-[GitHub: OWASP/masvs](https://github.com/OWASP/masvs) · [Documentation](https://mas.owasp.org/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/reporting/compliance-mapping/masvs)
+[GitHub: OWASP/masvs](https://github.com/OWASP/masvs) · [Documentation](https://mas.owasp.org/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/reporting/compliance-mapping/masvs)
 
 ## What it is for
 

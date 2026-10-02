@@ -3,7 +3,7 @@
 **Area:** 6. Guard Kubernetes → Kubernetes admission and audit  
 **License:** Apache-2.0
 
-[GitHub: open-policy-agent/gatekeeper](https://github.com/open-policy-agent/gatekeeper) · [Documentation](https://open-policy-agent.github.io/gatekeeper/website/docs/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/policies/kubernetes/gatekeeper-library)
+[GitHub: open-policy-agent/gatekeeper](https://github.com/open-policy-agent/gatekeeper) · [Documentation](https://open-policy-agent.github.io/gatekeeper/website/docs/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/policies/kubernetes/gatekeeper-library)
 
 ## What it is for
 

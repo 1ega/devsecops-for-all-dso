@@ -3,7 +3,7 @@
 **Area:** 3. Harden containers → Container images  
 **License:** Apache-2.0
 
-[GitHub: GoogleContainerTools/distroless](https://github.com/GoogleContainerTools/distroless) · [Documentation](https://github.com/GoogleContainerTools/distroless#readme) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/policies/containers/distroless-examples)
+[GitHub: GoogleContainerTools/distroless](https://github.com/GoogleContainerTools/distroless) · [Documentation](https://github.com/GoogleContainerTools/distroless#readme) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/policies/containers/distroless-examples)
 
 ## What it is for
 

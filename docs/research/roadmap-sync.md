@@ -1,6 +1,6 @@
 # Online roadmap synchronization audit
 
-Reviewed 2026-10-02 against the [live map](https://1ega.github.io/devsecopsforall/)
+Reviewed 2026-10-02 against the [live map](https://1ega.github.io/devsecops-for-all-dso/)
 and repository commit `4876c17`. The live `index.html`, `app.js` and `data.js`
 matched the original local `public/` files. Pages last published the site at
 `2999932`; the subsequent repository/manual update did not change those files.
@@ -15,7 +15,7 @@ matched the original local `public/` files. Pages last published the site at
 | `ROADMAP.md` described a separate future site and unimplemented work already present | Link the published site; record current content and remaining acceptance separately |
 | Pages trigger only watched `public/` and its workflow | Watch manuals, catalog and baseline; fail stale/manual/control/resource checks before publishing |
 
-The [published kit run](https://github.com/1ega/devsecopsforall/actions/runs/37031734420/job/110919961139)
+The [published kit run](https://github.com/1ega/devsecops-for-all-dso/actions/runs/37031734420/job/110919961139)
 passed repository and 22 Python tests, then failed before Falco rule compilation:
 the CLI `load_plugins=[]` override was interpreted as a plugin named `[]`.
 The updated harness removes that CLI override and retains the image's bundled
@@ -24,10 +24,10 @@ break the rules. Re-running the current `validate.sh` locally compiled both rule
 files with Falco 0.45.0 (aarch64). The [test record](../../rules/falco/tests/README.md)
 reports 16/16 positive rules and no negative alerts on a Docker Desktop Linux VM,
 with the host `uname` guard bypassed; rule-specific non-match scenarios remain
-unautomated. The subsequent [kit run](https://github.com/1ega/devsecopsforall/actions/runs/37035950123)
-and [Pages run](https://github.com/1ega/devsecopsforall/actions/runs/37035950179)
+unautomated. The subsequent [kit run](https://github.com/1ega/devsecops-for-all-dso/actions/runs/37035950123)
+and [Pages run](https://github.com/1ega/devsecops-for-all-dso/actions/runs/37035950179)
 both passed on `6679703`. Runtime smoke in the earlier remote
-run was skipped. [Semgrep CI](https://github.com/1ega/devsecopsforall/actions/runs/37031112656)
+run was skipped. [Semgrep CI](https://github.com/1ega/devsecops-for-all-dso/actions/runs/37031112656)
 passed for the original three Python rules, not for every imported pack.
 
 The updated source map has ten areas, 29 topics, 95 tools and all 32 baseline
