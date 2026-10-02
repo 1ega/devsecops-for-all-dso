@@ -9,7 +9,7 @@
 
 DevSecOps for All collects security checks, policies, detection rules, standards, and manuals in one place, so a team can scan its code, cloud accounts, and clusters, enforce controls, hunt for malware, and know what to do with each finding.
 
-**[Quick start](#quick-start)** · **[Find by task](#find-by-task)** · **[What's inside](#whats-inside)** · **[How the repository is organized](#how-the-repository-is-organized)** · **[Roadmap](ROADMAP.md)** · **[Contributing](#contributing)**
+**[Quick start](#quick-start)** · **[Interactive roadmap](https://1ega.github.io/devsecopsforall/)** · **[Find by task](#find-by-task)** · **[What's inside](#whats-inside)** · **[How the repository is organized](#how-the-repository-is-organized)** · **[Roadmap](ROADMAP.md)** · **[Contributing](#contributing)**
 
 ## Quick start
 
@@ -113,6 +113,7 @@ Run tools only against systems you are authorized to assess, and treat every fin
 
 ```text
 devsecopsforall/
+├── public/            Interactive DevSecOps roadmap published on GitHub Pages
 ├── rules/             All rule sets: Semgrep, YARA, secret patterns, nuclei, Falco
 ├── scanners/          Scanner wrappers, configuration, ZAP scripts
 ├── policies/          Policy-as-code: Kubernetes, CI/CD, Terraform, containers, supply chain
