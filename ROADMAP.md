@@ -1,44 +1,25 @@
 # Roadmap
 
-The order in which the empty directories get filled. Each item should start with a [research note](docs/research/README.md) and end with tested content and an updated README.
+This is a task map for a small or medium team securing **code, builds, artifacts, infrastructure, cloud, running workloads, and response**. Start with [Find by task](README.md#find-by-task) if you have a concrete problem. The interactive roadmap is maintained in the separate `devsecops-roadmap` project for a future Pages release. Each tool's [manual](manuals/README.md) explains use; a manual alone does not mean this repository ships a ready integration.
 
-## Phase 0 — Foundation
+## Choose a starting point
 
-- [ ] Run `semgrep --validate` and `semgrep --test` for `semgrep-rules/mobile_custom/` in CI; [rules.yml](.github/workflows/rules.yml) currently tests only `rules/`.
-- [ ] Agree on [severity and metadata](reporting/severity-and-metadata.md).
-- [ ] Fill missing metadata in the mobile pack: `cwe` is present in 106 of 255 rule files and `masvs` in 40.
-- [ ] Add a Markdown link check to CI.
-- [x] Survey open-source projects for each section — see the [open-source map](docs/research/open-source-map.md).
-- [x] Import reusable upstream content with licenses and `SOURCE.md` files — see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-- [ ] Run `semgrep --validate` and `semgrep --test` for the imported `elttam/` and `trailofbits/` packs in CI.
+| Your immediate need | Repository entry point | Current state | Next useful addition |
+| :--- | :--- | :--- | :--- |
+| Secrets and source code | [gitleaks](scanners/gitleaks/README.md), [Semgrep rules](semgrep-rules/README.md) | Imported and original rule content | Validate mobile and imported packs in CI; define blocking profiles |
+| Dependencies, SBOMs, images | [Grype](scanners/grype/README.md), [Trivy](scanners/trivy/README.md), [osv-scanner](scanners/osv-scanner/README.md) | Grype SARIF wrapper; other references | Test fixtures, version pinning, shared triage format |
+| CI/CD and artifacts | [CI policies](policies/cicd/README.md), [integrations](integrations/README.md), [supply chain](policies/supply-chain/README.md) | Imported policies; integration scaffolds | Reusable GitHub/GitLab jobs, signing verification |
+| Infrastructure and Kubernetes | [Terraform policies](policies/terraform/README.md), [Kubernetes policies](policies/kubernetes/README.md) | Imported policy libraries | Small, tested default policies and exception examples |
+| Cloud and identities | [Prowler scanner](scanners/prowler/README.md), [Cloud policies](policies/cloud/README.md), [Prowler mappings](reporting/compliance-mapping/prowler/SOURCE.md) | Multi-cloud scan wrapper and mapping references; policy scaffold | AWS, Azure, GCP least-privilege checks with fixtures |
+| Running apps and clusters | [ZAP](scanners/zap/README.md), [Falco](detections/falco/README.md), [YARA](detections/yara/README.md) | ZAP references; Falco deployment and triage guidance; imported YARA rules | Validate runtime rules and tune YARA with sample events and files |
+| Findings and response | [Reporting](reporting/README.md), [playbooks](playbooks/README.md), [threat models](templates/threat-models/README.md) | Standard mappings and templates; draft metadata | Common severity, owner and SLA fields; incident playbooks |
 
-## Phase 1 — One way in
+## Delivery order
 
-- [ ] [GitHub Actions](integrations/github-actions/README.md) reusable workflow and [GitLab CI](integrations/gitlab-ci/README.md) template.
-- [ ] [Semgrep profiles](semgrep-rules/profiles/README.md): `ci-blocking`, `pr-diff`, `audit`.
-- [ ] [pre-commit](integrations/pre-commit/README.md) hooks.
-- [ ] [DefectDojo](integrations/defectdojo/README.md) import.
-- [ ] [dso](tools/dso/README.md) command-line entry point.
+1. **Make the existing content trustworthy.** Add link checks and CI validation for the mobile, elttam, and Trail of Bits Semgrep packs. Finish [severity and metadata](reporting/severity-and-metadata.md), including ownership and exception fields.
+2. **Make high-use tools repeatable.** Add synthetic fixtures and documented output to Grype, Falco, gitleaks, Trivy, [imported YARA packs](detections/yara/README.md), and cloud checks. Pin tool versions in runnable CI examples. Expand the [91 manuals](manuals/README.md) where operators need tuning and triage steps.
+3. **Connect the controls.** Build reusable [GitHub Actions and GitLab CI integrations](integrations/README.md), pre-commit hooks, a `dso` entry point, and finding import to DefectDojo. A local command and its CI job should produce the same result format.
+4. **Cover environments after deploy.** Turn imported Kubernetes and IaC references into tested default policies; add AWS, Azure, and GCP checks; validate Falco rules and alert routing; add DAST examples for owned web apps and APIs.
+5. **Close the loop.** Link findings to [compliance mappings](reporting/compliance-mapping/README.md), [threat models](templates/threat-models/README.md), and [response playbooks](playbooks/README.md). Add safe labs so teams can rehearse a detection and a fix.
 
-## Phase 2 — Complete mobile coverage
-
-- [ ] Mobile secret patterns in [gitleaks](scanners/gitleaks/README.md).
-- [ ] Mobile lockfiles in [osv-scanner](scanners/osv-scanner/README.md).
-- [ ] Built artifact analysis with [MobSF](scanners/mobsf/README.md).
-- [ ] Release build configuration rules in [mobile_custom](semgrep-rules/mobile_custom/README.md): network security config, R8, signing, Expo EAS, Flutter obfuscation.
-
-## Phase 3 — Backend and infrastructure
-
-- [ ] Backend Semgrep packs in [semgrep-rules](semgrep-rules/README.md).
-- [ ] [Policies](policies/README.md): tune the imported Kyverno and Gatekeeper libraries into a default pack; write Terraform, CI/CD, and cloud policies.
-- [ ] [Trivy](scanners/trivy/README.md), [ZAP](scanners/zap/README.md), and [nuclei](scanners/nuclei/README.md) configurations.
-
-## Phase 4 — Knowledge and operations
-
-- [x] [Manuals](manuals/README.md) for 91 tools, with links to each tool's GitHub repository.
-- [ ] Deepen the manuals of the tools marked "start here" with tuning and triage examples.
-- [ ] [Compliance mapping](reporting/compliance-mapping/README.md): standards and Prowler cloud mappings are imported; map this repository's rules to MASVS, ASVS, and PCI DSS 4.0.
-- [ ] [Playbooks](playbooks/README.md) for leaked secrets, compromised dependencies, and triage.
-- [ ] [Threat model templates](templates/threat-models/README.md) for login, biometrics, payments, and deep links (examples are imported).
-- [x] Import open-source [YARA rule sets](detections/yara/README.md).
-- [ ] Tuned [detection](detections/README.md) packs of our own (YARA with fixtures, Sigma, Falco) and first [labs](labs/README.md).
+For each new control, add a [research note](docs/research/README.md), a runnable example or fixture, expected output, tuning guidance, source/license details, and a README entry. The [contribution guide](CONTRIBUTING.md) describes the review requirements.

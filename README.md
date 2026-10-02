@@ -42,17 +42,18 @@ Run tools only against systems you are authorized to assess, and treat every fin
 | Scan source code for vulnerabilities | [Semgrep rule packs](semgrep-rules/README.md) · [Python rules](rules/README.md) |
 | Review a mobile app | [Mobile rules](semgrep-rules/mobile_custom/README.md) · [OWASP MASTG](guides/owasp-mastg/SOURCE.md) · [MobSF notes](scanners/mobsf/README.md) |
 | Find leaked secrets | [gitleaks](scanners/gitleaks/README.md) · [Secret pattern database](scanners/secrets-patterns-db/SOURCE.md) |
-| Check dependencies and SBOMs | [osv-scanner](scanners/osv-scanner/README.md) · [Trivy](scanners/trivy/README.md) · [Supply chain policies](policies/supply-chain/README.md) |
+| Check dependencies and SBOMs | [Grype SARIF wrapper](scanners/grype/README.md) · [osv-scanner](scanners/osv-scanner/README.md) · [Trivy](scanners/trivy/README.md) · [Supply chain policies](policies/supply-chain/README.md) |
 | Secure CI/CD pipelines | [CI/CD policies](policies/cicd/README.md) · [CI integrations](integrations/README.md) |
 | Check Terraform and other IaC | [Terraform policies](policies/terraform/README.md) |
 | Harden containers and Kubernetes | [Container policies](policies/containers/README.md) · [Kyverno and Gatekeeper libraries](policies/kubernetes/README.md) |
-| Audit a cloud account | [Prowler manual](manuals/prowler.md) · [Prowler frameworks](reporting/compliance-mapping/prowler/SOURCE.md) · [Cloud policies](policies/cloud/README.md) |
+| Audit a cloud account | [Prowler scan wrapper](scanners/prowler/README.md) · [Prowler frameworks](reporting/compliance-mapping/prowler/SOURCE.md) · [Cloud policies](policies/cloud/README.md) |
 | Hunt for malware and malicious code | [YARA rules](detections/yara/README.md) · [GuardDog](manuals/guarddog.md) · [ClamAV](manuals/clamav.md) |
 | Test a running web app or API | [ZAP](scanners/zap/README.md) · [nuclei](scanners/nuclei/README.md) |
 | Map work to a standard (MASVS, ASVS, PCI DSS, CIS) | [Compliance mapping](reporting/compliance-mapping/README.md) |
 | Model threats for a feature | [Threat model templates and examples](templates/threat-models/README.md) |
 | Fix or triage a finding | [OWASP Cheat Sheets](guides/owasp-cheatsheets/SOURCE.md) · [Playbooks](playbooks/README.md) · [Severity scale](reporting/severity-and-metadata.md) |
 | Respond to an incident | [Playbooks](playbooks/README.md) · [Incident response skill](skills/detection-response/incident-response/SKILL.md) |
+| Detect threats in running containers | [Falco deployment and triage](detections/falco/README.md) · [Runtime security examples](skills/detection-response/runtime-security/examples/runtime-security/README.md) |
 | Give an AI agent security skills | [Skill catalog](skills/README.md) · [Trail of Bits plugins](skills/trailofbits/README.md) |
 | Learn how to install and run a tool | [Manuals for 91 tools](manuals/README.md), each linked to its GitHub repository |
 
@@ -64,7 +65,7 @@ Run tools only against systems you are authorized to assess, and treat every fin
 
 | Directory | Contents | Status |
 | :--- | :--- | :--- |
-| [`scanners/`](scanners/README.md) | Configurations for gitleaks, osv-scanner, Trivy, ZAP, nuclei, MobSF; imported secret patterns, 200+ ZAP scripts, nuclei fuzzing templates | 📦 · 🗺️ |
+| [`scanners/`](scanners/README.md) | Grype and Prowler wrappers; references for gitleaks, osv-scanner, Trivy, ZAP, nuclei, MobSF; imported secret patterns and templates | ✅ · 📦 · 🗺️ |
 | [`semgrep-rules/`](semgrep-rules/README.md) | Code rule packs: [mobile](semgrep-rules/mobile_custom/README.md) (320 rules, ✅), [Trail of Bits](semgrep-rules/trailofbits/SOURCE.md) (120, 📦), [elttam](semgrep-rules/elttam/SOURCE.md) (107, 📦), planned [profiles](semgrep-rules/profiles/README.md) | ✅ · 📦 |
 | [`rules/`](rules/README.md) | 3 Python starter rules with tests | ✅ |
 
@@ -102,7 +103,7 @@ Run tools only against systems you are authorized to assess, and treat every fin
 | [`skills/trailofbits/`](skills/trailofbits/README.md) | 23 Claude Code plugins (38 skills): Semgrep rule creation, SARIF analysis, variant analysis, supply-chain risk | 📦 |
 | [`playbooks/`](playbooks/README.md) | Leaked secrets, compromised dependencies, finding triage | 🗺️ |
 | [`detections/yara/`](detections/yara/README.md) | Five YARA rule sets, about 2,700 rule files: signature-base, Elastic, ReversingLabs, bartblaze, Yara-Rules community | 📦 |
-| [`detections/`](detections/README.md) | Sigma, Falco, and osquery rules | 🗺️ |
+| [`detections/`](detections/README.md) | Falco deployment and triage guidance; Sigma and osquery packs planned | ✅ · 🗺️ |
 | [`labs/`](labs/README.md) | Reproducible vulnerable-and-fixed exercises | 🗺️ |
 
 ## How the repository is organized
@@ -115,23 +116,13 @@ Run tools only against systems you are authorized to assess, and treat every fin
 
 ```text
 devsecopsforall/
-├── scanners/          Configurations and rules for third-party scanners
-├── semgrep-rules/     Semgrep rule packs: mobile, Trail of Bits, elttam
-├── rules/             Python Semgrep starter rules
-├── policies/          Policy-as-code: Kubernetes, CI/CD, Terraform, containers, supply chain
-├── detections/        Detection rules; YARA rule sets in detections/yara/
-├── integrations/      CI templates, pre-commit, DefectDojo import (planned)
-├── tools/             Standalone utilities (planned)
-├── guides/            Review checklists, OWASP Cheat Sheets, OWASP MASTG
-├── manuals/           How to install, use, and triage 91 tools
-├── reporting/         Severity scale and compliance mappings
-├── templates/         Threat model templates and examples
-├── skills/            AI agent skills, including Trail of Bits plugins
-├── playbooks/         Incident and triage procedures (planned)
-├── labs/              Reproducible exercises (planned)
-├── docs/research/     Tool evaluations and the open-source map
-├── ROADMAP.md         What gets built next
-└── THIRD_PARTY_NOTICES.md   Source and license of every import
+├── scanners/  semgrep-rules/  rules/        scan
+├── policies/  integrations/  tools/         enforce
+├── guides/  reporting/  templates/
+│   manuals/  docs/research/                 know
+├── skills/  playbooks/  detections/  labs/  act
+├── ROADMAP.md  CONTRIBUTING.md  SECURITY.md
+└── THIRD_PARTY_NOTICES.md  LICENSE
 ```
 
 ## Contributing

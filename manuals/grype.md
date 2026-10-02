@@ -5,6 +5,8 @@
 
 [GitHub: anchore/grype](https://github.com/anchore/grype) · [Documentation](https://oss.anchore.com/docs/)
 
+**In this repository:** [SARIF scan wrapper and starter configuration](../scanners/grype/README.md).
+
 ## What it is for
 
 Vulnerability matcher for directories, images, and SBOMs.

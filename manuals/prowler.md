@@ -5,7 +5,7 @@
 **Notes:** Upstream GitLab CI cookbook  
 **Recommended first choice in this topic.**
 
-[GitHub: prowler-cloud/prowler](https://github.com/prowler-cloud/prowler) · [Documentation](https://docs.prowler.com/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/reporting/compliance-mapping/prowler)
+[GitHub: prowler-cloud/prowler](https://github.com/prowler-cloud/prowler) · [Documentation](https://docs.prowler.com/) · [Scan wrapper](../scanners/prowler/README.md) · [Framework mappings](../reporting/compliance-mapping/prowler/SOURCE.md)
 
 ## What it is for
 

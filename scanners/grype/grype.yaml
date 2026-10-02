@@ -1,0 +1,4 @@
+# Review every finding by default. Add scoped, documented ignores in the consumer.
+check-for-app-update: false
+only-fixed: false
+ignore: []

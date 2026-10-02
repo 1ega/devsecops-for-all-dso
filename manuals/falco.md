@@ -6,6 +6,8 @@
 
 [GitHub: falcosecurity/falco](https://github.com/falcosecurity/falco) · [Documentation](https://falco.org/docs/)
 
+**In this repository:** [deployment examples and alert triage](../detections/falco/README.md).
+
 ## What it is for
 
 eBPF-based runtime detection for containers, Kubernetes, and hosts.

@@ -7,6 +7,8 @@ Ready-to-use configurations for third-party scanners: which checks are enabled, 
 | [gitleaks](gitleaks/README.md) | Secrets in code and git history | gitleaks |
 | [secrets-patterns-db](secrets-patterns-db/SOURCE.md) | Imported database of secret patterns | — |
 | [osv-scanner](osv-scanner/README.md) | Vulnerable dependencies in lockfiles | osv-scanner |
+| [grype](grype/README.md) | Vulnerabilities in filesystems, images, and SBOMs; SARIF and severity gate | Grype |
+| [prowler](prowler/README.md) | AWS, Azure, GCP, and Kubernetes posture; JSON OCSF and HTML | Prowler |
 | [trivy](trivy/README.md) | Images, filesystems, misconfiguration | Trivy |
 | [zap](zap/README.md) | Dynamic testing of web apps and APIs | OWASP ZAP |
 | [nuclei](nuclei/README.md) | Template-based checks for exposed services | nuclei |
@@ -17,4 +19,4 @@ Each configuration should pin the tool version, explain every disabled check or 
 
 Imported upstream content keeps its license; each imported directory has a `SOURCE.md`. See [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 
-**Status:** Upstream reference content imported; no configurations of our own are published yet.
+**Status:** Upstream reference content is imported. Grype and Prowler contain local wrappers; the other scanner directories vary in readiness, so check each README.
