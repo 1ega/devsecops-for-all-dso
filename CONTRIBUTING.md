@@ -2,7 +2,7 @@
 
 Thanks for helping make DevSecOps tools easier to use. Improvements to documentation, examples, tests, and existing tools are welcome alongside new tools.
 
-Semgrep rules should include match and non-match examples in `rules/`, and AI skills should include a focused description and workflow in `skills/<name>/SKILL.md`.
+Semgrep rules should include match and non-match examples in `rules/`, and AI skills should include a focused description and workflow in `skills/<category>/<name>/SKILL.md`. Add new skills to the [skills catalog](skills/README.md), and record the source and license of imported skills in [THIRD_PARTY_NOTICES.md](skills/THIRD_PARTY_NOTICES.md).
 
 ## Before you start
 
