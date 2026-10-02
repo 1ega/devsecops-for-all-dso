@@ -26,11 +26,11 @@ marking a tool adopted does not establish a working control.
 
 ## Next delivery priorities
 
-1. **Complete runtime acceptance.** Falco 0.45.0 now compiles both local files.
-   The [test record](rules/falco/tests/README.md) reports 16/16 positive rules and
-   no negative alerts on a Docker Desktop Linux VM; rule-specific non-match
-   scenarios remain unautomated. Test staging node coverage, alert delivery,
-   missing nodes and failed output, then confirm the corrected CI run.
+1. **Complete runtime acceptance.** CI compiles both local Falco files with 0.45.0
+   on every push. The [test record](rules/falco/tests/README.md) reports 16/16
+   positive rules and no negative alerts on a Docker Desktop Linux VM; rule-specific
+   non-match scenarios remain unautomated. Test staging node coverage, alert
+   delivery, missing nodes and failed output.
 2. **Verify imported rule coverage and scanner failures.** Add CI for mobile,
    Trail of Bits and elttam rules. Cover synthetic secret, native Grype/image,
    YARA positive/negative and permission/database/error cases; retain coverage
@@ -51,7 +51,7 @@ marking a tool adopted does not establish a working control.
 
 The [repository review](docs/research/smb-operational-gaps.md) records existing
 local checks and their limits. The [roadmap audit](docs/research/roadmap-sync.md)
-records the online drift, earlier CI failure and subsequent local compiler check. Most manuals/imported packs
+records the online drift and the Falco compilation failure that CI now passes. Most manuals/imported packs
 still require per-tool acceptance; generated coverage is not deployed coverage.
 
 Edit manuals and [the topic catalog](tools/roadmap/catalog.json), then run

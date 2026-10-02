@@ -25,6 +25,10 @@ Use the directory README for the kind of contribution you are making: [`rules/`]
 
 The [tool directory guide](tools/README.md) includes a suggested layout and README checklist.
 
+## Add a scanner configuration
+
+Start with a [research note](docs/research/README.md). The scanner must write SARIF or another format DefectDojo can import, so its results fit the [finding lifecycle](reporting/finding-lifecycle.md). Pin the tool by image digest or exact package version, record it in [tools/versions.json](tools/versions.json), and add a synthetic fixture that shows one match and one clean run.
+
 ## Security and privacy
 
 Never include real tokens, private keys, customer data, or unredacted findings in commits, issues, or pull requests. Use synthetic fixtures. If you discover a vulnerability, follow [SECURITY.md](SECURITY.md) instead of opening a public issue.
@@ -34,3 +38,5 @@ Tools that probe external systems must clearly describe their scope, permissions
 ## Review expectations
 
 Pull requests should be small enough to review, use clear names, and avoid unrelated changes. Maintainers may ask for clearer setup instructions, tests, or safer defaults before merging.
+
+Every change reaches `main` through a pull request. The `validate` job of the [repository validation](tools/validation/README.md) workflow must pass, and pull requests are squash-merged.
