@@ -1,5 +1,7 @@
 # Dockle
 
+**Version reviewed:** v0.4.15 ([official release](https://github.com/goodwithtech/dockle/releases/tag/v0.4.15)); metadata checked 2026-10-02.
+
 **Area:** 3. Harden containers → Container images  
 **License:** Apache-2.0
 
@@ -37,7 +39,7 @@ Pin images and actions to a version or digest before relying on this example.
 dockle:
   stage: test
   image:
-    name: goodwithtech/dockle:latest
+    name: goodwithtech/dockle:v0.4.15@sha256:eade932f793742de0aa8755406c7677cd7696f8675b6180926f7eeffa7abe6b9
     entrypoint: [""]
   variables:
     DOCKLE_USERNAME: $CI_REGISTRY_USER

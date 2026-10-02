@@ -1,5 +1,7 @@
 # Checkov
 
+**Version reviewed:** 3.3.21 ([official release](https://github.com/bridgecrewio/checkov/releases/tag/3.3.21)); metadata checked 2026-10-02.
+
 **Area:** 4. Check infrastructure code → Infrastructure as code  
 **License:** Apache-2.0  
 **Notes:** GitLab SAST output  
@@ -18,7 +20,7 @@ Broadest coverage in one tool, with checks for Terraform plans (resolved values)
 **pip or Homebrew**
 
 ```bash
-pip3 install checkov
+pip3 install checkov==3.3.21
 # or
 brew install checkov
 ```
@@ -49,7 +51,7 @@ Pin images and actions to a version or digest before relying on this example.
 checkov:
   stage: test
   image:
-    name: bridgecrew/checkov:latest
+    name: bridgecrew/checkov:3.3.21@sha256:9aefe56582004ebdac112fe85c3268dc4d3658231a8f023fb714ba9d29539d53
     entrypoint: [""]
   script:
     - checkov -d . -o cli -o junitxml --output-file-path console,checkov.xml

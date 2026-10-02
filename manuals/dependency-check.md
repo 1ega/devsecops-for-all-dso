@@ -1,5 +1,7 @@
 # OWASP Dependency-Check
 
+**Version reviewed:** v13.0.0 ([official release](https://github.com/dependency-check/DependencyCheck/releases/tag/v13.0.0)); metadata checked 2026-10-02.
+
 **Area:** 1. Protect your code → Dependency scanning (SCA)  
 **License:** Apache-2.0  
 **Notes:** Writes GitLab dependency scanning reports
@@ -44,7 +46,7 @@ Pin images and actions to a version or digest before relying on this example.
 dependency-check:
   stage: test
   image:
-    name: owasp/dependency-check:latest
+    name: owasp/dependency-check:13.0.0@sha256:0e8f69ad5b00d62000937f4e57189812343f6903d9c83ee712012d51542a020a
     entrypoint: [""]
   script:
     - /usr/share/dependency-check/bin/dependency-check.sh

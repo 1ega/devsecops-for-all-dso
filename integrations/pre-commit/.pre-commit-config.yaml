@@ -1,0 +1,7 @@
+---
+# Copy to the application root. First run downloads the pinned hook environment.
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks

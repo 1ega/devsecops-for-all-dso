@@ -1,5 +1,7 @@
 # actionlint
 
+**Version reviewed:** v1.7.12 ([official release](https://github.com/rhysd/actionlint/releases/tag/v1.7.12)); metadata checked 2026-10-02.
+
 **Area:** 2. Secure the pipeline → Pipeline security  
 **License:** MIT  
 **Notes:** GitHub Actions only
@@ -19,7 +21,7 @@ Catches broken expressions, wrong types, and unsafe shell before a workflow ever
 ```bash
 brew install actionlint
 # or
-go install github.com/rhysd/actionlint/cmd/actionlint@latest
+go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 ```
 
 ## Use
@@ -43,11 +45,14 @@ permissions:
   contents: read
 jobs:
   actionlint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7          # pin to a commit SHA
-      - name: Download actionlint
-        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Download verified actionlint
+        run: |
+          curl --fail --show-error --location https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz -o actionlint.tar.gz
+          printf '%s  %s\n' '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8' 'actionlint.tar.gz' | sha256sum --check -
+          tar -xzf actionlint.tar.gz actionlint
       - name: Lint workflows
         run: ./actionlint -color
 ```

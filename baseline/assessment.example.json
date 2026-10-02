@@ -1,0 +1,20 @@
+{
+  "organization": "example-company",
+  "as_of": "2026-10-02",
+  "controls": {
+    "GOV-01": {
+      "status": "partial",
+      "owner": "security-owner@example.invalid",
+      "reviewed_on": "2026-10-02",
+      "evidence": "",
+      "note": "Replace with inventory location and review evidence"
+    },
+    "CLD-01": {
+      "status": "not_applicable",
+      "owner": "platform-owner@example.invalid",
+      "reviewed_on": "2026-10-02",
+      "evidence": "",
+      "note": "Example only: no cloud account in scope"
+    }
+  }
+}

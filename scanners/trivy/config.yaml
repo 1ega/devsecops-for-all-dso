@@ -1,0 +1,7 @@
+---
+# Use with `trivy config --config ... /path/to/infrastructure`.
+exit-code: 1
+format: sarif
+severity:
+  - HIGH
+  - CRITICAL

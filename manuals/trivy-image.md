@@ -1,5 +1,7 @@
 # Trivy (image)
 
+**Version covered:** 0.75.0. [Local configs and wrapper](../scanners/trivy/README.md).
+
 **Area:** 3. Harden containers → Container images  
 **License:** Apache-2.0  
 **Notes:** Container scanning report template included
@@ -47,7 +49,7 @@ Pin images and actions to a version or digest before relying on this example.
 container-scan:
   stage: test
   image:
-    name: aquasec/trivy:latest          # pin by digest
+    name: aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa          # pin by digest
     entrypoint: [""]
   variables:
     FULL_IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
@@ -86,3 +88,11 @@ The first command writes the GitLab report; the second fails the job on critical
 - [distroless base images](distroless.md) — Minimal base images with no shell or package manager.
 - [skopeo](skopeo.md) — Inspects and copies images between registries and archives without a Docker daemon.
 - [crane](crane.md) — Small CLI for registry operations: digests, tags, manifests, and filesystem export.
+
+## Tuning and acceptance
+
+Use immutable image references and a current database/check bundle. Keep unfixed
+findings visible; accept risk only with asset scope, owner and expiry. Confirm
+ecosystem/config-parser coverage and skipped files. Test a known positive and
+negative fixture using [the local tests](../scanners/trivy/tests/README.md), retain
+private reports, and distinguish tool failures from finding exit codes.

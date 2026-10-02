@@ -23,6 +23,7 @@ Rules keep their native severity — Semgrep uses `ERROR`, `WARNING`, and `INFO`
 | Semgrep | `INFO` | `low` or `info` |
 | gitleaks | any finding | `critical` until triaged |
 | Trivy, osv-scanner, Grype | `CRITICAL` / `HIGH` / `MEDIUM` / `LOW` | same level |
+| Falco | `ERROR` / `WARNING` / `NOTICE` | `high` / `medium` / `info`; incident context may raise it |
 | ZAP | High / Medium / Low / Informational | `high` / `medium` / `low` / `info` |
 
 ## Rule metadata
@@ -45,3 +46,5 @@ metadata:
 ```
 
 `cwe`, `masvs`, and `owasp` drive the [compliance mapping](compliance-mapping/README.md); `confidence` and `impact` drive the CI profiles in [rules/semgrep/profiles](../rules/semgrep/profiles/README.md).
+
+Falco metadata lives in [rule-catalog.json](../rules/falco/rule-catalog.json), because native rule fields have their own schema. Use [finding lifecycle](finding-lifecycle.md) for owners/deadlines and [dated exceptions](exceptions.example.json); priority alone does not prove compromise.

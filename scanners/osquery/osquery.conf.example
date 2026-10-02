@@ -1,0 +1,17 @@
+{
+  "options": {
+    "logger_plugin": "filesystem",
+    "logger_path": "/var/log/osquery",
+    "disable_events": "true"
+  },
+  "schedule": {
+    "dso_users": {
+      "query": "SELECT uid, username, directory, shell FROM users;",
+      "interval": 3600
+    },
+    "dso_listening_ports": {
+      "query": "SELECT pid, port, protocol, address FROM listening_ports;",
+      "interval": 300
+    }
+  }
+}

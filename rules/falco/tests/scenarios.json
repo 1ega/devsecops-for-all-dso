@@ -1,0 +1,133 @@
+{
+  "note": "Scenario contract, not executed Falco engine results. See smoke.sh and tests/README.md.",
+  "scenarios": [
+    {
+      "rule": "DSO Interactive shell in container",
+      "positive": "shell with a controlling terminal in a test container",
+      "negative": "noninteractive shell with proc.tty=0",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Web process spawned shell",
+      "positive": "nginx parent executes /bin/sh in a test container",
+      "negative": "shell parent is an approved test runner, not a web process",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Credential file read in container",
+      "positive": "open a dummy /root/.aws/credentials in a disposable container",
+      "negative": "open /tmp/dso-public.txt",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Service account token read by utility",
+      "positive": "cat a dummy service-account token path in a test container",
+      "negative": "application process python opens the same dummy token",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Container accessed runtime socket",
+      "positive": "connect to a dummy Unix socket at /run/docker.sock inside a disposable container",
+      "negative": "connect to /tmp/dso-app.sock",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Executable launched from temporary directory",
+      "positive": "execute a copy of /bin/true placed at /tmp/dso-test",
+      "negative": "execute /usr/bin/true",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Package manager in running container",
+      "positive": "execute apt --help in a test container",
+      "negative": "execute /usr/bin/true",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Network discovery utility in container",
+      "positive": "execute a harmless nmap --version in a test container",
+      "negative": "execute /usr/bin/true",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Known miner process name in container",
+      "positive": "execute a harmless test binary named xmrig",
+      "negative": "execute /usr/bin/true",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Privilege helper in container",
+      "positive": "execute su --help in a test container",
+      "negative": "execute /usr/bin/id",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Memory backed executable in container",
+      "positive": "execute /usr/bin/true copied to a memfd in an isolated Linux test container",
+      "negative": "execute /usr/bin/true from its disk path",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Ptrace succeeded in container",
+      "positive": "an authorized test parent traces its own dummy child in a sandbox",
+      "negative": "a ptrace call denied by seccomp, or no ptrace syscall",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO SSH authorized keys modified",
+      "positive": "write a dummy key to /tmp/dso-home/.ssh/authorized_keys in a disposable container",
+      "negative": "read the same dummy file without write flags",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Scheduler or systemd configuration modified",
+      "positive": "write /etc/cron.d/dso-test in a disposable container",
+      "negative": "read /etc/cron.d/dso-test",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Account credential database modified",
+      "positive": "write a placeholder to a dummy /etc/gshadow in a disposable container",
+      "negative": "read /etc/passwd",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    },
+    {
+      "rule": "DSO Security log removed",
+      "positive": "unlink a dummy /var/log/auth.log inside a disposable container",
+      "negative": "unlink /tmp/dso-test.log",
+      "expected_positive": true,
+      "expected_negative": false,
+      "status": "requires_linux_runtime_validation"
+    }
+  ]
+}

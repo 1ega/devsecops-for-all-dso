@@ -18,7 +18,7 @@ Rules look like the code they match, so the team can write its own. This reposit
 **pip or Homebrew**
 
 ```bash
-python3 -m pip install semgrep
+python3 -m pip install semgrep==1.178.0
 # or
 brew install semgrep
 ```
@@ -26,7 +26,7 @@ brew install semgrep
 **Container image**
 
 ```bash
-docker pull semgrep/semgrep
+docker pull semgrep/semgrep:1.178.0@sha256:32e459968daabe7ab86968184a29109b9564aa00392401156f9788452b42786b
 ```
 
 ## Use
@@ -54,9 +54,9 @@ Pin images and actions to a version or digest before relying on this example.
 ```yaml
 semgrep:
   stage: test
-  image: semgrep/semgrep            # no entrypoint override needed
+  image: semgrep/semgrep:1.178.0@sha256:32e459968daabe7ab86968184a29109b9564aa00392401156f9788452b42786b
   variables:
-    SEMGREP_RULES: rules/           # path to your rule pack
+    SEMGREP_RULES: rules/semgrep/python/           # path to your rule pack
   script:
     - semgrep scan --metrics=off --config "$SEMGREP_RULES"
         --gitlab-sast-output=gl-sast-report.json
@@ -92,3 +92,13 @@ Add `--error` to exit 1 when there are findings, which fails the job. Registry c
 - [eslint-plugin-security](eslint-security.md) — ESLint rules for risky JavaScript and TypeScript patterns.
 - [mobsfscan](mobsfscan.md) — Source code checks for Android and iOS apps with native GitLab SAST output.
 - [SonarQube](sonarqube.md) — Code quality and security server with quality gates and per-branch dashboards.
+
+## Adoption, tuning and verification
+
+Record the tool version, rule/database revision, target scope and owner with every report.
+Use the [starter integrations](../integrations/README.md) where applicable; test
+expected findings and scanner failures before requiring a gate. Suppress only
+reviewed false positives with asset/rule scope, approver and expiry. Retest the
+deployed version, retain redacted evidence privately, and follow the
+[finding lifecycle](../reporting/finding-lifecycle.md). Missing packages, denied
+APIs, incomplete checkout or skipped targets are coverage gaps, not a clean scan.

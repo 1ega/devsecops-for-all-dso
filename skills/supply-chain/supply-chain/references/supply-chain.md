@@ -40,13 +40,14 @@ permissions:
   id-token: write   # required for Cosign OIDC token exchange with Fulcio
   packages: write   # required to push to GHCR
 
-- name: Install Cosign
-  uses: sigstore/cosign-installer@11086d9f32b178aa24e93c2b86eba3ef4b16b68a  # v3.8.1
+steps:
+  - name: Install Cosign
+    uses: sigstore/cosign-installer@11086d9f32b178aa24e93c2b86eba3ef4b16b68a  # v3.8.1
 
-- name: Sign image
-  run: |
-    cosign sign --yes \
-      ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+  - name: Sign image
+    run: |
+      cosign sign --yes \
+        ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
 ```
 
 **Always sign the digest, not the tag.** Tags are mutable; a digest is immutable.
@@ -82,19 +83,20 @@ permissions:
   id-token: write   # required for Cosign OIDC token exchange with Fulcio
   packages: write   # required to push attestation to GHCR
 
-- name: Generate SBOM
-  uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a  # v0.20.0
-  with:
-    image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
-    format: spdx-json
-    output-file: sbom.spdx.json
+steps:
+  - name: Generate SBOM
+    uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a  # v0.20.0
+    with:
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+      format: spdx-json
+      output-file: sbom.spdx.json
 
-- name: Attest SBOM
-  run: |
-    cosign attest --yes \
-      --predicate sbom.spdx.json \
-      --type spdxjson \
-      ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+  - name: Attest SBOM
+    run: |
+      cosign attest --yes \
+        --predicate sbom.spdx.json \
+        --type spdxjson \
+        ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
 ```
 
 ### SBOM formats

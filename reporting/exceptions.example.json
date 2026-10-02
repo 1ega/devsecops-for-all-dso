@@ -1,0 +1,17 @@
+{
+  "exceptions": [
+    {
+      "id": "EXAMPLE-001",
+      "tool": "falco",
+      "rule_id": "runtime.local.interactive-shell",
+      "asset_id": "replace-with-private-asset-id",
+      "owner": "platform-owner",
+      "approver": "risk-owner",
+      "reason": "Scheduled troubleshooting for the approved workload only",
+      "compensating_control": "Exec access restricted, audit logging enabled, session reviewed",
+      "ticket": "private-ticket-reference",
+      "created_on": "2026-10-02",
+      "expires_on": "2026-10-16"
+    }
+  ]
+}

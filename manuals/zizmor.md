@@ -19,9 +19,9 @@ The most thorough auditor for GitHub workflows. It finds the injection and token
 ```bash
 brew install zizmor
 # or
-pipx install zizmor
+pipx install zizmor==1.30.1
 # or
-docker pull ghcr.io/zizmorcore/zizmor:latest
+docker pull ghcr.io/zizmorcore/zizmor:1.30.1@sha256:a2eb396d886c053073405c7a980f2139ba2248ec172243cfa3841e57196e8101
 ```
 
 ## Use
@@ -59,10 +59,10 @@ jobs:
       contents: read
       actions: read
     steps:
-      - uses: actions/checkout@v7          # pin to a commit SHA
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - uses: zizmorcore/zizmor-action@v0.6.4
+      - uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482
 ```
 
 ## Output and triage
@@ -87,3 +87,13 @@ Exit codes 11 to 14 give the highest finding severity (informational to high); w
 - [Harden-Runner](harden-runner.md) — Monitors and blocks network egress and file changes on GitHub-hosted runners.
 - [Checkov (gitlab_ci)](checkov-cicd.md) — Policy checks for .gitlab-ci.yml and GitLab project settings.
 - [OpenSSF Scorecard](scorecard.md) — Scores a repository on security practices: reviews, pinning, branch protection.
+
+## Adoption, tuning and verification
+
+Record the tool version, rule/database revision, target scope and owner with every report.
+Use the [starter integrations](../integrations/README.md) where applicable; test
+expected findings and scanner failures before requiring a gate. Suppress only
+reviewed false positives with asset/rule scope, approver and expiry. Retest the
+deployed version, retain redacted evidence privately, and follow the
+[finding lifecycle](../reporting/finding-lifecycle.md). Missing packages, denied
+APIs, incomplete checkout or skipped targets are coverage gaps, not a clean scan.

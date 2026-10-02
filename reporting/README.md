@@ -12,3 +12,5 @@ Future work may include SARIF/JSON adapters, review baselines, and local HTML re
 Keep generated reports and sensitive findings out of the repository. Any shared format should document severity, evidence, source tool, and stable finding identifiers.
 
 **Status:** Draft conventions only; no reporting tools are published yet.
+
+Original templates: [finding record](finding.example.json), [finding lifecycle](finding-lifecycle.md) and [exceptions](exceptions.example.json). Automatic adapters and DefectDojo ingestion remain planned.

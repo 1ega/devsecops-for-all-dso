@@ -19,13 +19,13 @@ Free, fast, and precise: OSV data maps vulnerabilities to exact package versions
 ```bash
 brew install osv-scanner
 # or
-go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest
+go install github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.6.0
 ```
 
 **Container image**
 
 ```bash
-docker pull ghcr.io/google/osv-scanner:latest
+docker pull ghcr.io/google/osv-scanner:v2.6.0@sha256:afd838850ac1a0fcc15ff4a041dc9ba11123c3f0d2666217a5f0fcf9222b55fa
 ```
 
 ## Use
@@ -52,7 +52,7 @@ Pin images and actions to a version or digest before relying on this example.
 osv-scanner:
   stage: test
   image:
-    name: ghcr.io/google/osv-scanner:latest
+    name: ghcr.io/google/osv-scanner:v2.6.0@sha256:afd838850ac1a0fcc15ff4a041dc9ba11123c3f0d2666217a5f0fcf9222b55fa
     entrypoint: [""]
   script:
     - /osv-scanner scan source -r --format sarif --output-file osv.sarif .
@@ -83,3 +83,13 @@ Exit code 1 when vulnerabilities are found, 128 when no packages were found (com
 - [Grype](grype.md) — Vulnerability matcher for directories, images, and SBOMs.
 - [OWASP Dependency-Check](dependency-check.md) — NVD-based scanner, strongest for Java and .NET, with a GitLab report format.
 - [retire.js](retire.md) — Finds JavaScript libraries with known vulnerabilities, including copies vendored into static files.
+
+## Adoption, tuning and verification
+
+Record the tool version, rule/database revision, target scope and owner with every report.
+Use the [starter integrations](../integrations/README.md) where applicable; test
+expected findings and scanner failures before requiring a gate. Suppress only
+reviewed false positives with asset/rule scope, approver and expiry. Retest the
+deployed version, retain redacted evidence privately, and follow the
+[finding lifecycle](../reporting/finding-lifecycle.md). Missing packages, denied
+APIs, incomplete checkout or skipped targets are coverage gaps, not a clean scan.

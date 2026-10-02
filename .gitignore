@@ -19,3 +19,16 @@ coverage/
 *.tfvars
 *.tfvars.json
 !.terraform.lock.hcl
+
+# Private findings, assessments and evidence
+reports/
+evidence/
+*.sarif
+*.sarif.json
+*.scap
+baseline/assessment*.json
+!baseline/assessment.example.json
+baseline/assets*.csv
+!baseline/assets.example.csv
+reporting/exceptions*.json
+!reporting/exceptions.example.json

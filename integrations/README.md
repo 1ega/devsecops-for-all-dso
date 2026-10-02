@@ -1,14 +1,18 @@
-# Integrations
+# Starter integrations
 
-Reusable ways to connect repository content to delivery workflows belong here: CI templates, local hooks, and the systems that receive findings.
+| Integration | Entry point | Behavior |
+| :--- | :--- | :--- |
+| GitHub Actions | [Reusable workflow](github-actions/README.md) | Pinned Docker scanners, SARIF artifacts |
+| GitLab CI | [Include](gitlab-ci/README.md) | Same starter secrets/SCA/SAST checks |
+| pre-commit | [Hook config](pre-commit/README.md) | Pinned Gitleaks hook |
+| DefectDojo | [Design notes](defectdojo/README.md) | Upload/deduplication still unimplemented |
 
-| Directory | Purpose |
-| :--- | :--- |
-| [github-actions](github-actions/README.md) | Reusable workflow with SARIF upload to code scanning |
-| [gitlab-ci](gitlab-ci/README.md) | CI template enabled with one `include:` |
-| [pre-commit](pre-commit/README.md) | Fast local checks before a commit |
-| [defectdojo](defectdojo/README.md) | Importing results into DefectDojo for tracking and deduplication |
+Gitleaks blocks findings; OSV/Semgrep produce findings for triage and scanner
+errors fail the job. This is not a normalized severity/delta gate. Network is
+needed for images, OSV data and Semgrep registry rules. Secret scanning covers
+the current tree; run a separate full-history scan as described in the manual.
+Reports may contain sensitive code or paths; use private artifacts and retention.
 
-Keep each integration self-contained with setup instructions, required permissions, an example, and a safe way to test it. Repository maintenance workflows remain in [`.github/workflows/`](../.github/workflows/).
-
-**Status:** Structure only; no reusable integrations are published yet.
+Templates scan the caller repository; no production credentials are needed.
+The repository's own validation compiles Falco rules separately. Test detection
+and failure paths in your application before making jobs required.

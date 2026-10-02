@@ -715,7 +715,9 @@ run: | # zizmor: ignore[template-injection] input is maintainer-only via environ
 # ❌ Not suppressed — the "comment" is part of the string
 run: |
   echo "${{ github.event.issue.title }}" # zizmor: ignore[template-injection]
+```
 
+```yaml
 # ✅ Suppressed — comment is on the `run:` key, outside the literal
 run: | # zizmor: ignore[template-injection]
   echo "${{ github.event.issue.title }}"

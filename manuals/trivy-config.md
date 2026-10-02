@@ -1,5 +1,7 @@
 # Trivy (config)
 
+**Version covered:** 0.75.0. [Local configs and wrapper](../scanners/trivy/README.md).
+
 **Area:** 4. Check infrastructure code → Infrastructure as code  
 **License:** Apache-2.0
 
@@ -46,3 +48,11 @@ Add `--exit-code 1 --severity HIGH,CRITICAL` to gate.
 - [KICS](kics.md) — Rego queries for Terraform, Helm, Docker, Ansible, and more; behind GitLab IaC SAST.
 - [conftest](conftest.md) — Tests any structured config file against your own Rego policies.
 - [terraform-compliance](terraform-compliance.md) — Readable BDD scenarios that a Terraform plan must satisfy.
+
+## Tuning and acceptance
+
+Use immutable image references and a current database/check bundle. Keep unfixed
+findings visible; accept risk only with asset scope, owner and expiry. Confirm
+ecosystem/config-parser coverage and skipped files. Test a known positive and
+negative fixture using [the local tests](../scanners/trivy/tests/README.md), retain
+private reports, and distinguish tool failures from finding exit codes.

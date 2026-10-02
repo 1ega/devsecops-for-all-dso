@@ -1,5 +1,7 @@
 # nuclei
 
+**Version reviewed:** v3.11.1 ([official release](https://github.com/projectdiscovery/nuclei/releases/tag/v3.11.1)); metadata checked 2026-10-02.
+
 **Area:** 7. Test what runs → Dynamic testing (DAST)  
 **License:** MIT
 
@@ -16,7 +18,7 @@ Thousands of community templates, and templates are simple YAML, so writing one 
 **Go**
 
 ```bash
-go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
+go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@v3.11.1
 ```
 
 ## Use
@@ -43,7 +45,7 @@ Pin images and actions to a version or digest before relying on this example.
 nuclei:
   stage: dast
   image:
-    name: projectdiscovery/nuclei:latest
+    name: projectdiscovery/nuclei:v3.11.1@sha256:582d5546902e67052097cb2d07296c642d50a1afc5e44623cb038845df9a32eb
     entrypoint: [""]
   script:
     - nuclei -u "$TARGET_URL" -severity medium,high,critical -sarif-export nuclei.sarif

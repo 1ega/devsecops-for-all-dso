@@ -454,15 +454,18 @@ steps:
     - Determine scope (single user, service account, API key)
 
   2_contain:
-    - Disable compromised accounts immediately
-    - Revoke active sessions and tokens
-    - Rotate API keys and service account credentials
-    - Block source IP if identified
+    actions:
+      - Preserve identity, key and audit-event identifiers before changes
+      - Disable compromised identities using the provider-specific procedure
+      - Revoke active sessions and tokens at their issuer
+      - Rotate affected API keys and service credentials with service owners
+      - Review temporary-session revocation separately from long-lived keys
     commands:
-      - "aws iam update-login-profile --user-name USER --password-reset-required"
-      - "aws iam delete-access-key --user-name USER --access-key-id AKIAXXXX"
-      - "aws iam deactivate-mfa-device --user-name USER --serial-number ARN"
-      - "kubectl delete secret compromised-secret -n NAMESPACE"
+      - "aws iam update-access-key --user-name USER --access-key-id AKIAXXXX --status Inactive"
+    notes:
+      - Inactivating an IAM key does not invalidate issued temporary sessions
+      - Preserve MFA protection during containment
+      - Deleting a Kubernetes Secret alone does not revoke credentials at their issuer
 
   3_investigate:
     - Review CloudTrail/audit logs for the compromised identity
@@ -488,6 +491,10 @@ steps:
 ```
 
 ## Troubleshooting
+
+For AWS, follow the provider's [temporary-session containment procedure](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_control-access_disable-perms.html)
+and [compromised-credential playbook](https://github.com/aws-samples/aws-customer-playbook-framework/blob/main/docs/Compromised_IAM_Credentials.md).
+The YAML commands above are placeholders for a reviewed response procedure.
 
 | Problem | Cause | Solution |
 |---------|-------|----------|

@@ -1,5 +1,7 @@
 # witness
 
+**Version reviewed:** v0.12.0 ([official release](https://github.com/in-toto/witness/releases/tag/v0.12.0)); metadata checked 2026-10-02.
+
 **Area:** 5. Trust your artifacts → SBOM, signing, and provenance  
 **License:** Apache-2.0
 
@@ -16,10 +18,19 @@ Captures evidence about how each step ran (environment, materials, products) and
 
 ## Install
 
-**Install script**
+**Verified release package (Linux amd64)**
+
+The checksum below was read from the official release metadata on 2026-10-02.
+Use the matching release asset/checksum for another OS or architecture.
+SHA256 pinning checks integrity; review upstream signatures/provenance before
+trusting a new release.
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/in-toto/witness/main/install-witness.sh)
+set -eu
+curl --fail --show-error --location https://github.com/in-toto/witness/releases/download/v0.12.0/witness_0.12.0_linux_amd64.tar.gz -o witness.tar.gz
+printf '%s  %s\n' '543d05898731fe5b9c176443ec596a0242bd27f0b327d73aff60f6f7398b7dd0' 'witness.tar.gz' | sha256sum --check -
+tar -xzf witness.tar.gz witness
+sudo install -m 0755 witness /usr/local/bin/witness
 ```
 
 ## Use

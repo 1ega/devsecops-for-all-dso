@@ -1,0 +1,38 @@
+# Include alongside the starter security template; runner uses container jobs.
+dso:iac:
+  stage: test
+  image:
+    name: aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa
+    entrypoint: ['']
+  variables:
+    TRIVY_CACHE_DIR: /tmp/trivy-cache
+  script:
+    - umask 077
+    - mkdir -p reports
+    - trivy config --severity HIGH,CRITICAL --exit-code 1 --format sarif --output reports/iac.sarif .
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths: [reports/iac.sarif]
+dso:image:
+  stage: test
+  image:
+    name: aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa
+    entrypoint: ['']
+  variables:
+    TRIVY_CACHE_DIR: /tmp/trivy-cache
+  rules:
+    - if: $DSO_IMAGE_DIGEST
+  script:
+    - |
+      case "$DSO_IMAGE_DIGEST" in *@sha256:*) ;; *) exit 2 ;; esac
+      digest="${DSO_IMAGE_DIGEST##*@sha256:}"
+      test "${#digest}" -eq 64 || exit 2
+      case "$digest" in *[!a-f0-9]*) exit 2 ;; esac
+    - umask 077
+    - mkdir -p reports
+    - trivy image --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output reports/image.json "$DSO_IMAGE_DIGEST"
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths: [reports/image.json]

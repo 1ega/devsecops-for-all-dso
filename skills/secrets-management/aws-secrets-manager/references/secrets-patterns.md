@@ -107,9 +107,11 @@ connection = connect(
 # SAM template
 Environment:
   Variables:
-    SECRET_ARN: !Ref DatabaseSecret
+    SECRET_ARN:
+      Ref: DatabaseSecret
     
 Policies:
   - AWSSecretsManagerGetSecretValuePolicy:
-      SecretArn: !Ref DatabaseSecret
+      SecretArn:
+        Ref: DatabaseSecret
 ```

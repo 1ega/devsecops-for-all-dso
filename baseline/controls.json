@@ -1,0 +1,325 @@
+{
+  "version": 1,
+  "controls": [
+    {
+      "id": "GOV-01",
+      "domain": "governance",
+      "tier": "core",
+      "title": "Inventory critical services and assets",
+      "owner_role": "IT or service owner",
+      "review_days": 30,
+      "evidence": "Dated inventory with service, account, repository and owner",
+      "reference": "NIST CSF 2.0 Identify"
+    },
+    {
+      "id": "GOV-02",
+      "domain": "governance",
+      "tier": "core",
+      "title": "Classify sensitive data and retention",
+      "owner_role": "Data owner",
+      "review_days": 90,
+      "evidence": "Data inventory and retention decision for each critical service",
+      "reference": "NIST CSF 2.0 Identify"
+    },
+    {
+      "id": "GOV-03",
+      "domain": "governance",
+      "tier": "core",
+      "title": "Track risks, exceptions and expiry",
+      "owner_role": "Security owner",
+      "review_days": 30,
+      "evidence": "Risk register with accountable owner, decision and expiry",
+      "reference": "NIST CSF 2.0 Govern"
+    },
+    {
+      "id": "ID-01",
+      "domain": "identity",
+      "tier": "core",
+      "title": "Require MFA for privileged, remote and business accounts",
+      "owner_role": "Identity administrator",
+      "review_days": 90,
+      "evidence": "Identity provider policy export and exception review",
+      "reference": "CISA CPG Protect"
+    },
+    {
+      "id": "ID-02",
+      "domain": "identity",
+      "tier": "core",
+      "title": "Review privileged access and remove departed users",
+      "owner_role": "Identity administrator",
+      "review_days": 30,
+      "evidence": "Access review and joiner-mover-leaver test",
+      "reference": "CIS Controls IG1"
+    },
+    {
+      "id": "END-01",
+      "domain": "endpoints",
+      "tier": "core",
+      "title": "Manage and patch employee devices",
+      "owner_role": "IT owner",
+      "review_days": 30,
+      "evidence": "Device inventory, encryption and patch compliance export",
+      "reference": "CIS Controls IG1"
+    },
+    {
+      "id": "BKP-01",
+      "domain": "recovery",
+      "tier": "core",
+      "title": "Back up critical data and configurations",
+      "owner_role": "Operations owner",
+      "review_days": 30,
+      "evidence": "Backup scope, retention and failed-job review",
+      "reference": "CISA CPG Recover"
+    },
+    {
+      "id": "BKP-02",
+      "domain": "recovery",
+      "tier": "core",
+      "title": "Test recovery of a critical service",
+      "owner_role": "Service owner",
+      "review_days": 180,
+      "evidence": "Dated restore exercise with result and recovery time",
+      "reference": "NIST CSF 2.0 Recover"
+    },
+    {
+      "id": "LOG-01",
+      "domain": "detection",
+      "tier": "core",
+      "title": "Collect and protect critical security logs",
+      "owner_role": "Operations owner",
+      "review_days": 90,
+      "evidence": "Log source list, retention settings and access review",
+      "reference": "CISA CPG Detect"
+    },
+    {
+      "id": "LOG-02",
+      "domain": "detection",
+      "tier": "core",
+      "title": "Alert on high-risk identity and cloud changes",
+      "owner_role": "Security owner",
+      "review_days": 90,
+      "evidence": "Alert rule and dated test notification",
+      "reference": "CISA CPG Detect"
+    },
+    {
+      "id": "IR-01",
+      "domain": "response",
+      "tier": "core",
+      "title": "Maintain incident contacts and response playbook",
+      "owner_role": "Security owner",
+      "review_days": 90,
+      "evidence": "Approved contact list and incident playbook",
+      "reference": "NIST CSF 2.0 Respond"
+    },
+    {
+      "id": "IR-02",
+      "domain": "response",
+      "tier": "extended",
+      "title": "Exercise a security incident scenario",
+      "owner_role": "Security owner",
+      "review_days": 365,
+      "evidence": "Tabletop record with actions and owners",
+      "reference": "NIST CSF 2.0 Respond"
+    },
+    {
+      "id": "VUL-01",
+      "domain": "vulnerability",
+      "tier": "core",
+      "title": "Prioritize exposed and exploited vulnerabilities",
+      "owner_role": "Security owner",
+      "review_days": 30,
+      "evidence": "Triage record using exposure, asset criticality and CISA KEV",
+      "reference": "CISA KEV"
+    },
+    {
+      "id": "CLD-01",
+      "domain": "cloud",
+      "tier": "extended",
+      "title": "Inventory cloud accounts and enable audit logging",
+      "owner_role": "Cloud owner",
+      "review_days": 90,
+      "evidence": "Account inventory and audit logging configuration",
+      "reference": "NIST CSF 2.0 Detect"
+    },
+    {
+      "id": "CLD-02",
+      "domain": "cloud",
+      "tier": "extended",
+      "title": "Review cloud IAM and public exposure",
+      "owner_role": "Cloud owner",
+      "review_days": 30,
+      "evidence": "IAM and public asset review with remediation tickets",
+      "reference": "CIS Controls IG1"
+    },
+    {
+      "id": "CLD-03",
+      "domain": "cloud",
+      "tier": "extended",
+      "title": "Protect cloud storage and encryption keys",
+      "owner_role": "Cloud owner",
+      "review_days": 90,
+      "evidence": "Storage exposure, encryption and key access review",
+      "reference": "NIST CSF 2.0 Protect"
+    },
+    {
+      "id": "NET-01",
+      "domain": "infrastructure",
+      "tier": "extended",
+      "title": "Inventory internet-facing systems and restrict management access",
+      "owner_role": "Infrastructure owner",
+      "review_days": 30,
+      "evidence": "External asset inventory and firewall or access review",
+      "reference": "CISA CPG Identify"
+    },
+    {
+      "id": "DEV-01",
+      "domain": "development",
+      "tier": "core",
+      "title": "Protect source repositories and release branches",
+      "owner_role": "Engineering owner",
+      "review_days": 90,
+      "evidence": "Branch protection, review and token permission settings",
+      "reference": "NIST SSDF Protect Software"
+    },
+    {
+      "id": "DEV-02",
+      "domain": "development",
+      "tier": "core",
+      "title": "Detect secrets in code and rotate exposed credentials",
+      "owner_role": "Engineering owner",
+      "review_days": 30,
+      "evidence": "Secret scan report and leak response ticket",
+      "reference": "NIST SSDF Produce Well-Secured Software"
+    },
+    {
+      "id": "DEV-03",
+      "domain": "development",
+      "tier": "core",
+      "title": "Track vulnerable dependencies and lockfiles",
+      "owner_role": "Engineering owner",
+      "review_days": 30,
+      "evidence": "Dependency scan, ownership and remediation records",
+      "reference": "NIST SSDF Respond to Vulnerabilities"
+    },
+    {
+      "id": "DEV-04",
+      "domain": "development",
+      "tier": "extended",
+      "title": "Run static analysis on application changes",
+      "owner_role": "Engineering owner",
+      "review_days": 30,
+      "evidence": "SAST report and triage record",
+      "reference": "NIST SSDF Produce Well-Secured Software"
+    },
+    {
+      "id": "DEV-05",
+      "domain": "development",
+      "tier": "extended",
+      "title": "Test authorization across API roles and tenants",
+      "owner_role": "Application owner",
+      "review_days": 90,
+      "evidence": "Negative authorization tests and review",
+      "reference": "OWASP API Security Top 10 2023"
+    },
+    {
+      "id": "DEP-01",
+      "domain": "deployment",
+      "tier": "extended",
+      "title": "Check infrastructure changes before deployment",
+      "owner_role": "Platform owner",
+      "review_days": 30,
+      "evidence": "IaC scan report and approved exceptions",
+      "reference": "NIST SSDF Produce Well-Secured Software"
+    },
+    {
+      "id": "DEP-02",
+      "domain": "deployment",
+      "tier": "extended",
+      "title": "Scan and constrain production container images",
+      "owner_role": "Platform owner",
+      "review_days": 30,
+      "evidence": "Image scan, base image and runtime policy review",
+      "reference": "NIST SSDF Protect Software"
+    },
+    {
+      "id": "DEP-03",
+      "domain": "deployment",
+      "tier": "extended",
+      "title": "Record release components and provenance",
+      "owner_role": "Release owner",
+      "review_days": 90,
+      "evidence": "SBOM and provenance retained with release",
+      "reference": "NIST SSDF Protect Software"
+    },
+    {
+      "id": "ID-03",
+      "domain": "identity",
+      "tier": "core",
+      "title": "Restrict and review workload credentials",
+      "owner_role": "Engineering owner",
+      "review_days": 30,
+      "evidence": "Service identity inventory, scoped permissions and expiry/OIDC policy",
+      "reference": "NIST CSF 2.0 Protect"
+    },
+    {
+      "id": "SAAS-01",
+      "domain": "saas",
+      "tier": "core",
+      "title": "Review business SaaS and email security",
+      "owner_role": "Identity administrator",
+      "review_days": 90,
+      "evidence": "Tenant assessment, forwarding/OAuth review and domain mail-authentication test",
+      "reference": "CISA SCuBA"
+    },
+    {
+      "id": "END-02",
+      "domain": "endpoints",
+      "tier": "core",
+      "title": "Monitor endpoint protection and lost-device response",
+      "owner_role": "IT owner",
+      "review_days": 30,
+      "evidence": "Agent coverage, detection test and lost-device/offboarding procedure",
+      "reference": "CIS Controls IG1"
+    },
+    {
+      "id": "LOG-03",
+      "domain": "detection",
+      "tier": "extended",
+      "title": "Test runtime detection and alert delivery",
+      "owner_role": "Platform owner",
+      "review_days": 30,
+      "evidence": "Sensor/node coverage, positive/negative rule test and routed alert",
+      "reference": "NIST CSF 2.0 Detect"
+    },
+    {
+      "id": "NET-02",
+      "domain": "infrastructure",
+      "tier": "core",
+      "title": "Maintain domain DNS and TLS ownership",
+      "owner_role": "Infrastructure owner",
+      "review_days": 90,
+      "evidence": "Registrar MFA/access review, DNS inventory and tested expiry alert",
+      "reference": "NIST CSF 2.0 Protect"
+    },
+    {
+      "id": "DEP-04",
+      "domain": "deployment",
+      "tier": "extended",
+      "title": "Constrain Kubernetes access and network paths",
+      "owner_role": "Platform owner",
+      "review_days": 30,
+      "evidence": "RBAC/service-account review, Pod Security and negative network/admission tests",
+      "reference": "NIST CSF 2.0 Protect"
+    },
+    {
+      "id": "GOV-04",
+      "domain": "governance",
+      "tier": "core",
+      "title": "Review vendors and third-party access",
+      "owner_role": "Business owner",
+      "review_days": 90,
+      "evidence": "Vendor/data inventory, scoped access, termination and incident contacts",
+      "reference": "NIST CSF 2.0 Govern"
+    }
+  ]
+}

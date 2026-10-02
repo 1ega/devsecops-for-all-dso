@@ -438,7 +438,7 @@ async def check_tool_permission(agent_role: str, tool_name: str, context: dict) 
 
 ### Scoped Credentials with Short TTLs
 
-```yaml
+```hcl
 # vault-agent-policy.hcl — Vault policy for AI agent credentials
 path "secret/data/agent/{{identity.entity.aliases.auth_approle.metadata.tenant_id}}/*" {
   capabilities = ["read"]

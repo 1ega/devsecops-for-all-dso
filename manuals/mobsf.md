@@ -16,8 +16,13 @@ The standard open-source mobile analyzer. Run it as a service and let the pipeli
 
 **Run the server**
 
+Set `MOBSF_IMAGE_DIGEST` to an approved release reference from
+`opensecurity/mobile-security-framework-mobsf` including its `@sha256:` digest.
+The example exposes the service on local loopback; configure authenticated TLS
+access for shared use.
+
 ```bash
-docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
+docker run -it --rm -p 127.0.0.1:8000:8000 "$MOBSF_IMAGE_DIGEST"
 ```
 
 ## Use
@@ -25,10 +30,15 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 **Upload, scan, and fetch the JSON report**
 
 ```bash
-HASH=$(curl -s -F "file=@app.apk" -H "Authorization: $MOBSF_API_KEY" \
-  http://localhost:8000/api/v1/upload | jq -r .hash)
-curl -s -X POST -H "Authorization: $MOBSF_API_KEY" -d "hash=$HASH" http://localhost:8000/api/v1/scan > /dev/null
-curl -s -X POST -H "Authorization: $MOBSF_API_KEY" -d "hash=$HASH" http://localhost:8000/api/v1/report_json > mobsf.json
+set -eu
+umask 077
+curl --fail --show-error --silent -F "file=@app.apk" -H "Authorization: $MOBSF_API_KEY" \
+  http://localhost:8000/api/v1/upload > upload.json
+HASH=$(jq -er '.hash | select(type == "string" and length > 0)' upload.json)
+curl --fail --show-error --silent -X POST -H "Authorization: $MOBSF_API_KEY" \
+  -d "hash=$HASH" http://localhost:8000/api/v1/scan > scan.json
+curl --fail --show-error --silent -X POST -H "Authorization: $MOBSF_API_KEY" \
+  -d "hash=$HASH" http://localhost:8000/api/v1/report_json > mobsf.json
 ```
 
 ## CI example
@@ -46,9 +56,15 @@ mobsf:
   before_script:
     - apk add --no-cache curl jq
   script:
-    - HASH=$(curl -s -F "file=@build/app-release.apk" -H "Authorization: $MOBSF_API_KEY" "$MOBSF_URL/api/v1/upload" | jq -r .hash)
-    - curl -s -X POST -H "Authorization: $MOBSF_API_KEY" -d "hash=$HASH" "$MOBSF_URL/api/v1/scan" > /dev/null
-    - curl -s -X POST -H "Authorization: $MOBSF_API_KEY" -d "hash=$HASH" "$MOBSF_URL/api/v1/report_json" > mobsf.json
+    - |
+      umask 077
+      curl --fail --show-error --silent -F "file=@build/app-release.apk" \
+        -H "Authorization: $MOBSF_API_KEY" "$MOBSF_URL/api/v1/upload" > upload.json
+      HASH=$(jq -er '.hash | select(type == "string" and length > 0)' upload.json)
+      curl --fail --show-error --silent -X POST -H "Authorization: $MOBSF_API_KEY" \
+        -d "hash=$HASH" "$MOBSF_URL/api/v1/scan" > scan.json
+      curl --fail --show-error --silent -X POST -H "Authorization: $MOBSF_API_KEY" \
+        -d "hash=$HASH" "$MOBSF_URL/api/v1/report_json" > mobsf.json
   artifacts:
     when: always
     paths: [mobsf.json]

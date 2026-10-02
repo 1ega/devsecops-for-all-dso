@@ -1,0 +1,34 @@
+name: Validate original kit content
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      runtime_smoke:
+        description: Run the isolated Linux Falco syscall smoke test
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: python3 -m pip install -r tools/validation/requirements.txt
+      - run: python3 tools/validation/check_repo.py
+      - run: python3 -m unittest discover -s tools/dso/tests -v
+      - name: Compile Falco rules
+        run: bash rules/falco/validate.sh
+  runtime:
+    if: github.event_name == 'workflow_dispatch' && inputs.runtime_smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Run isolated positive and negative cases
+        run: bash rules/falco/tests/smoke.sh

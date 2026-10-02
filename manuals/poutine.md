@@ -1,5 +1,7 @@
 # poutine
 
+**Version reviewed:** v1.1.6 ([official release](https://github.com/boostsecurityio/poutine/releases/tag/v1.1.6)); metadata checked 2026-10-02.
+
 **Area:** 2. Secure the pipeline → Pipeline security  
 **License:** Apache-2.0  
 **Notes:** Understands GitLab CI; scans groups via the API  
@@ -24,7 +26,7 @@ brew install poutine
 **Go**
 
 ```bash
-go install github.com/boostsecurityio/poutine@latest
+go install github.com/boostsecurityio/poutine@v1.1.6
 ```
 
 ## Use
@@ -53,7 +55,7 @@ poutine:
   stage: test
   image: golang:1.27
   before_script:
-    - go install github.com/boostsecurityio/poutine@latest
+    - go install github.com/boostsecurityio/poutine@v1.1.6
   script:
     - poutine analyze_local . --format sarif > poutine.sarif
     - poutine analyze_local . --fail-on-violation

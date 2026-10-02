@@ -1,40 +1,20 @@
-# Runtime Security Examples
+# Runtime security examples
 
-Status: Stable
+The maintained rule/deployment entry point is [rules/falco](../../../../../rules/falco/README.md).
+`falco-custom-rules.yaml` links to its original rule pack; `falco-values.yaml`
+uses the same pinned configuration. `falcosidekick-values.yaml` enables internal
+HTTP routing with UI disabled; supply output credentials through an existing
+Kubernetes Secret, following the [manual](../../../../../manuals/falco.md).
 
-Working examples for the `/platform-skills:runtime-security` skill.
-
-## Files
-
-| File | Description |
-|---|---|
-| `falco-values.yaml` | Helm values: Falco with eBPF driver, resource limits, node tolerations |
-| `falco-custom-rules.yaml` | Custom rules: shell in container, privilege escalation, unexpected outbound |
-| `falcosidekick-values.yaml` | Helm values: Falcosidekick with Slack and webhook routing |
-| `falco-kyverno-bridge.yaml` | Kyverno ValidatingPolicy: block re-admission of Falco-flagged workloads |
-
-## Usage
+Run all commands from the repository root:
 
 ```bash
-# Install Falco
-helm upgrade --install falco falcosecurity/falco \
-  --namespace falco \
-  --create-namespace \
-  -f examples/runtime-security/falco-values.yaml
-
-# Install with Falcosidekick
-helm upgrade --install falco falcosecurity/falco \
-  --namespace falco \
-  --create-namespace \
-  --set falcosidekick.enabled=true \
-  -f examples/runtime-security/falcosidekick-values.yaml
-
-# Apply Kyverno bridge policy
-kubectl apply -f examples/runtime-security/falco-kyverno-bridge.yaml
+bash rules/falco/validate.sh
+helm upgrade --install falco falcosecurity/falco --version 9.2.0 -n falco --create-namespace \
+  -f rules/falco/helm/values.yaml \
+  --set-file 'customRules.dso-runtime\.yaml=rules/falco/dso-runtime.yaml'
 ```
 
-## Validation
-
-```bash
-bash examples/runtime-security/runtime-security-validate.sh
-```
+See [tests](../../../../../rules/falco/tests/README.md) for live validation.
+The existing Kyverno bridge is an optional design example; automatic labeling
+and response are not implemented by installing Falco or this chart.

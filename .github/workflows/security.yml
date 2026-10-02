@@ -1,0 +1,98 @@
+---
+# yamllint disable rule:line-length
+# yamllint disable rule:truthy
+name: DSO security checks
+
+on:
+  workflow_call:
+    inputs:
+      run_secrets:
+        type: boolean
+        default: true
+      run_sca:
+        type: boolean
+        default: true
+      run_sast:
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out caller repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Prepare reports
+        run: mkdir -p "$RUNNER_TEMP/dso-reports"
+
+      - name: Scan current tree for secrets
+        id: secrets
+        if: inputs.run_secrets
+        continue-on-error: true
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$PWD:/src:ro" -v "$RUNNER_TEMP/dso-reports:/reports" -w /src \
+            ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            dir --no-banner --redact=100 --report-format sarif \
+            --report-path /reports/gitleaks.sarif /src
+
+      - name: Scan dependencies
+        id: sca
+        if: inputs.run_sca
+        continue-on-error: true
+        run: |
+          set +e
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$PWD:/src:ro" -v "$RUNNER_TEMP/dso-reports:/reports" -w /src \
+            ghcr.io/google/osv-scanner:v2.6.0@sha256:afd838850ac1a0fcc15ff4a041dc9ba11123c3f0d2666217a5f0fcf9222b55fa \
+            scan source --recursive --allow-no-lockfiles --format sarif \
+            --output-file /reports/osv.sarif /src
+          rc=$?
+          set -e
+          if (( rc > 1 )); then exit "$rc"; fi
+
+      - name: Scan source code
+        id: sast
+        if: inputs.run_sast
+        continue-on-error: true
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$PWD:/src:ro" -v "$RUNNER_TEMP/dso-reports:/reports" -w /src \
+            semgrep/semgrep:1.178.0@sha256:32e459968daabe7ab86968184a29109b9564aa00392401156f9788452b42786b \
+            semgrep scan --config auto --metrics off --sarif \
+            --output /reports/semgrep.sarif /src
+
+      - name: Upload scan reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: dso-security-reports
+          path: ${{ runner.temp }}/dso-reports/*.sarif
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Check scan execution and secret gate
+        if: always()
+        env:
+          SECRETS_OUTCOME: ${{ steps.secrets.outcome }}
+          SCA_OUTCOME: ${{ steps.sca.outcome }}
+          SAST_OUTCOME: ${{ steps.sast.outcome }}
+        run: |
+          if [[ "$SECRETS_OUTCOME" != skipped ]]; then
+            test -s "$RUNNER_TEMP/dso-reports/gitleaks.sarif" || exit 2
+            [[ "$SECRETS_OUTCOME" == success ]] || exit 1
+          fi
+          if [[ "$SCA_OUTCOME" != skipped ]]; then
+            test -s "$RUNNER_TEMP/dso-reports/osv.sarif" || exit 2
+            [[ "$SCA_OUTCOME" == success ]] || exit 2
+          fi
+          if [[ "$SAST_OUTCOME" != skipped ]]; then
+            test -s "$RUNNER_TEMP/dso-reports/semgrep.sarif" || exit 2
+            [[ "$SAST_OUTCOME" == success ]] || exit 2
+          fi

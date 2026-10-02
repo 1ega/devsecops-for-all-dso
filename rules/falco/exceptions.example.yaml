@@ -1,0 +1,10 @@
+---
+# Template only. Replace the impossible pair in a private copy; register expiry.
+# Always load after dso-runtime.yaml. Never allow an entire namespace/process name.
+- rule: DSO Interactive shell in container
+  exceptions:
+    - name: approved_process
+      values:
+        - [/__dso_example_never_exists__/sh, __dso_example_parent__]
+  override:
+    exceptions: append

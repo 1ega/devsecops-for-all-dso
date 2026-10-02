@@ -1,12 +1,15 @@
-# pre-commit
+# Local secret check
 
-Hooks that give developers fast feedback before a commit leaves their machine: secret detection, a quick Semgrep profile, Dockerfile linting, and IaC linting. Only checks that finish in a few seconds belong here; full scans run in CI.
+Copy [.pre-commit-config.yaml](.pre-commit-config.yaml) to the application's root.
+Install a reviewed `pre-commit` package, then run:
 
-Planned contents:
+```bash
+pre-commit install
+pre-commit run --all-files
+```
 
-- `.pre-commit-hooks.yaml` so other repositories can reference these hooks.
-- An example `.pre-commit-config.yaml` for a consuming project.
-
-Built on [pre-commit](https://github.com/pre-commit/pre-commit).
-
-**Status:** Structure only; no hooks are published yet.
+The hook is Gitleaks v8.30.1. Initial setup downloads its environment; pin and
+review hook upgrades. A hook can be bypassed, so keep CI secret checks enabled.
+Run a full-history scan before adoption and rotate exposed credentials. Scope
+fixture exceptions to known dummy values; do not suppress every test directory.
+See [Gitleaks](../../manuals/gitleaks.md) and [leak response](../../playbooks/leaked-secret.md).

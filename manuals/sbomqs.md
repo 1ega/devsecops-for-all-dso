@@ -1,5 +1,7 @@
 # sbomqs
 
+**Version reviewed:** v2.1.2 ([official release](https://github.com/interlynk-io/sbomqs/releases/tag/v2.1.2)); metadata checked 2026-10-02.
+
 **Area:** 5. Trust your artifacts → SBOM, signing, and provenance  
 **License:** Apache-2.0
 
@@ -18,7 +20,7 @@ An SBOM with missing versions or suppliers is of little use. Gate releases on a 
 ```bash
 brew tap interlynk-io/interlynk && brew install sbomqs
 # or
-go install github.com/interlynk-io/sbomqs/v2@latest
+go install github.com/interlynk-io/sbomqs/v2@v2.1.2
 ```
 
 ## Use

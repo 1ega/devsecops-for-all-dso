@@ -1,0 +1,2 @@
+asset_id,asset_type,name,environment,owner,criticality,internet_exposed,data_classification,provider_account,repository,notes
+svc-example,service,Example API,production,team-example,high,true,confidential,aws-account-alias,org/example-api,Replace this row with a real inventory entry

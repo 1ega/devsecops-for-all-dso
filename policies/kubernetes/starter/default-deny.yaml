@@ -1,0 +1,10 @@
+---
+# Requires a CNI that enforces NetworkPolicy. Add required allows before rollout.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: dso-app
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]

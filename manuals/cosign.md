@@ -13,6 +13,8 @@ Signs and verifies images and files; keyless with the GitLab job identity.
 
 Keyless signing ties each signature to the exact GitLab project and branch that built the image, with no key to store or rotate.
 
+**Version covered:** 3.1.3; install the verified upstream release/package.
+
 ## Install
 
 **Homebrew or Alpine**
@@ -35,29 +37,31 @@ cosign verify "$IMAGE" \
 
 ## CI example
 
-Pin images and actions to a version or digest before relying on this example.
-
-### GitLab CI
+Use a dedicated protected release runner with verified Cosign 3.1.3 installed
+and registry authentication configured. The build must provide `IMAGE_DIGEST`
+as the full immutable image reference, not just a tag. No Docker-in-Docker or
+local `docker inspect` is needed for signing.
 
 ```yaml
 sign-image:
   stage: deploy
-  image: docker:27
-  services: [docker:27-dind]
+  tags: [protected-release]
   id_tokens:
     SIGSTORE_ID_TOKEN:
       aud: sigstore
-  variables:
-    COSIGN_YES: "true"
-  before_script:
-    - apk add --no-cache cosign
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
-    - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA")
-    - cosign sign "$IMAGE_DIGEST"
+    - test -n "$IMAGE_DIGEST"
+    - cosign sign --yes --identity-token "$SIGSTORE_ID_TOKEN" "$IMAGE_DIGEST"
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"
 ```
+
+Keep shell tracing off and restrict runner/process/log access. Match the actual
+certificate issuer and exact signing identity at verification/deploy time. Test
+an unsigned image, wrong identity and wrong digest are rejected. Public keyless
+signing publishes transparency information; assess private artifact naming
+and use an approved Sigstore setup when needed. Signing without verification
+by an approved identity does not form a release gate.
 
 ## Output and triage
 

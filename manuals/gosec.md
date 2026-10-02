@@ -1,5 +1,7 @@
 # gosec
 
+**Version reviewed:** v2.29.0 ([official release](https://github.com/securego/gosec/releases/tag/v2.29.0)); metadata checked 2026-10-02.
+
 **Area:** 1. Protect your code → Static code analysis (SAST)  
 **License:** Apache-2.0
 
@@ -16,7 +18,7 @@ Specialized for Go and aware of Go idioms, so it finds things generic rules miss
 **Go (needs Go 1.25+)**
 
 ```bash
-go install github.com/securego/gosec/v2/cmd/gosec@latest
+go install github.com/securego/gosec/v2/cmd/gosec@v2.29.0
 ```
 
 **Container image**

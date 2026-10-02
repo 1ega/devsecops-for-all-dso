@@ -1,5 +1,7 @@
 # syft
 
+**Version reviewed:** 1.54.0 ([release](https://github.com/anchore/syft/releases/tag/v1.54.0)). Install and verify the matching release package before CI use.
+
 **Area:** 5. Trust your artifacts → SBOM, signing, and provenance  
 **License:** Apache-2.0  
 **Notes:** CycloneDX report for GitLab  
@@ -15,18 +17,30 @@ Fast, accurate, and covers dozens of ecosystems. Generate one SBOM per release a
 
 ## Install
 
-**Install script**
+**Verified release package (Linux amd64)**
+
+The checksum below was read from the official release metadata on 2026-10-02.
+Use the matching release asset/checksum for another OS or architecture.
+SHA256 pinning checks integrity; review upstream signatures/provenance before
+trusting a new release.
 
 ```bash
-curl -sSfL https://get.anchore.io/syft | sudo sh -s -- -b /usr/local/bin
+set -eu
+curl --fail --show-error --location https://github.com/anchore/syft/releases/download/v1.54.0/syft_1.54.0_linux_amd64.tar.gz -o syft.tar.gz
+printf '%s  %s\n' '54a87372498168b2d033e876fd41fa4e8035b872699e525a57046e1f2f09c860' 'syft.tar.gz' | sha256sum --check -
+tar -xzf syft.tar.gz syft
+sudo install -m 0755 syft /usr/local/bin/syft
 ```
+
+On macOS, `brew install syft` is a convenient alternative; verify its installed
+version before using it with a pinned CI setup.
 
 ## Use
 
 **SBOM for an image**
 
 ```bash
-syft my-app:latest -o cyclonedx-json=sbom.cdx.json
+syft "$IMAGE_DIGEST" -o cyclonedx-json=sbom.cdx.json
 ```
 
 **Two formats at once**
@@ -44,10 +58,14 @@ Pin images and actions to a version or digest before relying on this example.
 ```yaml
 sbom:
   stage: build
-  image: alpine:3.20                 # the official image has no shell
+  image: ubuntu:24.04@sha256:a853f94d226358a79c740cfc7bce0c289748f3fe3488d921d038ccd752c61b60
   before_script:
-    - apk add --no-cache curl
-    - curl -sSfL https://get.anchore.io/syft | sh -s -- -b /usr/local/bin
+    - apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
+    - |
+      curl --fail --show-error --location https://github.com/anchore/syft/releases/download/v1.54.0/syft_1.54.0_linux_amd64.tar.gz -o syft.tar.gz
+      printf '%s  %s\n' '54a87372498168b2d033e876fd41fa4e8035b872699e525a57046e1f2f09c860' 'syft.tar.gz' | sha256sum --check -
+      tar -xzf syft.tar.gz syft
+      install -m 0755 syft /usr/local/bin/syft
   script:
     - syft dir:. -o cyclonedx-json=gl-sbom.cdx.json
   artifacts:
@@ -78,3 +96,8 @@ Keep the SBOM with the release artifact. Score its completeness with sbomqs and 
 - [slsa-verifier](slsa-verifier.md) — Verifies SLSA provenance before you install or deploy an artifact.
 - [witness](witness.md) — Wraps build steps and produces signed in-toto attestations.
 - [sbomqs](sbomqs.md) — Scores SBOM quality and checks it against standards such as BSI and NTIA.
+
+Generate the SBOM from the immutable deployed image digest, retain it with the
+release and record generator/database context. Check that packages and licenses
+for your stack are represented. An SBOM is inventory; pair it with vulnerability
+scanning, approved-signer verification and the [finding lifecycle](../reporting/finding-lifecycle.md).

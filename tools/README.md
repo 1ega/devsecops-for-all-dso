@@ -1,10 +1,10 @@
 # Tools
 
-This directory will contain the independent tools in DevSecOps for All. There are no published tools here yet.
+Independent utilities with explicit inputs, outputs and validation.
 
 | Tool | Purpose | Status |
 | :--- | :--- | :--- |
-| [dso](dso/README.md) | Single entry point that detects a project's stack and runs the matching checks | Design only |
+| [dso](dso/README.md) | Private inventory, baseline evidence and exception expiry checks | Published |
 
 ## Suggested layout
 
@@ -29,4 +29,6 @@ The exact layout can match the language and size of the tool. Keep dependencies 
 - Tests or other verification steps
 - License information, if different terms are explicitly provided
 
-Add a tool to the [root catalog](../README.md#explore-the-collection) only when its code and guide are available.
+Add a tool to the [root catalog](../README.md#whats-inside) only when its code and guide are available.
+
+Published: [dso](dso/README.md) for private evidence/exception checks and [repository validation](validation/README.md). Scanner orchestration remains planned.

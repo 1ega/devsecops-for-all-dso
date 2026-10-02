@@ -1,0 +1,61 @@
+---
+# yamllint disable rule:line-length
+# Requires a GitLab runner with a Docker daemon and access to the pinned images.
+# The caller repository is scanned; the template repository is not checked out.
+dso:security:
+  stage: test
+  variables:
+    DSO_SECRETS: "true"
+    DSO_SCA: "true"
+    DSO_SAST: "true"
+  script:
+    - mkdir -p reports
+    - |
+      set +e
+      report_dir="$(mktemp -d)"
+      secrets_rc=0
+      sca_rc=0
+      sast_rc=0
+      if [ "$DSO_SECRETS" = "true" ]; then
+        docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+          -v "$PWD:/src:ro" -v "$report_dir:/reports" -w /src \
+          ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+          dir --no-banner --redact=100 --report-format sarif \
+          --report-path /reports/gitleaks.sarif /src
+        secrets_rc=$?
+      fi
+      if [ "$DSO_SCA" = "true" ]; then
+        docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+          -v "$PWD:/src:ro" -v "$report_dir:/reports" -w /src \
+          ghcr.io/google/osv-scanner:v2.6.0@sha256:afd838850ac1a0fcc15ff4a041dc9ba11123c3f0d2666217a5f0fcf9222b55fa \
+          scan source --recursive --allow-no-lockfiles --format sarif \
+          --output-file /reports/osv.sarif /src
+        sca_rc=$?
+      fi
+      if [ "$DSO_SAST" = "true" ]; then
+        docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+          -v "$PWD:/src:ro" -v "$report_dir:/reports" -w /src \
+          semgrep/semgrep:1.178.0@sha256:32e459968daabe7ab86968184a29109b9564aa00392401156f9788452b42786b \
+          semgrep scan --config auto --metrics off --sarif \
+          --output /reports/semgrep.sarif /src
+        sast_rc=$?
+      fi
+      cp "$report_dir"/*.sarif reports/ 2>/dev/null || true
+      set -e
+      if [ "$DSO_SECRETS" = "true" ]; then
+        test -s reports/gitleaks.sarif || exit 2
+        test "$secrets_rc" -eq 0 || exit 1
+      fi
+      if [ "$DSO_SCA" = "true" ]; then
+        test -s reports/osv.sarif || exit 2
+        test "$sca_rc" -le 1 || exit 2
+      fi
+      if [ "$DSO_SAST" = "true" ]; then
+        test -s reports/semgrep.sarif || exit 2
+        test "$sast_rc" -eq 0 || exit 2
+      fi
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths:
+      - reports/*.sarif

@@ -1,5 +1,11 @@
 # Manuals
 
+These are tool references and adoption recipes. Read each component's validation
+scope before deploying it; the 95 entries are not all acceptance-tested. The
+[review record](../docs/research/smb-operational-gaps.md) names local checks and
+remaining gaps. Reviewed releases, image digests and binary checksums are recorded
+in [tools/versions.json](../tools/versions.json).
+
 Practical manuals for DevSecOps tools: what each tool is for, how to install and use it, a CI example where one is useful, and how to read its results. Each manual links to the tool's GitHub repository and documentation.
 
 They are grouped in the order most teams adopt them. To write a deeper manual for a tool, start from the [template](TEMPLATE.md).
@@ -213,4 +219,15 @@ They are grouped in the order most teams adopt them. To write a deeper manual fo
 | [OWASP MASVS](masvs.md) | [OWASP/masvs](https://github.com/OWASP/masvs) | CC-BY-SA-4.0 |
 | [GoPhish](gophish.md) | [gophish/gophish](https://github.com/gophish/gophish) | MIT |
 
-**Status:** 91 generated manuals. Commands come from each project's own documentation; test CI examples in your own pipeline before relying on them.
+**Status:** 95 manuals: 91 initial tool references plus four operational additions. Falco now has a pinned deployment and validation workflow. Test every integration in your environment; a manual alone does not mean a scanner was executed.
+
+## 10. Company operations
+
+| Manual | Tool repository | Purpose |
+| :--- | :--- | :--- |
+| [Restic](restic.md) | [restic/restic](https://github.com/restic/restic) | Encrypted backups and verified restore |
+| [osquery](osquery.md) | [osquery/osquery](https://github.com/osquery/osquery) | Endpoint inventory and investigation |
+| [Wazuh](wazuh.md) | [wazuh/wazuh](https://github.com/wazuh/wazuh) | Host detection, agents and security events |
+| [SCuBA](scuba.md) | [ScubaGear](https://github.com/cisagov/ScubaGear), [ScubaGoggles](https://github.com/cisagov/ScubaGoggles) | Microsoft 365 and Google Workspace posture |
+
+Follow [SMB adoption](../guides/smb-security.md), [logging acceptance](../guides/logging-and-detection.md) and [API authorization](../guides/api-authorization.md) to turn tools into controls.

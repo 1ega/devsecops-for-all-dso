@@ -1,5 +1,7 @@
 # Opengrep
 
+**Version reviewed:** v1.30.0 ([official release](https://github.com/opengrep/opengrep/releases/tag/v1.30.0)); metadata checked 2026-10-02.
+
 **Area:** 1. Protect your code → Static code analysis (SAST)  
 **License:** LGPL-2.1  
 **Notes:** Writes GitLab SAST reports
@@ -10,14 +12,23 @@
 
 Community fork of the Semgrep engine with the same rule format and CLI.
 
-Choose it if you want an engine whose features are all open source. Existing Semgrep rules, including the packs in this repository, run unchanged.
+Choose it if you want an engine whose features are all open source. Its rule syntax overlaps with Semgrep. Test every chosen pack with the pinned
+engine; compatibility and feature coverage vary.
 
 ## Install
 
-**Install script (Linux and macOS)**
+**Verified release package (Linux amd64)**
+
+The checksum below was read from the official release metadata on 2026-10-02.
+Use the matching release asset/checksum for another OS or architecture.
+SHA256 pinning checks integrity; review upstream signatures/provenance before
+trusting a new release.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/opengrep/opengrep/main/install.sh | bash
+set -eu
+curl --fail --show-error --location https://github.com/opengrep/opengrep/releases/download/v1.30.0/opengrep_manylinux_x86 -o opengrep
+printf '%s  %s\n' '35779bdd72e92129c8df2a77f0c55e8c08356801ea92591ef32108d6b28d564c' 'opengrep' | sha256sum --check -
+sudo install -m 0755 opengrep /usr/local/bin/opengrep
 ```
 
 ## Use
@@ -25,7 +36,7 @@ curl -fsSL https://raw.githubusercontent.com/opengrep/opengrep/main/install.sh |
 **Scan with SARIF output**
 
 ```bash
-opengrep scan --sarif-output=opengrep.sarif -f rules/ path/to/code
+opengrep scan --sarif-output=opengrep.sarif -f rules/semgrep/python/ path/to/code
 ```
 
 ## CI example
@@ -37,13 +48,15 @@ Pin images and actions to a version or digest before relying on this example.
 ```yaml
 opengrep:
   stage: test
-  image: debian:bookworm-slim
+  image: ubuntu:24.04@sha256:a853f94d226358a79c740cfc7bce0c289748f3fe3488d921d038ccd752c61b60
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
-    - curl -fsSL https://raw.githubusercontent.com/opengrep/opengrep/main/install.sh | bash
-    - export PATH="$HOME/.opengrep/cli/latest:$PATH"
+    - |
+      curl --fail --show-error --location https://github.com/opengrep/opengrep/releases/download/v1.30.0/opengrep_manylinux_x86 -o opengrep
+      printf '%s  %s\n' '35779bdd72e92129c8df2a77f0c55e8c08356801ea92591ef32108d6b28d564c' 'opengrep' | sha256sum --check -
+      install -m 0755 opengrep /usr/local/bin/opengrep
   script:
-    - opengrep scan -f rules/ --gitlab-sast-output=gl-sast-report.json .
+    - opengrep scan -f rules/semgrep/python/ --gitlab-sast-output=gl-sast-report.json .
   artifacts:
     reports:
       sast: gl-sast-report.json
@@ -51,7 +64,8 @@ opengrep:
 
 ## Output and triage
 
-`--error` exits 1 on findings. No official container image is published; install with the script.
+`--error` exits 1 on findings. The example installs a verified release binary. Test engine/rule compatibility
+and distinguish findings from scanner execution errors before enabling a gate.
 
 ## Concepts to know
 

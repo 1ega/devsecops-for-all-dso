@@ -1,5 +1,7 @@
 # hadolint
 
+**Version reviewed:** v2.15.1 ([official release](https://github.com/hadolint/hadolint/releases/tag/v2.15.1)); metadata checked 2026-10-02.
+
 **Area:** 3. Harden containers → Container images  
 **License:** GPL-3.0  
 **Notes:** Code quality report format  
@@ -49,7 +51,7 @@ Pin images and actions to a version or digest before relying on this example.
 ```yaml
 hadolint:
   stage: test
-  image: hadolint/hadolint:latest-debian
+  image: hadolint/hadolint:v2.15.1-debian@sha256:9a3944b7fddcb947d1ffd90829ac1a6e5c30479223358f249d8b96c7d0019e27
   script:
     - mkdir -p reports
     - hadolint -f gitlab_codeclimate Dockerfile > reports/hadolint.json

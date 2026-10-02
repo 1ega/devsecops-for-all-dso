@@ -1,24 +1,37 @@
 # Falco runtime detection
 
-**Status:** Deployment examples and an alert triage runbook. The shared examples are a starting point for a cluster; they require review and tuning before production use.
+This directory ships **16 original syscall rules**, a pinned Helm configuration,
+metadata, exception examples and validation scripts. Start with the
+[manual](../../manuals/falco.md) and [triage runbook](triage.md).
 
-Falco watches runtime activity on hosts and Kubernetes nodes. Start with the [full manual](../../manuals/falco.md), then review the existing [Helm values and example rules](../../skills/detection-response/runtime-security/examples/runtime-security/README.md). This directory is the stable entry point for detection operators.
+| Files | Purpose |
+| :--- | :--- |
+| [dso-runtime.yaml](dso-runtime.yaml) | Standalone macros and 16 rules; MIT |
+| [rule-catalog.json](rule-catalog.json) | Stable IDs, ATT&CK references, ownership, limitations |
+| [helm/values.yaml](helm/values.yaml) | Chart 9.2.0, Falco 0.45.0, pinned image/rules/plugin digests |
+| [exceptions.example.yaml](exceptions.example.yaml) | Process/parent tuple override; inactive placeholder |
+| [tests/](tests/README.md) | Contracts, native compiler and positive/negative smoke test |
 
-## Roll out
-
-1. Choose the nodes and namespaces to monitor, and confirm the Falco driver and permissions required by your cluster.
-2. Inspect [`falco-values.yaml`](../../skills/detection-response/runtime-security/examples/runtime-security/falco-values.yaml) and [`falco-custom-rules.yaml`](../../skills/detection-response/runtime-security/examples/runtime-security/falco-custom-rules.yaml). Test custom rules against your Falco version; keep vendor defaults enabled while tuning exceptions.
-3. Install a pinned Falco Helm chart with reviewed values in a test cluster. Route alerts through [Falcosidekick values](../../skills/detection-response/runtime-security/examples/runtime-security/falcosidekick-values.yaml) to a monitored destination. Supply webhook or chat credentials through your secret manager, never this repository.
-4. Generate one authorized test event, verify it reaches the destination, and follow the [triage runbook](triage.md). Record alert latency, noise, owner, and escalation route.
-
-Example commands from the repository root:
+Coverage: interactive and web-spawned shells, credential/token reads, runtime
+sockets, temporary and memory-backed executables, package managers, discovery
+tools, miner names, privilege helpers, ptrace, SSH/cron/systemd/account writes,
+and security-log removal. Each catalog entry explains its limitations.
+Keep the pinned upstream rules enabled. Process names and paths are heuristics.
 
 ```bash
+bash rules/falco/validate.sh
 helm repo add falcosecurity https://falcosecurity.github.io/charts
 helm repo update
-helm upgrade --install falco falcosecurity/falco -n falco --create-namespace \
-  -f skills/detection-response/runtime-security/examples/runtime-security/falco-values.yaml
-kubectl logs -n falco -l app.kubernetes.io/name=falco --tail=100
+helm upgrade --install falco falcosecurity/falco --version 9.2.0 \
+  -n falco --create-namespace -f rules/falco/helm/values.yaml \
+  --set-file 'customRules.dso-runtime\.yaml=rules/falco/dso-runtime.yaml'
 ```
 
-Use `falco -V <rules-file>` with the deployed Falco version to validate rules before roll out. Falco [loads local rules after defaults](https://falco.org/docs/concepts/rules/default-custom/); check rule and chart compatibility together.
+The quotes preserve the dot in the rule filename. The manual includes rendering
+and rollout verification. `rule_matching: all` prevents upstream matches hiding
+local rules; measure CPU, drops and duplicate alerts. Artifact following is
+disabled; review engine, chart, rules and plugin upgrades together.
+
+**Validation:** structural checks and Helm rendering can run locally. Engine
+compilation and syscall execution require Docker; see [test status](tests/README.md).
+Deployment files do not prove production coverage or successful alert delivery.

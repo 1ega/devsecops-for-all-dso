@@ -1,0 +1,262 @@
+{
+  "version": 1,
+  "falco_version": "0.45.0",
+  "rules": [
+    {
+      "id": "runtime.local.interactive-shell",
+      "rule": "DSO Interactive shell in container",
+      "priority": "WARNING",
+      "confidence": "MEDIUM",
+      "attack": "T1059",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Approved debugging creates the same event; identify the actor through Kubernetes audit logs.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1059/"
+      ]
+    },
+    {
+      "id": "runtime.local.web-shell",
+      "rule": "DSO Web process spawned shell",
+      "priority": "ERROR",
+      "confidence": "MEDIUM",
+      "attack": "T1059",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Direct parent names only; renamed processes, node/java/python apps and deeper ancestry need workload-specific rules.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1059/"
+      ]
+    },
+    {
+      "id": "runtime.local.credential-read",
+      "rule": "DSO Credential file read in container",
+      "priority": "WARNING",
+      "confidence": "MEDIUM",
+      "attack": "T1552",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Applications legitimately reading credentials need narrowly scoped exceptions; names do not cover every secret store.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1552/"
+      ]
+    },
+    {
+      "id": "runtime.local.service-account-token",
+      "rule": "DSO Service account token read by utility",
+      "priority": "WARNING",
+      "confidence": "MEDIUM",
+      "attack": "T1552",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Projected volumes may resolve to /run or ..data paths; SDK reads and alternate paths are outside this heuristic.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1552/"
+      ]
+    },
+    {
+      "id": "runtime.local.runtime-socket",
+      "rule": "DSO Container accessed runtime socket",
+      "priority": "ERROR",
+      "confidence": "MEDIUM",
+      "attack": "T1611",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Custom mount paths require adding the resolved path; socket access alone does not prove escape.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1611/"
+      ]
+    },
+    {
+      "id": "runtime.local.temporary-executable",
+      "rule": "DSO Executable launched from temporary directory",
+      "priority": "WARNING",
+      "confidence": "MEDIUM",
+      "attack": "T1059",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Legitimate init and build jobs may execute here; renaming or executing in another writable directory evades this rule.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1059/"
+      ]
+    },
+    {
+      "id": "runtime.local.package-manager",
+      "rule": "DSO Package manager in running container",
+      "priority": "NOTICE",
+      "confidence": "MEDIUM",
+      "attack": "T1105",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Build containers and package-managed startup scripts are expected noise; execution does not prove installation.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1105/"
+      ]
+    },
+    {
+      "id": "runtime.local.network-discovery",
+      "rule": "DSO Network discovery utility in container",
+      "priority": "WARNING",
+      "confidence": "MEDIUM",
+      "attack": "T1046",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Process-name heuristic; renamed tools and application-native discovery are outside coverage.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1046/"
+      ]
+    },
+    {
+      "id": "runtime.local.miner-name",
+      "rule": "DSO Known miner process name in container",
+      "priority": "ERROR",
+      "confidence": "MEDIUM",
+      "attack": "T1496",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Names can be spoofed or changed; correlate with CPU, network and image provenance.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1496/"
+      ]
+    },
+    {
+      "id": "runtime.local.privilege-helper",
+      "rule": "DSO Privilege helper in container",
+      "priority": "WARNING",
+      "confidence": "MEDIUM",
+      "attack": "T1548",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Helper names can change; approved account-switching init scripts need review.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1548/"
+      ]
+    },
+    {
+      "id": "runtime.local.memfd-executable",
+      "rule": "DSO Memory backed executable in container",
+      "priority": "ERROR",
+      "confidence": "MEDIUM",
+      "attack": "T1620",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Some runtimes legitimately execute from memfd; requires Linux field support.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1620/"
+      ]
+    },
+    {
+      "id": "runtime.local.ptrace",
+      "rule": "DSO Ptrace succeeded in container",
+      "priority": "WARNING",
+      "confidence": "MEDIUM",
+      "attack": "T1055",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Debuggers and profilers are common legitimate sources; ptrace does not establish injection.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1055/"
+      ]
+    },
+    {
+      "id": "runtime.local.ssh-persistence",
+      "rule": "DSO SSH authorized keys modified",
+      "priority": "ERROR",
+      "confidence": "MEDIUM",
+      "attack": "T1098",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Alert covers write-open, not rename, unlink, symlink, authorized_keys2 or authorized-keys commands.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1098/"
+      ]
+    },
+    {
+      "id": "runtime.local.scheduler-persistence",
+      "rule": "DSO Scheduler or systemd configuration modified",
+      "priority": "WARNING",
+      "confidence": "MEDIUM",
+      "attack": "T1053",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Provisioning and package upgrades cause noise; write-open does not cover atomic rename or every persistence location.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1053/"
+      ]
+    },
+    {
+      "id": "runtime.local.credential-write",
+      "rule": "DSO Account credential database modified",
+      "priority": "ERROR",
+      "confidence": "MEDIUM",
+      "attack": "T1098",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "User provisioning and upgrades are legitimate; atomic replacement and other identity stores need separate detection.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1098/"
+      ]
+    },
+    {
+      "id": "runtime.local.log-removal",
+      "rule": "DSO Security log removed",
+      "priority": "WARNING",
+      "confidence": "MEDIUM",
+      "attack": "T1070",
+      "owner_role": "Platform or security owner",
+      "response": "playbooks/runtime-alert.md",
+      "limitations": "Normal rotation can trigger; truncation, renamed logs and remote log deletion are outside this rule.",
+      "source": "local",
+      "license": "MIT",
+      "references": [
+        "https://falco.org/docs/reference/rules/supported-fields/",
+        "https://attack.mitre.org/techniques/T1070/"
+      ]
+    }
+  ]
+}

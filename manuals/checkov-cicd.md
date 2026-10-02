@@ -1,5 +1,7 @@
 # Checkov (gitlab_ci)
 
+**Version reviewed:** 3.3.21 ([official release](https://github.com/bridgecrewio/checkov/releases/tag/3.3.21)); metadata checked 2026-10-02.
+
 **Area:** 2. Secure the pipeline → Pipeline security  
 **License:** Apache-2.0  
 **Notes:** gitlab_ci and gitlab_configuration frameworks; GitLab SAST output
@@ -17,7 +19,7 @@ If you already run Checkov for Terraform, the same tool checks pipeline files an
 **pip or Homebrew**
 
 ```bash
-pip3 install checkov
+pip3 install checkov==3.3.21
 # or
 brew install checkov
 ```
@@ -40,7 +42,7 @@ Pin images and actions to a version or digest before relying on this example.
 checkov-pipeline:
   stage: test
   image:
-    name: bridgecrew/checkov:latest
+    name: bridgecrew/checkov:3.3.21@sha256:9aefe56582004ebdac112fe85c3268dc4d3658231a8f023fb714ba9d29539d53
     entrypoint: [""]
   script:
     - checkov -d . --framework gitlab_ci -o cli -o gitlab_sast --output-file-path console,gl-sast-checkov.json

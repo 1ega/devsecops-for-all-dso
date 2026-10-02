@@ -13,3 +13,5 @@ Imported guidance:
 | [owasp-mastg](owasp-mastg/SOURCE.md) | OWASP MASTG [tests](owasp-mastg/tests-beta/), [techniques](owasp-mastg/techniques/), [knowledge](owasp-mastg/knowledge/), and [best practices](owasp-mastg/best-practices/) for Android and iOS | CC-BY-SA-4.0 |
 
 For step-by-step incident procedures, use [`playbooks/`](../playbooks/). For fill-in documents, use [`templates/`](../templates/). For tool usage, use [`manuals/`](../manuals/README.md).
+
+Implementation guides: [SMB baseline](smb-security.md), [CI hardening](cicd-hardening.md), [logging acceptance](logging-and-detection.md), and [API authorization tests](api-authorization.md).

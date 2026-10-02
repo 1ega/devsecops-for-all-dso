@@ -21,3 +21,5 @@ Research candidates:
 Scanners should run with dedicated read-only roles. Document the exact permissions each check needs.
 
 **Status:** Structure only; no policies are published yet.
+
+The [evidence map](evidence-map.md) ties provider exports and read-only reviews to the company baseline. No cloud account is automatically connected or verified.

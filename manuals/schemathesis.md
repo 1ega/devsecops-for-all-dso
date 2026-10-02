@@ -43,18 +43,24 @@ schemathesis:
     name: schemathesis/schemathesis:stable
     entrypoint: [""]
   script:
-    - schemathesis run "$TARGET_URL/openapi.json"
-        --header "Authorization: Bearer $API_TOKEN"
-        --wait-for-schema 60 --report junit
+    - >-
+      schemathesis run "$TARGET_URL/openapi.json"
+      --header "Authorization: Bearer $API_TOKEN"
+      --wait-for-schema 60 --report junit
+      --report-junit-path schemathesis-report/junit.xml
   artifacts:
     when: always
     reports:
-      junit: schemathesis-report/junit-*.xml
+      junit: schemathesis-report/junit.xml
 ```
 
 ## Output and triage
 
-Exit code 1 when a check fails, 2 when the schema could not be loaded.
+Exit code 1 when a check fails, 2 for configuration or schema errors. The explicit
+JUnit path avoids relying on a generated report filename. Use staging data and
+protect reports containing request/response evidence. Schema fuzzing complements
+the [authorization matrix](../guides/api-authorization.md); it cannot prove all
+business access rules. See the [CLI reference](https://schemathesis.readthedocs.io/en/stable/reference/cli/).
 
 ## Concepts to know
 

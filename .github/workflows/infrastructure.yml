@@ -1,0 +1,62 @@
+name: Infrastructure and image checks
+on:
+  workflow_call:
+    inputs:
+      image_digest:
+        description: Optional full public image reference including sha256 digest
+        type: string
+        default: ''
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Prepare reports
+        run: mkdir -p "$RUNNER_TEMP/dso-infra"
+      - name: Scan infrastructure misconfiguration
+        id: iac
+        continue-on-error: true
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$PWD:/src:ro" -v "$RUNNER_TEMP/dso-infra:/reports" \
+            aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa \
+            config --severity HIGH,CRITICAL --exit-code 1 --format sarif \
+            --output /reports/iac.sarif /src
+      - name: Scan immutable image
+        id: image
+        continue-on-error: true
+        if: inputs.image_digest != ''
+        env:
+          IMAGE_DIGEST: ${{ inputs.image_digest }}
+        run: |
+          [[ "$IMAGE_DIGEST" != -* && "$IMAGE_DIGEST" =~ ^[^[:space:]@]+@sha256:[a-f0-9]{64}$ ]] || exit 2
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$RUNNER_TEMP/dso-infra:/reports" \
+            aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa \
+            image --scanners vuln,secret --severity HIGH,CRITICAL \
+            --exit-code 1 --format json --output /reports/image.json "$IMAGE_DIGEST"
+      - name: Retain reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: infrastructure-security-reports
+          path: ${{ runner.temp }}/dso-infra/*
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Require completed scans and enforce gates
+        if: always()
+        env:
+          IAC_OUTCOME: ${{ steps.iac.outcome }}
+          IMAGE_OUTCOME: ${{ steps.image.outcome }}
+        run: |
+          test -s "$RUNNER_TEMP/dso-infra/iac.sarif" || exit 2
+          [[ "$IAC_OUTCOME" == success ]] || exit 1
+          if [[ "$IMAGE_OUTCOME" != skipped ]]; then
+            test -s "$RUNNER_TEMP/dso-infra/image.json" || exit 2
+            [[ "$IMAGE_OUTCOME" == success ]] || exit 1
+          fi

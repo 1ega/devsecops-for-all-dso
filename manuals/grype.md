@@ -1,5 +1,7 @@
 # Grype
 
+**Version reviewed:** v0.120.0 ([official release](https://github.com/anchore/grype/releases/tag/v0.120.0)); metadata checked 2026-10-02.
+
 **Area:** 1. Protect your code → Dependency scanning (SCA)  
 **License:** Apache-2.0
 
@@ -15,11 +17,23 @@ Pairs with syft: generate the SBOM once, then scan it with Grype at every stage 
 
 ## Install
 
-**Install script**
+**Verified release package (Linux amd64)**
+
+The checksum below was read from the official release metadata on 2026-10-02.
+Use the matching release asset/checksum for another OS or architecture.
+SHA256 pinning checks integrity; review upstream signatures/provenance before
+trusting a new release.
 
 ```bash
-curl -sSfL https://get.anchore.io/grype | sudo sh -s -- -b /usr/local/bin
+set -eu
+curl --fail --show-error --location https://github.com/anchore/grype/releases/download/v0.120.0/grype_0.120.0_linux_amd64.tar.gz -o grype.tar.gz
+printf '%s  %s\n' 'a5a1218dce63acdac152a6b3b5bb366e7267e36f4069848cf455543b3fa5700e' 'grype.tar.gz' | sha256sum --check -
+tar -xzf grype.tar.gz grype
+sudo install -m 0755 grype /usr/local/bin/grype
 ```
+
+On macOS, `brew install grype` is a convenient alternative; verify its installed
+version before using it with a pinned CI setup.
 
 ## Use
 
@@ -45,10 +59,14 @@ Pin images and actions to a version or digest before relying on this example.
 ```yaml
 grype:
   stage: test
-  image: alpine:3.20                # the official image has no shell
+  image: ubuntu:24.04@sha256:a853f94d226358a79c740cfc7bce0c289748f3fe3488d921d038ccd752c61b60
   before_script:
-    - apk add --no-cache curl
-    - curl -sSfL https://get.anchore.io/grype | sh -s -- -b /usr/local/bin
+    - apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
+    - |
+      curl --fail --show-error --location https://github.com/anchore/grype/releases/download/v0.120.0/grype_0.120.0_linux_amd64.tar.gz -o grype.tar.gz
+      printf '%s  %s\n' 'a5a1218dce63acdac152a6b3b5bb366e7267e36f4069848cf455543b3fa5700e' 'grype.tar.gz' | sha256sum --check -
+      tar -xzf grype.tar.gz grype
+      install -m 0755 grype /usr/local/bin/grype
   script:
     - grype dir:. -o sarif --file grype.sarif --fail-on high
   artifacts:

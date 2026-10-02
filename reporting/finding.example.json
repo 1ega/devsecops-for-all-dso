@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "finding_id": "example-finding-001",
+  "tool": "trivy",
+  "rule_id": "CVE-EXAMPLE",
+  "asset_id": "example-api-prod",
+  "environment": "production",
+  "severity": "high",
+  "confidence": "medium",
+  "owner": "api-team",
+  "status": "open",
+  "internet_exposed": true,
+  "kev": false,
+  "detected_on": "2026-10-02",
+  "due_on": "2026-10-09",
+  "evidence": "private-report-reference",
+  "ticket": "private-ticket-reference",
+  "deployed_version": "image@sha256:replace-with-real-digest",
+  "decision": "Confirm deployed package and remediate or record a dated exception",
+  "retest_evidence": ""
+}

@@ -10,7 +10,7 @@
 
 Imports results from 200+ scanners, deduplicates them, and tracks them per product.
 
-One place for every finding, with parsers for the GitLab report formats and every tool on this page. Reimport closes findings automatically when they disappear.
+One place for every finding, with parsers for the GitLab report formats and every tool on this page. Reimport behavior depends on matching scope, test identity and closure settings.
 
 ## Install
 
@@ -47,12 +47,14 @@ defectdojo-upload:
   before_script:
     - apk add --no-cache curl
   script:
-    - for f in *.sarif; do
-        curl -sf -X POST "$DD_URL/api/v2/reimport-scan/"
-          -H "Authorization: Token $DD_API_KEY"
-          -F scan_type="SARIF" -F "file=@$f" -F test_title="$f"
-          -F product_name="$CI_PROJECT_PATH" -F engagement_name="$CI_DEFAULT_BRANCH"
-          -F auto_create_context=true;
+    - |
+      for report in *.sarif; do
+        test -f "$report" || continue
+        curl --fail --show-error -X POST "$DD_URL/api/v2/reimport-scan/" \
+          -H "Authorization: Token $DD_API_KEY" \
+          -F scan_type="SARIF" -F "file=@$report" -F "test_title=$report" \
+          -F "product_name=$CI_PROJECT_PATH" -F "engagement_name=$CI_DEFAULT_BRANCH" \
+          -F auto_create_context=true
       done
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -60,7 +62,7 @@ defectdojo-upload:
 
 ## Output and triage
 
-Use `reimport-scan` for recurring CI scans so fixed findings close automatically. Scan type names come from the parsers, for example "SARIF", "Semgrep JSON Report", "Gitleaks Scan", and "Trivy Scan".
+Use `reimport-scan` for recurring scans with a stable test/engagement identity. Set closure behavior deliberately: incomplete, failed or differently scoped scans must not close existing findings. Test an empty/partial import and confirm expected lifecycle behavior. Scan type names come from the parsers, for example "SARIF", "Semgrep JSON Report", "Gitleaks Scan", and "Trivy Scan".
 
 ## Concepts to know
 
@@ -77,3 +79,5 @@ Use `reimport-scan` for recurring CI scans so fixed findings close automatically
 
 - [Dependency-Track](dependency-track.md) — Continuously re-checks uploaded SBOMs against new vulnerability data.
 - [secureCodeBox](securecodebox.md) — Runs scanners as Kubernetes jobs on a schedule and ships results to DefectDojo.
+
+See the [finding lifecycle](../reporting/finding-lifecycle.md) and [exception register](../reporting/exceptions.example.json). Upload/deduplication automation is still planned in this repository.

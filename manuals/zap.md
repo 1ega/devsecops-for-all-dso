@@ -10,7 +10,7 @@
 
 Web and API scanner with ready baseline, full, and OpenAPI scan scripts.
 
-The baseline scan is passive and safe to run against staging on every deploy. The API scan imports your OpenAPI spec so every endpoint gets tested.
+The baseline spider makes requests while passive rules analyze responses. Choose authorized staging routes and a disposable account. API scans exercise schema-defined routes but do not prove all authorization or business paths are covered.
 
 > [!WARNING]
 > Scan only environments you are authorized to test. The full scan sends attacks and can change data.
@@ -20,7 +20,7 @@ The baseline scan is passive and safe to run against staging on every deploy. Th
 **Container image**
 
 ```bash
-docker pull ghcr.io/zaproxy/zaproxy:stable
+docker pull ghcr.io/zaproxy/zaproxy:2.17.0@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef
 ```
 
 ## Use
@@ -28,14 +28,14 @@ docker pull ghcr.io/zaproxy/zaproxy:stable
 **Passive baseline scan**
 
 ```bash
-docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable \
+docker run -v "$PWD:/zap/wrk:rw" -t ghcr.io/zaproxy/zaproxy:2.17.0@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef \
   zap-baseline.py -t https://staging.example.com -r report.html -J report.json
 ```
 
 **API scan from an OpenAPI spec**
 
 ```bash
-docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable \
+docker run -v "$PWD:/zap/wrk:rw" -t ghcr.io/zaproxy/zaproxy:2.17.0@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef \
   zap-api-scan.py -t https://staging.example.com/openapi.json -f openapi -r api.html -J api.json
 ```
 
@@ -48,12 +48,21 @@ Pin images and actions to a version or digest before relying on this example.
 ```yaml
 zap-baseline:
   stage: dast
-  image: ghcr.io/zaproxy/zaproxy:stable
+  image: ghcr.io/zaproxy/zaproxy:2.17.0@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef
   variables:
     TARGET_URL: https://staging.example.com
   script:
     - mkdir -p /zap/wrk
-    - zap-baseline.py -t "$TARGET_URL" -r report.html -J report.json -I || true
+    - |
+      set +e
+      zap-baseline.py -t "$TARGET_URL" -r report.html -J report.json -I
+      scan_rc=$?
+      set -e
+      case "$scan_rc" in
+        0|2) ;;
+        1) exit 1 ;;
+        *) exit "$scan_rc" ;;
+      esac
     - cp /zap/wrk/report.* "$CI_PROJECT_DIR"/
   artifacts:
     when: always
@@ -83,3 +92,13 @@ Exit codes: 0 pass, 1 at least one FAIL, 2 warnings only, 3 other error; `-I` do
 - [RESTler](restler.md) — Stateful REST API fuzzer that learns dependencies between requests.
 - [Dalfox](dalfox.md) — Fast scanner focused on reflected, stored, and DOM XSS.
 - [Burp Suite](burp.md) — Intercepting proxy and scanner for manual web and API testing.
+
+## Adoption, tuning and verification
+
+Record the tool version, rule/database revision, target scope and owner with every report.
+Use the [starter integrations](../integrations/README.md) where applicable; test
+expected findings and scanner failures before requiring a gate. Suppress only
+reviewed false positives with asset/rule scope, approver and expiry. Retest the
+deployed version, retain redacted evidence privately, and follow the
+[finding lifecycle](../reporting/finding-lifecycle.md). Missing packages, denied
+APIs, incomplete checkout or skipped targets are coverage gaps, not a clean scan.

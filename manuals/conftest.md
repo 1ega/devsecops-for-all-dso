@@ -1,5 +1,7 @@
 # conftest
 
+**Version reviewed:** v0.71.0 ([official release](https://github.com/open-policy-agent/conftest/releases/tag/v0.71.0)); metadata checked 2026-10-02.
+
 **Area:** 4. Check infrastructure code → Infrastructure as code  
 **License:** Apache-2.0
 
@@ -18,7 +20,7 @@ For rules specific to your organization: required labels, allowed registries, na
 ```bash
 brew install conftest
 # or
-CGO_ENABLED=0 go install github.com/open-policy-agent/conftest@latest
+CGO_ENABLED=0 go install github.com/open-policy-agent/conftest@v0.71.0
 ```
 
 ## Use
@@ -45,7 +47,7 @@ Pin images and actions to a version or digest before relying on this example.
 conftest:
   stage: test
   image:
-    name: openpolicyagent/conftest:latest
+    name: openpolicyagent/conftest:v0.71.0@sha256:3ec6dad358db08acecda56b7a3184037cd810394a65046fafa4f33c7750141b1
     entrypoint: [""]
   script:
     - conftest test -p policy/ k8s/ --output junit > conftest.xml

@@ -1,5 +1,7 @@
 # crane
 
+**Version reviewed:** v0.22.1 ([official release](https://github.com/google/go-containerregistry/releases/tag/v0.22.1)); metadata checked 2026-10-02.
+
 **Area:** 3. Harden containers → Container images  
 **License:** Apache-2.0
 
@@ -18,7 +20,7 @@ Resolve tags to digests for pinning, list tags, and export an image filesystem f
 ```bash
 brew install crane
 # or
-go install github.com/google/go-containerregistry/cmd/crane@latest
+go install github.com/google/go-containerregistry/cmd/crane@v0.22.1
 ```
 
 ## Use

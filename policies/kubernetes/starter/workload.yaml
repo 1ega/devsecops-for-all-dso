@@ -1,0 +1,47 @@
+---
+# Example only: replace image with your tested application IMAGE@sha256:DIGEST.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dso-example
+  namespace: dso-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dso-example
+  template:
+    metadata:
+      labels:
+        app: dso-example
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: app
+          image: registry.invalid/company/app@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          ports:
+            - containerPort: 8080
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {memory: 256Mi}
+          readinessProbe:
+            httpGet: {path: /health/ready, port: 8080}
+          livenessProbe:
+            httpGet: {path: /health/live, port: 8080}
+          volumeMounts:
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi

@@ -11,6 +11,10 @@ if ! command -v grype >/dev/null 2>&1; then
 fi
 
 source_arg=$1
+if [[ "$source_arg" == -* ]]; then
+  echo "Source must be a Grype target, not an option" >&2; exit 64
+fi
+umask 077
 report_dir=${2:-reports}
 fail_on=${GRYPE_FAIL_ON:-high}
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

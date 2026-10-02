@@ -27,8 +27,8 @@ brew install gitleaks
 **Container image**
 
 ```bash
-docker pull zricethezav/gitleaks:latest
-# or ghcr.io/gitleaks/gitleaks:latest
+docker pull ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+# or ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
 ```
 
 ## Use
@@ -36,19 +36,19 @@ docker pull zricethezav/gitleaks:latest
 **Scan the git history of the current repository**
 
 ```bash
-gitleaks git -v .
+gitleaks git --redact=100 .
 ```
 
 **Scan a directory without git history**
 
 ```bash
-gitleaks dir -v path/to/project
+gitleaks dir --redact=100 path/to/project
 ```
 
 **Write a SARIF report**
 
 ```bash
-gitleaks git --report-format sarif --report-path gitleaks.sarif .
+gitleaks git --redact=100 --report-format sarif --report-path gitleaks.sarif .
 ```
 
 ## CI example
@@ -61,12 +61,12 @@ Pin images and actions to a version or digest before relying on this example.
 secret-scan:
   stage: test
   image:
-    name: zricethezav/gitleaks:latest   # pin a version tag
+    name: ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f   # pin a version tag
     entrypoint: [""]
   variables:
     GIT_DEPTH: 0                        # full history for the scan
   script:
-    - gitleaks git --report-format sarif --report-path gitleaks.sarif .
+    - gitleaks git --redact=100 --report-format sarif --report-path gitleaks.sarif .
   artifacts:
     when: always
     paths: [gitleaks.sarif]
@@ -93,3 +93,13 @@ Exit code 0 means no leaks; 1 means leaks were found (change it with `--exit-cod
 - [TruffleHog](trufflehog.md) — Finds secrets and checks with the provider whether they still work.
 - [betterleaks](betterleaks.md) — Successor to gitleaks by the same author; reads .gitleaks.toml and validates findings.
 - [detect-secrets](detect-secrets.md) — Baseline workflow: record known findings once, then block only new secrets.
+
+## Adoption, tuning and verification
+
+Record the tool version, rule/database revision, target scope and owner with every report.
+Use the [starter integrations](../integrations/README.md) where applicable; test
+expected findings and scanner failures before requiring a gate. Suppress only
+reviewed false positives with asset/rule scope, approver and expiry. Retest the
+deployed version, retain redacted evidence privately, and follow the
+[finding lifecycle](../reporting/finding-lifecycle.md). Missing packages, denied
+APIs, incomplete checkout or skipped targets are coverage gaps, not a clean scan.

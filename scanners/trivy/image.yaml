@@ -1,0 +1,13 @@
+---
+# Use with `trivy image --config ...` (Trivy 0.75.0).
+exit-code: 1
+format: json
+severity:
+  - HIGH
+  - CRITICAL
+scan:
+  scanners:
+    - vuln
+    - secret
+vulnerability:
+  ignore-unfixed: false

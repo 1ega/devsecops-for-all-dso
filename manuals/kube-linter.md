@@ -1,5 +1,7 @@
 # kube-linter
 
+**Version reviewed:** v0.8.3 ([official release](https://github.com/stackrox/kube-linter/releases/tag/v0.8.3)); metadata checked 2026-10-02.
+
 **Area:** 6. Guard Kubernetes → Kubernetes admission and audit  
 **License:** Apache-2.0
 
@@ -18,7 +20,7 @@ Catches privileged containers, missing limits, and writable root filesystems in 
 ```bash
 brew install kube-linter
 # or
-go install golang.stackrox.io/kube-linter/cmd/kube-linter@latest
+go install golang.stackrox.io/kube-linter/cmd/kube-linter@v0.8.3
 ```
 
 ## Use
@@ -39,7 +41,7 @@ Pin images and actions to a version or digest before relying on this example.
 kube-linter:
   stage: test
   image:
-    name: stackrox/kube-linter:latest-alpine   # the default tag has no shell
+    name: stackrox/kube-linter:v0.8.3-alpine@sha256:b8311611c27032d4922bc67719225e373e4a0ab0c767bbdcf5f20a9306b1a3bb   # the default tag has no shell
     entrypoint: [""]
   script:
     - /kube-linter lint --format sarif --output kube-linter.sarif k8s/

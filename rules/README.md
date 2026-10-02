@@ -14,7 +14,7 @@ Every rule set in the repository, grouped by the engine that runs it. Scanner wr
 | [secrets/secrets-patterns-db](secrets/secrets-patterns-db/SOURCE.md) | regex | Open database of secret patterns (CC-BY-SA-4.0) | 📦 |
 | [secrets/apkleaks](secrets/apkleaks/SOURCE.md) | apkleaks | Secret and endpoint patterns for APKs (Apache-2.0) | 📦 |
 | [nuclei](nuclei/fuzzing-templates/SOURCE.md) | nuclei | 21 fuzzing templates (MIT) | 📦 |
-| [falco](falco/README.md) | Falco | Deployment guidance and an alert triage runbook | ✅ |
+| [falco](falco/README.md) | Falco | 16 original syscall rules, pinned deployment, exceptions, compiler and smoke tests | ✅ |
 | `sigma/` | Sigma | Log detection rules | 🗺️ |
 
 ✅ our own content · 📦 imported with its license and `SOURCE.md` · 🗺️ planned.
