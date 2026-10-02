@@ -81,8 +81,9 @@ def narrative(body, base):
         elif re.fullmatch(r"\*\*[^*]+\*\*", paragraph.strip()):
             # Command labels are already displayed beside their fenced blocks.
             continue
-        elif lines[0].startswith("### "):
-            output.append("<h4>" + inline(lines[0][4:], base) + "</h4>")
+        elif len(lines) == 1 and lines[0].startswith("### "):
+            # Fenced block labels are rendered by the command component.
+            continue
         else:
             output.append("<p>" + inline(" ".join(lines), base) + "</p>")
     return "".join(output)

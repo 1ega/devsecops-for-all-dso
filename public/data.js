@@ -525,7 +525,7 @@ window.ROADMAP = {
           "why": "<p>Fast regex and entropy scanner for git history, directories, and stdin.</p><p>The most widely used open-source secret scanner, with a simple TOML config you can extend with your own rules (<code>[extend] useDefault = true</code>). Start with it in pre-commit and in pull request pipelines.</p><p>The README says gitleaks is feature complete and will receive security patches only; its author now develops betterleaks. It remains a solid choice today.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exit code 0 means no leaks; 1 means leaks were found (change it with <code>--exit-code</code>). Treat every finding as compromised: rotate the secret first, then remove it from history. Add justified false positives to <code>.gitleaksignore</code>. Import the SARIF file into DefectDojo as &quot;Gitleaks Scan&quot; or &quot;SARIF&quot;.</p>"
         },
         {
@@ -567,7 +567,7 @@ window.ROADMAP = {
           "versionInfo": "v3.97.9 (<a href=\"https://github.com/trufflesecurity/trufflehog/releases/tag/v3.97.9\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "<p>The checksum below was read from the official release metadata on 2026-10-02. Use the matching release asset/checksum for another OS or architecture. SHA256 pinning checks integrity; review upstream signatures/provenance before trusting a new release.</p><p>On macOS, <code>brew install trufflehog</code> is a convenient alternative; verify its installed version before using it with a pinned CI setup.</p>",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4><p>The CI example disables provider verification and preserves the scanner exit code. Restrict report access: native JSON can include secret values. Do not pipe the scanner into a formatter unless the shell preserves pipeline failures.</p>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><p>The CI example disables provider verification and preserves the scanner exit code. Restrict report access: native JSON can include secret values. Do not pipe the scanner into a formatter unless the shell preserves pipeline failures.</p>",
           "results": "<p>Exit code 183 means secrets were found (only with <code>--fail</code>), 1 means an error, 0 means clean. Verified results are live credentials: revoke them immediately.</p>"
         },
         {
@@ -616,7 +616,7 @@ window.ROADMAP = {
           "why": "<p>Successor to gitleaks by the same author; reads .gitleaks.toml and validates findings.</p><p>Worth watching if you already use gitleaks: it keeps the config format, adds rule validation, and can scan GitLab projects directly, including merge requests and CI job logs.</p><p>Version 2 removed SARIF output: reports are JSON or JSONL only. Several flags were renamed from gitleaks, for example <code>--report-path</code> became <code>--output</code>.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exit code 1 when findings exist (change with <code>--exit-code</code>).</p>"
         },
         {
@@ -653,7 +653,7 @@ window.ROADMAP = {
           "why": "<p>Baseline workflow: record known findings once, then block only new secrets.</p><p>Fits large legacy repositories where a first scan finds hundreds of old findings. You audit the baseline once and the hook only fails on secrets that are not in it.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>The hook exits 1 when it finds secrets missing from the baseline and 3 when it updated the baseline file. Commit the reviewed baseline to the repository.</p>"
         }
       ],
@@ -748,7 +748,7 @@ window.ROADMAP = {
           "why": "<p>Pattern and taint rules for 30+ languages, with native GitLab SAST output.</p><p>Rules look like the code they match, so the team can write its own. This repository ships rule packs for mobile, Python, and backend languages; GitLab reads the <code>--gitlab-sast-output</code> file natively.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Add <code>--error</code> to exit 1 when there are findings, which fails the job. Registry configs such as <code>p/ci</code> send pseudonymous metrics; local rule paths with <code>--metrics=off</code> do not. Import JSON into DefectDojo as &quot;Semgrep JSON Report&quot;.</p>"
         },
         {
@@ -782,7 +782,7 @@ window.ROADMAP = {
           "versionInfo": "v1.30.0 (<a href=\"https://github.com/opengrep/opengrep/releases/tag/v1.30.0\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "<p>The checksum below was read from the official release metadata on 2026-10-02. Use the matching release asset/checksum for another OS or architecture. SHA256 pinning checks integrity; review upstream signatures/provenance before trusting a new release.</p>",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p><code>--error</code> exits 1 on findings. The example installs a verified release binary. Test engine/rule compatibility and distinguish findings from scanner execution errors before enabling a gate.</p>"
         },
         {
@@ -824,7 +824,7 @@ window.ROADMAP = {
           "versionInfo": "v2.29.0 (<a href=\"https://github.com/securego/gosec/releases/tag/v2.29.0\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exit code 1 on any unsuppressed finding; <code>-no-fail</code> always returns 0. Suppress a reviewed line with <code>#nosec G104 -- reason</code>.</p>"
         },
         {
@@ -857,7 +857,7 @@ window.ROADMAP = {
           "why": "<p>SpotBugs plugin with security detectors for Java, Kotlin, and JVM frameworks.</p><p>Works on compiled bytecode, so it understands Spring, JAX-RS, and other frameworks deeply. Add it to the Maven or Gradle build you already have.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Results are SpotBugs XML in <code>target/</code>. For Gradle setup and the full configuration, follow the project wiki linked from the documentation page.</p>"
         },
         {
@@ -890,7 +890,7 @@ window.ROADMAP = {
           "why": "<p>ESLint rules for risky JavaScript and TypeScript patterns.</p><p>Runs inside the linter developers already use, so findings appear in the editor. Expect noise: the rules warn on patterns that need a human look.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>All recommended rules are warnings, so CI only fails with <code>--max-warnings 0</code> or when you raise rules to errors.</p>"
         },
         {
@@ -924,7 +924,7 @@ window.ROADMAP = {
           "why": "<p>Source code checks for Android and iOS apps with native GitLab SAST output.</p><p>The quickest way to add mobile-specific checks to a GitLab pipeline. Combine it with the mobile Semgrep pack in this repository for deeper coverage.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exit code 1 on ERROR-severity findings; <code>--exit-warning</code> also fails on warnings and <code>--no-fail</code> always returns 0.</p>"
         },
         {
@@ -1044,7 +1044,7 @@ window.ROADMAP = {
           "why": "<p>Matches lockfiles against Google&#x27;s OSV database, with offline mode.</p><p>Free, fast, and precise: OSV data maps vulnerabilities to exact package versions, which keeps false positives low. Reads Gradle, npm, pip, Go, Cargo, and pub lockfiles.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exit code 1 when vulnerabilities are found, 128 when no packages were found (common in repositories without lockfiles). Check CocoaPods and Swift Package Manager support in the docs before relying on it for iOS.</p>"
         },
         {
@@ -1092,7 +1092,7 @@ window.ROADMAP = {
           "versionInfo": "0.75.0. <a href=\"https://github.com/1ega/devsecopsforall/blob/main/scanners/trivy/README.md\" target=\"_blank\" rel=\"noopener\">Local configs and wrapper</a>.",
           "installNotes": "<p>This checksum comes from official release metadata reviewed on 2026-10-02. Choose the matching package/checksum for another OS or architecture. Review release provenance when adopting a new version.</p>",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Trivy exits 0 even when it finds issues; add <code>--exit-code 1 --severity CRITICAL</code> to gate. Import JSON into DefectDojo as &quot;Trivy Scan&quot;.</p>"
         },
         {
@@ -1131,7 +1131,7 @@ window.ROADMAP = {
           "versionInfo": "v0.120.0 (<a href=\"https://github.com/anchore/grype/releases/tag/v0.120.0\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "<p>The checksum below was read from the official release metadata on 2026-10-02. Use the matching release asset/checksum for another OS or architecture. SHA256 pinning checks integrity; review upstream signatures/provenance before trusting a new release.</p><p>On macOS, <code>brew install grype</code> is a convenient alternative; verify its installed version before using it with a pinned CI setup.</p>",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p><code>--fail-on</code> returns exit code 2 when a match is at or above the given severity.</p>"
         },
         {
@@ -1169,7 +1169,7 @@ window.ROADMAP = {
           "versionInfo": "v13.0.0 (<a href=\"https://github.com/dependency-check/DependencyCheck/releases/tag/v13.0.0\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>By default it never fails; <code>--failOnCVSS 9</code> exits 15 when a CVSS score of 9 or higher is found. Request a free NVD API key and store it as a masked CI/CD variable.</p>"
         },
         {
@@ -1372,7 +1372,7 @@ window.ROADMAP = {
           "role": "AI review of code changes for vulnerabilities and suspicious logic, as a GitHub Action or the /security-review command.",
           "why": "<p>AI review of code changes for vulnerabilities and suspicious logic, as a GitHub Action or the /security-review command.</p><p>An AI reviewer reads intent, so it can flag hidden callbacks, credential harvesting, or time bombs that pattern rules miss. Pair it with Semgrep, as a malicious-code scan built on Claude Code does.</p><p>Results depend on the model and can include false positives or misses; keep a human in the loop for anything it marks as malicious.</p>",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitHub Actions</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Comments land on the pull request. The API key must be enabled for both the Claude API and Claude Code.</p>"
         }
       ]
@@ -1447,7 +1447,7 @@ window.ROADMAP = {
           "versionInfo": "v1.1.6 (<a href=\"https://github.com/boostsecurityio/poutine/releases/tag/v1.1.6\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p><code>--fail-on-violation</code> exits 10 when violations are found. For GitLab API scans pass the token with <code>--token</code>; the CLI only reads <code>GH_TOKEN</code> from the environment. Disable the daily version check with <code>--disable-version-check</code>.</p>"
         },
         {
@@ -1489,7 +1489,7 @@ window.ROADMAP = {
           "why": "<p>Static analysis for GitHub Actions: template injection, unpinned actions, excessive permissions.</p><p>The most thorough auditor for GitHub workflows. It finds the injection and token-permission mistakes behind most real Actions compromises.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitHub Actions</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exit codes 11 to 14 give the highest finding severity (informational to high); with <code>--format=sarif</code> it exits 0 and the results live in the SARIF file.</p>"
         },
         {
@@ -1523,7 +1523,7 @@ window.ROADMAP = {
           "versionInfo": "v1.7.12 (<a href=\"https://github.com/rhysd/actionlint/releases/tag/v1.7.12\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitHub Actions</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exits non-zero when it finds errors. Output can be shaped with <code>-format</code>, including SARIF through a template.</p>"
         },
         {
@@ -1609,7 +1609,7 @@ window.ROADMAP = {
           "versionInfo": "3.3.21 (<a href=\"https://github.com/bridgecrewio/checkov/releases/tag/3.3.21\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exits non-zero on failed checks; <code>--soft-fail</code> always returns 0, and <code>--hard-fail-on</code> limits failures to chosen check IDs or severities.</p>"
         },
         {
@@ -1723,7 +1723,7 @@ window.ROADMAP = {
           "why": "<p>Central secret store with dynamic credentials and JWT login for GitLab jobs.</p><p>GitLab jobs log in with their OIDC token, so no secret is stored in GitLab at all. Vault can also mint short-lived database and cloud credentials per job.</p><p>Vault is under the Business Source License. OpenBao (openbao/openbao) is an MPL-2.0 fork with a compatible API if you need an open-source license.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Bind Vault roles to claims such as <code>project_path</code> and <code>ref_protected</code> so only protected branches of a given project can read production secrets.</p>"
         },
         {
@@ -1760,7 +1760,7 @@ window.ROADMAP = {
           "why": "<p>Encrypts values inside YAML, JSON, and env files so they can live in git.</p><p>Good for GitOps and small teams: secrets stay next to the code, encrypted with age, PGP, or a cloud KMS, and diffs remain readable.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Store the private key only in a protected variable or a KMS. Add a <code>.sops.yaml</code> creation rule so everyone encrypts with the same keys.</p>"
         },
         {
@@ -1857,7 +1857,7 @@ window.ROADMAP = {
           "versionInfo": "v2.15.1 (<a href=\"https://github.com/hadolint/hadolint/releases/tag/v2.15.1\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Fails at or above <code>--failure-threshold</code> (default info). Ignore a reviewed rule inline with <code># hadolint ignore=DL3008</code>.</p>"
         },
         {
@@ -1901,7 +1901,7 @@ window.ROADMAP = {
           "versionInfo": "0.75.0. <a href=\"https://github.com/1ega/devsecopsforall/blob/main/scanners/trivy/README.md\" target=\"_blank\" rel=\"noopener\">Local configs and wrapper</a>.",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>The first command writes the GitLab report; the second fails the job on critical findings. Use <code>.trivyignore</code> with a reason for accepted CVEs.</p>"
         },
         {
@@ -1935,7 +1935,7 @@ window.ROADMAP = {
           "versionInfo": "v0.4.15 (<a href=\"https://github.com/goodwithtech/dockle/releases/tag/v0.4.15\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exits 0 by default even with findings; <code>--exit-code 1</code> fails on WARN and FATAL. Skip a reviewed check with <code>-i CIS-DI-0001</code>.</p>"
         },
         {
@@ -2100,7 +2100,7 @@ window.ROADMAP = {
           "versionInfo": "3.3.21 (<a href=\"https://github.com/bridgecrewio/checkov/releases/tag/3.3.21\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Failed checks fail the job; use <code>--soft-fail</code> while you tune, and <code>--skip-check CKV_AWS_20</code> or an inline <code>#checkov:skip=CKV_AWS_20:reason</code> for accepted risks.</p>"
         },
         {
@@ -2133,7 +2133,7 @@ window.ROADMAP = {
           "why": "<p>Rego queries for Terraform, Helm, Docker, Ansible, and more; behind GitLab IaC SAST.</p><p>The engine GitLab uses for IaC scanning. Running it directly lets you pick report formats and severity gates.</p><p>In March and April 2026 KICS GitHub Actions and Docker Hub images were reported compromised. Pin by digest and verify.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exit codes encode the highest severity found (60 critical, 50 high, 40 medium, 30 low); <code>--fail-on high</code> and <code>--ignore-on-exit</code> control gating.</p>"
         },
         {
@@ -2172,7 +2172,7 @@ window.ROADMAP = {
           "versionInfo": "v0.71.0 (<a href=\"https://github.com/open-policy-agent/conftest/releases/tag/v0.71.0\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exit code 1 when a <code>deny</code> rule fails; with <code>--fail-on-warn</code> warnings exit 1 and failures exit 2.</p>"
         },
         {
@@ -2320,7 +2320,7 @@ window.ROADMAP = {
           "versionInfo": "1.54.0 (<a href=\"https://github.com/anchore/syft/releases/tag/v1.54.0\" target=\"_blank\" rel=\"noopener\">release</a>). Install and verify the matching release package before CI use.",
           "installNotes": "<p>The checksum below was read from the official release metadata on 2026-10-02. Use the matching release asset/checksum for another OS or architecture. SHA256 pinning checks integrity; review upstream signatures/provenance before trusting a new release.</p><p>On macOS, <code>brew install syft</code> is a convenient alternative; verify its installed version before using it with a pinned CI setup.</p>",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Keep the SBOM with the release artifact. Score its completeness with sbomqs and scan it with Grype.</p>"
         },
         {
@@ -2353,7 +2353,7 @@ window.ROADMAP = {
           "why": "<p>CycloneDX generator from source code, with deep language support.</p><p>Builds richer SBOMs from source than image scanners can, including dependency trees and evidence. Good for polyglot repositories.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>The npm package was renamed from <code>@cyclonedx/cdxgen</code> to <code>@cdxgen/cdxgen</code>; update old install commands.</p>"
         },
         {
@@ -2410,7 +2410,7 @@ window.ROADMAP = {
           "notes": [],
           "role": "Reusable workflows that produce SLSA Build Level 3 provenance on GitHub Actions.",
           "why": "<p>Reusable workflows that produce SLSA Build Level 3 provenance on GitHub Actions.</p><p>Provenance is generated in an isolated reusable workflow, so the build job cannot forge it. Consumers verify it with slsa-verifier.</p>",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitHub Actions</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Reusable workflows must be referenced by tag (for example <code>@v2.1.0</code>), not by SHA; that is how the verifier identifies the builder.</p>"
         },
         {
@@ -2661,7 +2661,7 @@ window.ROADMAP = {
           "versionInfo": "v0.8.3 (<a href=\"https://github.com/stackrox/kube-linter/releases/tag/v0.8.3\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exits non-zero when a check fails. Tune checks in <code>.kube-linter.yaml</code>.</p>"
         },
         {
@@ -2699,7 +2699,7 @@ window.ROADMAP = {
           "versionInfo": "v4.0.15 (<a href=\"https://github.com/kubescape/kubescape/releases/tag/v4.0.15\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "<p>The checksum below was read from the official release metadata on 2026-10-02. Use the matching release asset/checksum for another OS or architecture. SHA256 pinning checks integrity; review upstream signatures/provenance before trusting a new release.</p><p>On macOS, <code>brew install kubescape</code> is a convenient alternative; verify its installed version before using it with a pinned CI setup.</p>",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>A compliance score gate applies to framework/control scans and <code>--view resource|control</code>; default security-view scans do not apply that score threshold. Adopt and tune the sample score before gating. See the <a href=\"https://kubescape.io/docs/scanning/\" target=\"_blank\" rel=\"noopener\">official scanning guide</a>.</p>"
         },
         {
@@ -2810,7 +2810,7 @@ window.ROADMAP = {
           "why": "<p>Web and API scanner with ready baseline, full, and OpenAPI scan scripts.</p><p>The baseline spider makes requests while passive rules analyze responses. Choose authorized staging routes and a disposable account. API scans exercise schema-defined routes but do not prove all authorization or business paths are covered.</p><p>Scan only environments you are authorized to test. The full scan sends attacks and can change data.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exit codes: 0 pass, 1 at least one FAIL, 2 warnings only, 3 other error; <code>-I</code> does not fail on warnings. Tune rules with a config file generated by <code>-g</code>. There is no SARIF option; import JSON into DefectDojo.</p>"
         },
         {
@@ -2849,7 +2849,7 @@ window.ROADMAP = {
           "versionInfo": "v3.11.1 (<a href=\"https://github.com/projectdiscovery/nuclei/releases/tag/v3.11.1\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>nuclei does not fail on findings by itself; gate on the report in a later job.</p>"
         },
         {
@@ -2882,7 +2882,7 @@ window.ROADMAP = {
           "why": "<p>Property-based API tests generated from OpenAPI or GraphQL schemas.</p><p>Finds crashes, schema violations, and auth bypasses by generating thousands of valid and invalid requests from the spec you already have.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exit code 1 when a check fails, 2 for configuration or schema errors. The explicit JUnit path avoids relying on a generated report filename. Use staging data and protect reports containing request/response evidence. Schema fuzzing complements the <a href=\"https://github.com/1ega/devsecopsforall/blob/main/guides/api-authorization.md\" target=\"_blank\" rel=\"noopener\">authorization matrix</a>; it cannot prove all business access rules. See the <a href=\"https://schemathesis.readthedocs.io/en/stable/reference/cli/\" target=\"_blank\" rel=\"noopener\">CLI reference</a>.</p>"
         },
         {
@@ -3018,7 +3018,7 @@ window.ROADMAP = {
           "why": "<p>Static and dynamic analysis of APK, AAB, and IPA files with a REST API.</p><p>The standard open-source mobile analyzer. Run it as a service and let the pipeline upload each release build for analysis.</p>",
           "installNotes": "<p>Set <code>MOBSF_IMAGE_DIGEST</code> to an approved release reference from <code>opensecurity/mobile-security-framework-mobsf</code> including its <code>@sha256:</code> digest. The example exposes the service on local loopback; configure authenticated TLS access for shared use.</p>",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>The API key comes from the <code>MOBSF_API_KEY</code> environment variable of the server. Change the default UI credentials (mobsf/mobsf) on any shared instance.</p>"
         },
         {
@@ -3157,7 +3157,7 @@ window.ROADMAP = {
           "why": "<p>Hundreds of checks for AWS, Azure, GCP, and Kubernetes, mapped to CIS, PCI DSS, ISO 27001, and more.</p><p>Answers &quot;are we compliant?&quot; per framework out of the box. The framework mappings are imported in this repository.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Exit code 3 when checks fail; <code>-z</code> ignores it so the report is always kept. List frameworks with <code>prowler aws --list-compliance</code>.</p>"
         },
         {
@@ -3706,7 +3706,7 @@ window.ROADMAP = {
           "why": "<p>Imports results from 200+ scanners, deduplicates them, and tracks them per product.</p><p>One place for every finding, with parsers for the GitLab report formats and every tool on this page. Reimport behavior depends on matching scope, test identity and closure settings.</p>",
           "installNotes": "",
           "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p><h4>GitLab CI</h4>",
+          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
           "results": "<p>Use <code>reimport-scan</code> for recurring scans with a stable test/engagement identity. Set closure behavior deliberately: incomplete, failed or differently scoped scans must not close existing findings. Test an empty/partial import and confirm expected lifecycle behavior. Scan type names come from the parsers, for example &quot;SARIF&quot;, &quot;Semgrep JSON Report&quot;, &quot;Gitleaks Scan&quot;, and &quot;Trivy Scan&quot;.</p>"
         },
         {
