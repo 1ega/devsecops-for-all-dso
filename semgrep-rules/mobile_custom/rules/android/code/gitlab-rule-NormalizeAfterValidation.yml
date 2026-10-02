@@ -1,0 +1,31 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_strings_rule-NormalizeAfterValidation
+    languages:
+      - "kotlin"
+    message: |
+      IDS01-J. Normalize strings before validating them
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Incorrect behavior order: validate before canonicalize"
+      category: "security"
+      cwe: "CWE-180"
+      confidence: "HIGH"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      security-severity: "MEDIUM"
+    severity: "WARNING"
+
+    patterns:
+      - pattern: |
+          $Y = java.util.regex.Pattern.compile("[<>]");
+          ...
+          $Y.matcher($VAR);
+          ...
+          java.text.Normalizer.normalize($VAR, ...);

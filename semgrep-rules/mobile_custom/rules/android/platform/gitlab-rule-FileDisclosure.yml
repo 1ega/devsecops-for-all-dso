@@ -1,0 +1,67 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_inject_rule-FileDisclosure
+    languages:
+      - "kotlin"
+    message: |
+      Constructing a server-side redirect path with user input could allow an
+      attacker to download application binaries (including application classes or
+      jar files) or view arbitrary files within protected directories.
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Files or directories accessible to external parties"
+      category: "security"
+      cwe: "CWE-552"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      security-severity: "CRITICAL"
+    severity: "ERROR"
+
+    mode: "taint"
+    pattern-sinks:
+      - patterns:
+          - pattern: "org.springframework.web.servlet.ModelAndView($FST);"
+          - pattern: "$FST"
+      - patterns:
+          - pattern: "org.springframework.web.servlet.ModelAndView($FST, $SND);"
+          - pattern: "$FST"
+      - patterns:
+          - pattern: "org.springframework.web.servlet.ModelAndView($FST, $SND, $TRD);"
+          - pattern: "$FST"
+      - patterns:
+          - pattern: "org.apache.struts.action.ActionForward($FST)"
+          - pattern: "$FST"
+      - patterns:
+          - pattern: "org.apache.struts.action.ActionForward($FST, $SND)"
+          - pattern: "$FST"
+      - patterns:
+          - pattern: "org.apache.struts.action.ActionForward($FST, $SND, $TRD)"
+          - pattern: "$SND"
+      - patterns:
+          - pattern: "org.apache.struts.action.ActionForward($FST, $SND, $TRD)"
+          - pattern: "$TRD"
+      - patterns:
+          - pattern-inside: |
+              $ACTION = org.apache.struts.action.ActionForward();
+              ...
+          - pattern: "$ACTION.setPath(...)"
+      - patterns:
+          - pattern-inside: |
+              $MVC = org.springframework.web.servlet.ModelAndView();
+              ...
+          - pattern: "$MVC.setViewName(...);"
+      - patterns:
+          - pattern-inside: |
+              $REQ = $HTTP.getRequestDispatcher(...);
+              ...
+          - pattern-either:
+              - pattern: "$REQ.include($FST, $SND)"
+              - pattern: "$REQ.forward($FST, $SND)"
+    pattern-sources:
+      - pattern: "($VAR: javax.servlet.http.HttpServletRequest).getParameter(...)"

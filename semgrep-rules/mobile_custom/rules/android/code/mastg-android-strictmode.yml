@@ -1,0 +1,12 @@
+rules:
+  - id: android.owasp.strictmode
+    severity: WARNING
+    languages:
+      - java
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: This rule scans uses of StrictMode.
+    message: "[MASVS-RESILIENCE] Detected usage of StrictMode"
+    patterns:
+      - pattern: StrictMode.setVmPolicy(...)

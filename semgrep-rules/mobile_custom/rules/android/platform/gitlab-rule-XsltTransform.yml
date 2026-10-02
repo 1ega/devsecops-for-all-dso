@@ -1,0 +1,73 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_xml_rule-XsltTransform
+    languages:
+      - "kotlin"
+    message: |
+      It is possible to attach malicious behavior to those style sheets. Therefore, if an attacker
+      can control the content or the source of the style sheet, he might be able to trigger remote
+      code execution.
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "XML injection (aka Blind XPath injection)"
+      category: "security"
+      cwe: "CWE-91"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      security-severity: "MEDIUM"
+    severity: "WARNING"
+
+    mode: "taint"
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - patterns:
+                  - pattern-inside: |
+                      fun $FUNC(...,$VAR: String, ...) {
+                        ...
+                      }
+                  - pattern-either:
+                      - pattern: "FileInputStream(<... $VAR ...>);"
+                      - pattern: "javaClass.getResourceAsStream(<... $VAR ...>)"
+              - patterns:
+                  - pattern-inside: |
+                      class $CLZ {
+                        var $X = "...";
+                        ...
+                      }
+                  - pattern-inside: |
+                      fun $FUNC(...,$Y: String, ...) {
+                        ...
+                      }
+                  - pattern-either:
+                      - pattern: "FileInputStream($X + $Y);"
+                      - pattern: "javaClass.getResourceAsStream($X + $Y)"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |-
+                  ($T: javax.xml.transform.TransformerFactory).newTransformer($SRC, ...)
+              - pattern-inside: |-
+                  ($T: javax.xml.transform.Transformer).transform($SRC, ...)
+              # flow instead of type assertion
+              - patterns:
+                  - pattern-inside: |-
+                      $FACTORY = javax.xml.transform.TransformerFactory.newInstance(...)
+                      ...
+                  - pattern-inside: $FACTORY.newTransformer($SRC, ...)
+              - patterns:
+                  - pattern-inside: |-
+                      $FACTORY = javax.xml.transform.TransformerFactory(...)
+                      ...
+                  - pattern-inside: |-
+                      $T = $FACTORY.newTransformer(...)
+                      ...
+                  - pattern-inside: |-
+                      $T.transform($SRC, ...)
+          - pattern: "$SRC"

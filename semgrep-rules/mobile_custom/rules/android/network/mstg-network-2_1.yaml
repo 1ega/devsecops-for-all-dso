@@ -1,0 +1,37 @@
+rules:
+  - id: MSTG-NETWORK-2_1
+    severity: WARNING
+    languages:
+      - java
+    metadata:
+      source: https://github.com/mindedsecurity/semgrep-rules-android-security
+      license: GPL-3.0
+      authors:
+        - Giacomo Zorzin @gellge (IMQ Minded Security)
+      owasp-mobile: M3
+      category: security
+      area: network
+      verification-level:
+        - L1
+        - L2
+      references:
+        - https://github.com/OWASP/owasp-mastg/tree/v1.5.0/Document/0x04f-Testing-Network-Communication.md
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+      technology: [android]
+    message: Weak transport protocol version $PROTO is used.
+    options:
+      symbolic_propagation: true
+    patterns:
+      - pattern-inside: |
+          $FUN(...){
+            ...
+          }
+      - pattern: |
+          SSLContext.getInstance("$PROTO",...);
+          ...
+          (SSLContext $OBJ).init(...);
+      - metavariable-regex:
+          metavariable: $PROTO
+          regex: "(?i)(?!TLSv1.[23])"

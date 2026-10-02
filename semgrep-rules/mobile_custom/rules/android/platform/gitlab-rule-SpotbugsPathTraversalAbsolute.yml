@@ -1,0 +1,83 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_inject_rule-SpotbugsPathTraversalAbsolute
+    languages:
+      - "kotlin"
+    message: |
+      The software uses an HTTP request parameter to construct a pathname that should be within a
+      restricted directory, but it does not properly neutralize absolute path sequences such as
+      "/abs/path" that can resolve to a location that is outside of that directory. See
+      http://cwe.mitre.org/data/definitions/36.html for more information.
+    severity: "WARNING"
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Improper limitation of a pathname to a restricted directory ('Path Traversal')"
+      category: "security"
+      cwe: "CWE-22"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      technology:
+        - "kotlin"
+      security-severity: "MEDIUM"
+
+    mode: "taint"
+    pattern-sanitizers:
+      - pattern: "org.apache.commons.io.FilenameUtils.getName(...)"
+    pattern-sinks:
+      - patterns:
+          - pattern-inside: |
+              $U = java.net.URI($VAR)
+          - pattern-either:
+              - pattern-inside: |-
+                  java.io.File($U)
+              - pattern-inside: |-
+                  java.nio.file.Paths.get($U)
+          - pattern: "$VAR"
+      - patterns:
+          - pattern-inside: |-
+              java.io.RandomAccessFile($INPUT,...)
+          - pattern: "$INPUT"
+      - pattern: "java.io.FileReader(...)"
+      - pattern: "javax.activation.FileDataSource(...)"
+      - pattern: "java.io.FileInputStream(...)"
+      - pattern: "java.io.File(...)"
+      - pattern: "java.nio.file.Paths.get(...)"
+      - pattern: "java.io.File.createTempFile(...)"
+      - pattern: "java.io.File.createTempDirectory(...)"
+      - pattern: "java.nio.file.Files.createTempFile(...)"
+      - pattern: "java.nio.file.Files.createTempDirectory(...)"
+      - patterns:
+          - pattern: "$SRC.$METHOD(...)"
+          - metavariable-pattern:
+              metavariable: "$SRC"
+              pattern-either:
+                - pattern: "getClass()"
+                - pattern: "getClass().getClassLoader()"
+                - pattern: "($C: ClassLoader)"
+                - pattern: "($C: Class)"
+                - pattern: "$CLZ.getClassLoader()"
+          - metavariable-pattern:
+              metavariable: "$METHOD"
+              pattern-either:
+                - pattern: "getResourceAsStream"
+                - pattern: "getResource"
+      - patterns:
+          - pattern-inside: |-
+              java.io.FileWriter($PATH, ...)
+          - pattern: "$PATH"
+      - patterns:
+          - pattern-inside: |-
+              java.io.FileOutputStream($PATH, ...)
+          - pattern: "$PATH"
+    pattern-sources:
+      - pattern: "($REQ: HttpServletRequest).getParameter(...)"
+      - patterns:
+          - pattern-inside: |-
+              fun $FUNC(..., @RequestParam $REQ:$TYPE, ...) {...}
+          - focus-metavariable: "$REQ"

@@ -1,0 +1,38 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_file_rule-FileUploadFileName
+    languages:
+      - "kotlin"
+    message: |
+      The filename provided by the FileUpload API can be tampered with by the client to reference
+      unauthorized files. The provided filename should be properly validated to ensure it's properly
+      structured, contains no unauthorized path characters (e.g., / \), and refers to an authorized
+      file.
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      category: "security"
+      cwe: "CWE-22"
+      shortDescription: "Improper limitation of a pathname to a restricted directory ('Path Traversal')"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      technology:
+        - "kotlin"
+      security-severity: "CRITICAL"
+    severity: "ERROR"
+
+    pattern-either:
+      - patterns:
+          - pattern-inside: |
+              $FILES = ($SFU: ServletFileUpload).parseRequest(($REQ: $X.servlet.http.HttpServletRequest?))
+              ...
+              for($ITEM in $FILES) {
+                ...
+              }
+          - pattern: $ITEM.getName()
+      - pattern: "($PART: $X.servlet.http.Part).getSubmittedFileName()"

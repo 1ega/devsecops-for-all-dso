@@ -1,0 +1,29 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_xss_rule-WicketXSS
+    languages:
+      - "kotlin"
+    message: |
+      Disabling HTML escaping put the application at risk for Cross-Site Scripting (XSS).
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Improper neutralization of input during web page generation ('Cross-site Scripting')"
+      category: "security"
+      cwe: "CWE-79"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      security-severity: "MEDIUM"
+    severity: "WARNING"
+
+    patterns:
+      - pattern-inside: |
+          import org.apache.wicket.$A
+          ...
+      - pattern: |
+          $OBJ.setEscapeModelStrings(false);

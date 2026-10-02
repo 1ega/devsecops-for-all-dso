@@ -1,0 +1,28 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_crypto_rule-NullCipher
+    languages:
+      - "kotlin"
+    message: |
+      The NullCipher implements the Cipher interface by returning ciphertext identical to the
+      supplied plaintext. In a few contexts, such as testing, a NullCipher may be appropriate. Avoid
+      using the NullCipher. Its accidental use can introduce a significant confidentiality risk.
+    severity: "WARNING"
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Use of a broken or risky cryptographic algorithm"
+      category: "security"
+      cwe: "CWE-327"
+      owasp:
+        - "A3:2017-Sensitive Data Exposure"
+        - "A02:2021-Cryptographic Failures"
+      technology:
+        - "kotlin"
+      security-severity: "MEDIUM"
+
+    pattern: "javax.crypto.NullCipher()"

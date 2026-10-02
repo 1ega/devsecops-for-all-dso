@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "android": {
+      "permissions": ["android.permission.CAMERA"]
+    },
+    "extra": {
+      "client_secret": "production-secret-value"
+    },
+    "updates": {
+      "url": "http://updates.example.com/project"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_script_rule-ScriptInjection
+    languages:
+      - "kotlin"
+    message: |
+      The software constructs all or part of a code segment using externally-influenced
+      input from an upstream component, but it does not neutralize or incorrectly
+      neutralizes special elements that could modify the syntax or behavior of the
+      intended code segment.
+    severity: "ERROR"
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Improper control of generation of code ('Code Injection')"
+      category: "security"
+      cwe: "CWE-94"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      security-severity: "CRITICAL"
+
+    mode: "taint"
+    pattern-sinks:
+      - patterns:
+          - patterns:
+              - pattern-inside: |
+                  $ENGINE = $F.getEngineByExtension(...)
+                  ...
+              - pattern: "$ENGINE.eval($ARG, ...);"
+              - pattern-not: '$ENGINE.eval("...");'
+              - pattern-not: '$ENGINE.eval("...", ($BINDING: javax.script.Bindings));'
+      - patterns:
+          - pattern: "($ENGINE: javax.script.ScriptEngine).eval($ARG, ...);"
+          - pattern-not: '($ENGINE: javax.script.ScriptEngine).eval("...");'
+          - pattern-not: '($ENGINE: javax.script.ScriptEngine).eval("...", ($BINDING: javax.script.Bindings));'
+      - pattern: "($INVC: javax.script.Invocable).invokeFunction(..., $ARG)"
+      - pattern: "($INVC: javax.script.Invocable).invokeMethod(..., $ARG)"
+    pattern-sources:
+      - patterns:
+          - pattern-inside: |-
+              fun $FUNC(..., $VAR: String, ...) { ... }
+          - pattern: "$VAR"

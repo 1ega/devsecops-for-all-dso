@@ -1,0 +1,101 @@
+rules:
+  - id: flutter.code.sqflite-sql-injection
+    languages: [dart]
+    severity: ERROR
+    message: Dynamic data is concatenated into a raw sqflite query.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-89, technology: [flutter, sqflite]}
+    pattern-either:
+      - pattern: $DB.rawQuery($A + $B)
+      - pattern: $DB.rawInsert($A + $B)
+      - pattern: $DB.rawUpdate($A + $B)
+      - pattern: $DB.rawDelete($A + $B)
+      - pattern: $DB.execute($A + $B)
+  - id: flutter.code.process-run-untrusted-input
+    mode: taint
+    languages: [dart]
+    severity: ERROR
+    message: Externally controlled data reaches Process.run or Process.start.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-78, technology: [flutter]}
+    pattern-sources:
+      - pattern-either:
+          - pattern: $CONTROLLER.text
+          - pattern: $REQUEST.queryParameters[$KEY]
+          - pattern: $ROUTE.settings.arguments
+          - pattern: await Clipboard.getData(...)
+    pattern-sinks:
+      - pattern-either:
+          - pattern: Process.run($COMMAND, $ARGS, ...)
+          - pattern: Process.runSync($COMMAND, $ARGS, ...)
+          - pattern: Process.start($COMMAND, $ARGS, ...)
+  - id: flutter.code.path-traversal
+    mode: taint
+    languages: [dart]
+    severity: ERROR
+    message: Externally controlled path reaches a filesystem operation.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-22, technology: [flutter]}
+    pattern-sources:
+      - pattern-either:
+          - pattern: $CONTROLLER.text
+          - pattern: $REQUEST.queryParameters[$KEY]
+          - pattern: $ROUTE.settings.arguments
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: $PATH.canonicalize(...)
+          - pattern: normalize(...)
+          - pattern: validatePath(...)
+    pattern-sinks:
+      - pattern-either:
+          - pattern: File($PATH)
+          - pattern: Directory($PATH)
+          - pattern: FileSystemEntity.$METHOD($PATH, ...)
+  - id: flutter.code.flutter-html-untrusted-data
+    mode: taint
+    languages: [dart]
+    severity: WARNING
+    message: Untrusted HTML is rendered by a Flutter HTML widget.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-79, technology: [flutter, flutter_html]}
+    pattern-sources:
+      - pattern-either:
+          - pattern: $CONTROLLER.text
+          - pattern: $RESPONSE.body
+          - pattern: $ROUTE.settings.arguments
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: sanitizeHtml(...)
+          - pattern: HtmlEscape(...).convert(...)
+    pattern-sinks:
+      - pattern: 'Html(data: $DATA, ...)'
+  - id: flutter.code.method-channel-untrusted-arguments
+    mode: taint
+    languages: [dart]
+    severity: WARNING
+    message: External data crosses a Flutter MethodChannel boundary without validation.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-20, technology: [flutter]}
+    pattern-sources:
+      - pattern-either:
+          - pattern: $CONTROLLER.text
+          - pattern: $ROUTE.settings.arguments
+          - pattern: $MESSAGE.message
+          - pattern: $REQUEST.queryParameters[$KEY]
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: validate(...)
+          - pattern: sanitize(...)
+          - pattern: $SCHEMA.parse(...)
+    pattern-sinks:
+      - pattern: $CHANNEL.invokeMethod($METHOD, $ARGUMENTS)
+  - id: flutter.code.isolate-untrusted-message
+    mode: taint
+    languages: [dart]
+    severity: WARNING
+    message: External data is sent to an isolate without validation.
+    metadata: {license: GPL-3.0, category: security, confidence: LOW, cwe: CWE-20, technology: [flutter]}
+    pattern-sources:
+      - pattern-either:
+          - pattern: $CONTROLLER.text
+          - pattern: $ROUTE.settings.arguments
+          - pattern: $REQUEST.queryParameters[$KEY]
+    pattern-sinks:
+      - pattern-either:
+          - pattern: $PORT.send($MESSAGE)
+          - pattern: Isolate.spawn($ENTRY, $MESSAGE, ...)

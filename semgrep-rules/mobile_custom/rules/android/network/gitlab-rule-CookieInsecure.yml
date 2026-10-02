@@ -1,0 +1,38 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_cookie_rule-CookieInsecure
+    languages:
+      - "kotlin"
+    message: |
+      "A new cookie is created without the Secure flag set. The Secure flag is a
+       directive to the browser to make sure that the cookie is not sent for insecure communication
+      (http://)"
+    severity: "WARNING"
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Sensitive cookie in HTTPS session without 'Secure' attribute"
+      category: "security"
+      cwe: "CWE-614"
+      owasp:
+        - "A6:2017-Security Misconfiguration"
+        - "A05:2021-Security Misconfiguration"
+      technology:
+        - "kotlin"
+      security-severity: "MEDIUM"
+
+    patterns:
+      - pattern: |
+          $C = $X.servlet.http.Cookie(..., ...)
+          ...;
+          ($RESP: $X.servlet.http.HttpServletResponse).addCookie($C)
+      - pattern-not-inside: |
+          $C = $X.servlet.http.Cookie(..., ...)
+          ...
+          $C.setSecure(true)
+          ...;
+          ($RESP: $X.servlet.http.HttpServletResponse).addCookie($C)

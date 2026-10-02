@@ -1,0 +1,58 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://github.com/mobsf/mobsfscan/blob/main/mobsfscan/rules/patterns/android/kotlin/kotlin_rules.yaml
+# hash: e29e85c3
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.rules_lgpl_kotlin_other_rule-android-kotlin-webview-debug
+    patterns:
+      - pattern: |
+          $X.setWebContentsDebuggingEnabled(true)
+      - pattern-inside: |
+          WebView
+          ...
+    message: |
+      Remote WebView debugging is enabled.This can introduce security 
+      risks as it allows remote debugging tools, such as Chrome DevTools, 
+      to inspect and manipulate the WebView content. This can potentially 
+      expose sensitive information, including user data, session tokens, 
+      and other confidential data, to unauthorized parties.
+      
+      To fix this security issue, you should disable remote WebView 
+      debugging in production builds of your app. Here's how you can do it:
+      ```
+      import WebKit
+
+      class ViewController: UIViewController {
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // Disable remote WebView debugging in production builds
+              #if DEBUG
+              WebViewConfiguration.shared().preferences.setValue(true, forKey: "developerExtrasEnabled")
+              #else
+              WebViewConfiguration.shared().preferences.setValue(false, forKey: "developerExtrasEnabled")
+              #endif
+
+              // Other setup code...
+          }
+
+          // Other methods...
+      }
+      ```
+
+    languages:
+      - kotlin
+    severity: WARNING
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      category: security
+      cwe: "CWE-489"
+      shortDescription: "Leftover debug code"
+      owasp:
+        - "A6:2017-Security Misconfiguration"
+        - "A05:2021-Security Misconfiguration"
+      security-severity: MEDIUM

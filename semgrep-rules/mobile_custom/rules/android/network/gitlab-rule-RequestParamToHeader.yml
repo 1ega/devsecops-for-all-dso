@@ -1,0 +1,58 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_cookie_rule-RequestParamToHeader
+    languages:
+      - "kotlin"
+    message: |
+      This code directly writes an HTTP parameter to an HTTP header, which allows for a HTTP
+      response splitting vulnerability. See http://en.wikipedia.org/wiki/HTTP_response_splitting for
+      more information.
+    severity: "ERROR"
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Improper neutralization of CRLF sequences in HTTP headers ('HTTP Response Splitting')"
+      category: "security"
+      cwe: "CWE-113"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      technology:
+        - "kotlin"
+      security-severity: "CRITICAL"
+
+    mode: "taint"
+    pattern-sanitizers:
+      - patterns:
+          # a string that might be empty
+          - metavariable-pattern:
+              metavariable: "$S0"
+              pattern-either:
+                - pattern: "..."
+                - pattern: '""'
+          # replace pattern should include a character class with \r and \n
+          - metavariable-pattern:
+              metavariable: "$PATTERN"
+              patterns:
+                - pattern: "..."
+                - pattern-regex: ".*\\[\\]?(?=[^]]*\\\\r)(?=[^]]*\\\\n)[^]]*\\]\\+"
+          - pattern-inside: |
+              $STR.replace($PATTERN, $S0);
+              ...
+      - pattern: "org.apache.commons.text.StringEscapeUtils.unescapeJava(...);"
+    pattern-sinks:
+      - pattern: '($RES: $X.servlet.http.HttpServletResponse).setHeader("$KEY", ...);'
+      - pattern: '($RES: $X.servlet.http.HttpServletResponse).addHeader("$KEY", ...);'
+      - pattern: '($WRP: $X.servlet.http.HttpServletResponseWrapper).setHeader("$KEY", ...);'
+      - pattern: '($WRP: $X.servlet.http.HttpServletResponseWrapper).addHeader("$KEY", ...);'
+    pattern-sources:
+      - pattern: "($REQ: $X.servlet.http.HttpServletRequest).getParameter(...);"
+      - pattern: "($REQ: $X.servlet.http.HttpServletRequest).getParameterNames();"
+      - pattern: "($REQ: $X.servlet.http.HttpServletRequest).getParameterValues(...);"
+      - pattern: "($REQ: $X.servlet.http.HttpServletRequest).getParameterMap();"
+      - pattern: "($REQ: $X.servlet.http.HttpServletRequest).getHeader(...);"
+      - pattern: "($REQ: $X.servlet.http.HttpServletRequest).getPathInfo();"

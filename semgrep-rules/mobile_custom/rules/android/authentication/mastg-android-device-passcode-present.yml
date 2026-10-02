@@ -1,0 +1,19 @@
+rules:
+  - id: android.owasp.device-passcode-present
+    languages:
+      - java
+    severity: INFO
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: This rule searches for API that checks whether the device passcode is set.
+    message: "[MASVS-STORAGE] Make sure to verify that your app runs on a device with a passcode set"
+    pattern-either:
+      - pattern: |
+          $X.getSystemService("keyguard");
+          ...
+          $Y.isDeviceSecure();
+      - pattern: |
+          BiometricManager $BM = (BiometricManager) $X.getSystemService(BiometricManager.class);
+          ...
+          $BM.canAuthenticate($VAL);

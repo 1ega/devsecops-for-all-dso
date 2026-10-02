@@ -1,0 +1,13 @@
+rules:
+  - id: android.owasp.input-field-usage
+    severity: WARNING
+    languages:
+      - java
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: This rule looks for TextFields and SecureTextField.
+    message: "[MASVS-PLATFORM] Detected TextFields and SecureTextField."
+    pattern-either:
+      - pattern: androidx.compose.material3.TextFieldKt
+      - pattern-regex: SecureTextFieldKt.m\d+SecureTextField\w+\(.+TextObfuscationMode.Companion.m\d+getVisible\w+\(\).+\);

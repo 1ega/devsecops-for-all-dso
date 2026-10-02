@@ -1,0 +1,41 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_perm_rule-DangerousPermissions
+    languages:
+      - "kotlin"
+    message: |
+      Do not grant dangerous combinations of permissions.
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Insecure inherited permissions"
+      category: "security"
+      cwe: "CWE-277"
+      owasp:
+        - "A5:2017-Broken Access Control"
+        - "A01:2021-Broken Access Control"
+      confidence: "HIGH"
+      security-severity: "MEDIUM"
+    severity: "WARNING"
+
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside: |
+                  $PC = $X.getPermissions(...)
+                  ...
+              - pattern: $PC.add($PERMISSION)
+          - pattern: |
+              $REFVAR = $PERMISSION
+              ...;
+              ($PC: PermissionCollection).add($REFVAR)
+          - pattern: '($PC: PermissionCollection).add($PERMISSION)'
+      - metavariable-pattern:
+          metavariable: "$PERMISSION"
+          pattern-either:
+            - pattern: 'ReflectPermission("suppressAccessChecks")'
+            - pattern: 'RuntimePermission("createClassLoader")'

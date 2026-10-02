@@ -1,0 +1,12 @@
+android {
+    buildTypes {
+        release {
+            // ruleid: android.local.release-security-feature-disabled
+            buildConfigField "boolean", "SSL_PINNING", "false"
+        }
+        debug {
+            // ok: android.local.release-security-feature-disabled
+            buildConfigField "boolean", "SSL_PINNING", "false"
+        }
+    }
+}

@@ -1,0 +1,41 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_xxe_rule-XMLStreamRdr
+    languages:
+      - "kotlin"
+    message: |
+      XML External Entity (XXE) attacks can occur when an XML parser supports XML
+      entities while processing XML received from an untrusted source.
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Improper restriction of XML external entity reference ('XXE')"
+      category: "security"
+      cwe: "CWE-611"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      security-severity: "CRITICAL"
+    severity: "ERROR"
+
+    patterns:
+      - pattern-inside: |
+          $SF = XMLInputFactory.newFactory();
+          ...
+      - pattern-not-inside: |
+          $SF.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+          ...
+      - pattern-not-inside: |
+          $SF.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+          ...
+      - pattern-not-inside: |
+          $SF.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+          ...
+      - pattern-not-inside: |
+          $SF.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
+          ...
+      - pattern: "$SF.createXMLStreamReader(...)"

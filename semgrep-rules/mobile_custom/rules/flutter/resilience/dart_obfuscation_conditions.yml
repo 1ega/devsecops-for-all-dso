@@ -1,0 +1,22 @@
+rules:
+  - id: flutter.apiiro.dart-obfuscation-conditions
+    metadata:
+      source: https://github.com/apiiro/malicious-code-ruleset
+      license: MIT
+    patterns:
+      - pattern-not: while (true) { ... }
+      - pattern-either:
+          - pattern: if ($VAR) { ... }
+          - pattern: while ($VAR) { ... }
+          # Semgrep cannot parse `switch ($VAR) { ... }` for Dart; match on the
+          # case and default labels instead.
+          - pattern: 'switch ($VAR) { case $CASE: ... }'
+          - pattern: 'switch ($VAR) { default: ... }'
+      - metavariable-regex:
+          metavariable: $VAR
+          # Match all non-literals, or the listed literals.
+          regex: ^(?!.*(?<!['"`])\b(?!true|false|null)[a-zA-Z_!]).*$
+    message: Obfuscation by spurious conditions.
+    severity: WARNING
+    languages:
+      - dart

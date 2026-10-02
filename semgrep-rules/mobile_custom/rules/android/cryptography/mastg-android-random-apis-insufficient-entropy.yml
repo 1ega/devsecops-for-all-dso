@@ -1,0 +1,19 @@
+rules:
+  - id: android.owasp.random-apis-insufficient-entropy
+    severity: WARNING
+    languages:
+      - java
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: This rule looks for common patterns including classes and methods.
+      original_source: https://github.com/mindedsecurity/semgrep-rules-android-security/blob/main/rules/crypto/mstg-crypto-6.yaml
+    message: "[MASVS-CRYPTO-1] The application makes use of random number generators with insufficient entropy."
+
+    pattern-either:
+        - patterns:
+            - pattern-inside: $M(...){ ... }
+            - pattern-either:
+                - pattern: Math.random(...)
+                - pattern: (java.util.Random $X).$Y(...)
+

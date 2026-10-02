@@ -1,0 +1,52 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://github.com/mobsf/mobsfscan/blob/main/mobsfscan/rules/patterns/ios/swift/swift_rules.yaml
+# hash: e29e85c3
+# yamllint enable
+---
+rules:
+  - id: ios.gitlab.rules_lgpl_swift_other_rule-ios-file-no-special
+    pattern-either:
+      - pattern: .noFileProtection
+      - pattern: FileProtectionType.none
+    message: |
+      The file has no special protections associated with it.
+      Using .noFileProtection or FileProtectionType.none for 
+      file protection means that the file is not encrypted on disk, 
+      leaving it vulnerable to unauthorized access if the device is 
+      compromised or if the file is accessed outside of the app's 
+      sandbox. To enhance security, it's crucial to use appropriate 
+      file protection attributes based on the sensitivity of the data 
+      being stored. For sensitive data, you should use file protection 
+      options that encrypt the data on disk, such as 
+      FileProtectionType.complete or 
+      FileProtectionType.completeUnlessOpen.
+
+      Here's an example of how to fix the problem:
+      ```
+      import Foundation  
+      // Define the file URL
+      let fileURL = URL(fileURLWithPath: "path/to/file")
+      // Define data to be written to the file
+      let data = "Sensitive data".data(using: .utf8)!
+      // Write data to the file with complete file protection
+      do {
+        try data.write(to: fileURL, options: .completeFileProtection)
+        print("Data written to file with complete file protection.")
+      } catch {
+        print("Error writing data to file: \(error)")
+      }
+      ```
+    languages:
+      - swift
+    severity: ERROR
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      category: security
+      cwe: "CWE-312"
+      shortDescription: "Cleartext storage of sensitive information"
+      owasp:
+        - "A3:2017-Sensitive Data Exposure"
+        - "A02:2021-Cryptographic Failures"
+      security-severity: CRITICAL

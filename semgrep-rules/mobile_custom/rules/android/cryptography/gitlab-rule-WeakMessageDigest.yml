@@ -1,0 +1,33 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_crypto_rule-WeakMessageDigest
+    languages:
+      - "kotlin"
+    message: |
+      DES is considered strong ciphers for modern applications. Currently, NIST recommends the usage
+      of AES block ciphers instead of DES.
+    severity: "WARNING"
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Use of a broken or risky cryptographic algorithm (SHA1/MD5)"
+      category: "security"
+      cwe: "CWE-327"
+      owasp:
+        - "A6:2017-Security Misconfiguration"
+        - "A04:2021-Insecure Design"
+      technology:
+        - "kotlin"
+      security-severity: "MEDIUM"
+
+    patterns:
+      - pattern-either:
+          - pattern: "MessageDigest.getInstance($ALG, ...)"
+          - pattern: "Signature.getInstance($ALG, ...)"
+      - metavariable-regex:
+          metavariable: "$ALG"
+          regex: ".*(MD5|MD4|MD2|SHA1|SHA-1).*"

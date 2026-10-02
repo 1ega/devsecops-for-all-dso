@@ -1,0 +1,22 @@
+rules:
+  - id: ios.local.release-pinning-disabled-pbxproj
+    languages: [generic]
+    severity: WARNING
+    message: >-
+      Certificate pinning is disabled in an Xcode Release build configuration. Confirm that the
+      production target enables pinning and fails closed.
+    metadata:
+      license: GPL-3.0
+      category: security
+      confidence: HIGH
+      cwe: CWE-295
+      technology: [ios, xcode]
+    paths:
+      include:
+        - "*.pbxproj"
+    patterns:
+      - pattern-inside: |
+          Release ... = {
+            ...
+          };
+      - pattern-regex: 'SSL_PINNING(_ENABLED)?\s*=\s*NO'

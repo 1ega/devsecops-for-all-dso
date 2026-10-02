@@ -1,0 +1,11 @@
+rules:
+  - id: flutter.apiiro.dart-obfuscation-anonymous-nesting
+    metadata:
+      source: https://github.com/apiiro/malicious-code-ruleset
+      license: MIT
+    pattern: |
+      ((...) { ((...) { ((...) { ... })() })() })()
+    message: Detect obfuscation by deep anonymous nesting.
+    severity: WARNING
+    languages: 
+      - dart

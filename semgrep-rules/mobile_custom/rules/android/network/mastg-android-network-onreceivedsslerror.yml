@@ -1,0 +1,14 @@
+rules:
+  - id: android.owasp.network-onreceivedsslerror
+    severity: WARNING
+    languages:
+      - java
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: This rule looks for the use of onReceivedSslError and ensures it throws an exception instead of silently muting TLS errors.
+    message: Improper use of onReceivedSslError handler
+    match:
+      any:
+        - public void onReceivedSslError(...) {...}
+          

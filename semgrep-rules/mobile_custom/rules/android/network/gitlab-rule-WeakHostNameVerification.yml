@@ -1,0 +1,42 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_endpoint_rule-WeakHostNameVerification
+    languages:
+      - "kotlin"
+    message: |
+      A HostnameVerifier that accept any host are often use because of certificate
+      reuse on many hosts. As a consequence, this is vulnerable to Man-in-the-middle
+      attacks since the client will trust any certificate.
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      category: "security"
+      cwe: "CWE-295"
+      shortDescription: "Improper Certificate Validation"
+      security-severity: "MEDIUM"
+    severity: "WARNING"
+
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside: |
+                  class $V : HostnameVerifier {
+                    ...
+                  }
+              - pattern: |
+                  fun verify(...): Boolean {
+                    return true
+                  }
+          - patterns:
+              - pattern-inside: |
+                  class $V : X509TrustManager {
+                    ...
+                  }
+              - pattern-either:
+                  - pattern: "fun checkClientTrusted(...) {}"
+                  - pattern: "fun checkServerTrusted(...) {}"
+                  - pattern: "fun getAcceptedIssuers(): Array<X509Certificate>? {return null}"

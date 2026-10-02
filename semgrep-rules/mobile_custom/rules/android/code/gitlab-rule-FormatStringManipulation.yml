@@ -1,0 +1,68 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_strings_rule-FormatStringManipulation
+    languages:
+      - "kotlin"
+    message: |
+      Allowing user input to control format parameters could enable an attacker to cause exceptions
+      to be thrown or leak information.Attackers may be able  to modify the format string argument,
+      such that an exception is thrown. If this exception is left uncaught, it may crash the
+      application. Alternatively, if sensitive information is used within the unused arguments,
+      attackers may change the format string to reveal this information.
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Use of externally-controlled format string"
+      cwe: "CWE-134"
+      category: "security"
+      confidence: "HIGH"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      security-severity: "CRITICAL"
+    severity: "ERROR"
+
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside: |
+                  $INPUT = ($REQ: HttpServletRequest).getParameter(...)
+                  ...
+              - pattern-inside: |
+                  $FORMAT_STR = ... + $INPUT
+                  ...
+          - patterns:
+              - pattern-inside: |
+                  $INPUT = ($REQ: HttpServletRequest).getParameter(...)
+                  ...
+              - pattern-inside: |
+                  $FORMAT_STR = ... + $INPUT + ...
+                  ...
+          - pattern-inside: |
+              $FORMAT_STR = ... + ($REQ: HttpServletRequest).getParameter(...) + ...
+              ...
+          - pattern-inside: |
+              $FORMAT_STR = ... + ($REQ: HttpServletRequest).getParameter(...)
+              ...
+      - pattern-either:
+          - pattern: "String.format($FORMAT_STR, ...)"
+          - pattern: "String.format(java.util.Locale.$LOCALE, $FORMAT_STR, ...)"
+          - patterns:
+              - pattern-inside: |
+                  $F = java.util.Formatter(...)
+                  ...
+              - pattern-either:
+                  - pattern: "$F.format($FORMAT_STR, ...)"
+                  - pattern: "$F.format(java.util.Locale.$LOCALE, $FORMAT_STR, ...)"
+          - pattern: "($F: java.io.PrintStream).printf($FORMAT_STR, ...)"
+          - pattern: "($F: java.io.PrintStream).printf(java.util.Locale.$LOCALE, $FORMAT_STR, ...)"
+          - pattern: "($F: java.io.PrintStream).format($FORMAT_STR, ...)"
+          - pattern: "($F: java.io.PrintStream).format(java.util.Locale.$LOCALE, $FORMAT_STR, ...)"
+          - pattern: "System.out.printf($FORMAT_STR, ...)"
+          - pattern: "System.out.printf(java.util.Locale.$LOCALE, $FORMAT_STR, ...)"
+          - pattern: "System.out.format($FORMAT_STR, ...)"
+          - pattern: "System.out.format(java.util.Locale.$LOCALE, $FORMAT_STR, ...)"

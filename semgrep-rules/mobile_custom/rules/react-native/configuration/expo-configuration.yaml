@@ -1,0 +1,46 @@
+rules:
+  - id: react-native.configuration.expo-updates-cleartext-url
+    languages: [json]
+    severity: ERROR
+    message: Expo OTA updates use an unencrypted HTTP URL.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-319, technology: [react-native, expo]}
+    paths: {include: ["*app.json"]}
+    patterns:
+      - pattern: '{..., "updates": {..., "url": $URL, ...}, ...}'
+      - metavariable-regex:
+          metavariable: $URL
+          regex: '.*http://.*'
+  - id: react-native.configuration.expo-updates-no-code-signing
+    languages: [json]
+    severity: WARNING
+    message: Expo OTA updates are configured without code-signing verification.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-494, technology: [react-native, expo]}
+    paths: {include: ["*app.json"]}
+    patterns:
+      - pattern: '"updates": { ... }'
+      - pattern-not: '"updates": { ..., "codeSigningCertificate": $CERT, ... }'
+  - id: react-native.configuration.expo-sensitive-extra-value
+    languages: [json]
+    severity: ERROR
+    message: Sensitive value in Expo extra configuration is bundled into the application.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-798, technology: [react-native, expo]}
+    paths: {include: ["*app.json"]}
+    patterns:
+      - pattern: '"extra": { ..., $KEY: $VALUE, ... }'
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: '(?i)".*(secret|api.?key|private.?key|password|client.?secret|access.?token).*"'
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: '"(?!.*(example|placeholder|your_|xxx)).+"'
+  - id: react-native.configuration.expo-dangerous-permission
+    languages: [json]
+    severity: INFO
+    message: Expo requests a sensitive Android permission; verify that it is necessary and justified.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-250, technology: [react-native, expo]}
+    paths: {include: ["*app.json"]}
+    patterns:
+      - pattern: '"permissions": [..., $PERMISSION, ...]'
+      - metavariable-regex:
+          metavariable: $PERMISSION
+          regex: '"android\.permission\.(READ_PHONE_STATE|ACCESS_FINE_LOCATION|CAMERA|RECORD_AUDIO|READ_SMS|SEND_SMS|READ_CONTACTS)"'

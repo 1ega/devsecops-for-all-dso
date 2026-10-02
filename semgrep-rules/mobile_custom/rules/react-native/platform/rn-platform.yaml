@@ -1,0 +1,108 @@
+rules:
+  - id: react-native.platform.dynamic-linking-open-url
+    mode: taint
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Untrusted URL reaches Linking.openURL without validation.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-939, technology: [react-native]}
+    pattern-sources:
+      - pattern-either:
+          - pattern: Linking.getInitialURL()
+          - pattern: $EVENT.url
+          - pattern: $ROUTE.params.$X
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: Linking.canOpenURL(...)
+          - pattern: $URL.startsWith("https://")
+          - pattern: $ALLOWED.includes($URL)
+    pattern-sinks:
+      - pattern: Linking.openURL($URL)
+  - id: react-native.platform.sensitive-navigation-params
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Sensitive data is passed through serializable navigation parameters.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-200, technology: [react-native, react-navigation]}
+    patterns:
+      - pattern-either:
+          - pattern: '$NAV.navigate($SCREEN, {..., $KEY: $VALUE, ...})'
+          - pattern: '$NAV.push($SCREEN, {..., $KEY: $VALUE, ...})'
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: '(?i)(token|password|secret|credential|pin|cvv|ssn|privateKey|accessToken)'
+  - id: react-native.platform.native-module-untrusted-input
+    mode: taint
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: External data reaches a NativeModules bridge call without validation.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-20, technology: [react-native]}
+    pattern-sources:
+      - pattern-either:
+          - pattern: $ROUTE.params.$X
+          - pattern: $EVENT.nativeEvent.$X
+          - pattern: await AsyncStorage.getItem(...)
+          - pattern: $REQUEST.json()
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: $SCHEMA.parse(...)
+          - pattern: $SCHEMA.safeParse(...)
+          - pattern: validate(...)
+          - pattern: sanitize(...)
+    pattern-sinks:
+      - pattern: NativeModules.$MODULE.$METHOD(..., $DATA, ...)
+  - id: react-native.platform.webview-javascript-injection
+    mode: taint
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Untrusted data is inserted into WebView JavaScript execution.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-94, technology: [react-native, webview]}
+    pattern-sources:
+      - pattern-either:
+          - pattern: $ROUTE.params.$X
+          - pattern: $EVENT.nativeEvent.$X
+          - pattern: await AsyncStorage.getItem(...)
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: JSON.stringify(...)
+          - pattern: sanitize(...)
+    pattern-sinks:
+      - pattern-either:
+          - pattern: $WEBVIEW.injectJavaScript($CODE)
+          - pattern: <WebView injectedJavaScript={$CODE} ... />
+  - id: react-native.platform.webview-file-access
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: React Native WebView permits file or universal file URL access.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-200, technology: [react-native, webview]}
+    pattern-either:
+      - pattern: <WebView allowFileAccess={true} ... />
+      - pattern: <WebView allowingReadAccessToURL={$URL} ... />
+      - pattern: <WebView allowUniversalAccessFromFileURLs={true} ... />
+  - id: react-native.platform.webview-mixed-content
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: React Native WebView permits mixed HTTP content.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-319, technology: [react-native, webview]}
+    pattern: <WebView mixedContentMode="always" ... />
+  - id: react-native.platform.webview-postmessage-no-origin-check
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: WebView message handler consumes message data; verify the sender and validate its schema.
+    metadata: {license: GPL-3.0, category: security, confidence: LOW, cwe: CWE-346, technology: [react-native, webview]}
+    pattern: <WebView onMessage={$HANDLER} ... />
+  - id: react-native.platform.webview-unvalidated-uri
+    mode: taint
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Untrusted URL is loaded by a React Native WebView.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-939, technology: [react-native, webview]}
+    pattern-sources:
+      - pattern-either:
+          - pattern: $ROUTE.params.$X
+          - pattern: $EVENT.url
+          - pattern: Linking.getInitialURL()
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: $URL.startsWith("https://")
+          - pattern: $ALLOWED.includes($URL)
+    pattern-sinks:
+      - pattern: '<WebView source={{uri: $URL}} ... />'

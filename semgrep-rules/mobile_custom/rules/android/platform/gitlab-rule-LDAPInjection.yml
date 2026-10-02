@@ -1,0 +1,153 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_inject_rule-LDAPInjection
+    languages:
+      - "kotlin"
+    message: |
+      Just like SQL, all inputs passed to an LDAP query need to be passed in safely. Unfortunately,
+      LDAP doesn't have prepared statement interfaces like SQL. Therefore, the primary defense
+      against LDAP injection is strong input validation of any untrusted data before including it in
+      an LDAP query.
+    severity: "WARNING"
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Improper neutralization of special elements used in an LDAP query ('LDAP Injection')"
+      category: "security"
+      cwe: "CWE-90"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      technology:
+        - "kotlin"
+      security-severity: "MEDIUM"
+
+    mode: "taint"
+    pattern-sinks:
+      - pattern: "javax.naming.ldap.LdapName(...)"
+      - pattern: "($C: javax.naming.directory.Context).lookup(...)"
+      - pattern: "($C: javax.naming.Context).lookup(...)"
+      - patterns:
+          - pattern-inside: |-
+              ($C: com.unboundid.ldap.sdk.LDAPConnection).search($QUERY, ...)
+          - pattern: "$QUERY"
+      - patterns:
+          - pattern-either:
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$CTX.lookup(...)"
+                      - patterns:
+                          - pattern-inside: |-
+                              $CTX.search($QUERY, ...)
+                          - pattern: "$QUERY"
+                      - patterns:
+                          - pattern-inside: |-
+                              $CTX.search($NAME, $FILTER, ...)
+                          - pattern: "$FILTER"
+                  - metavariable-pattern:
+                      metavariable: "$CTX"
+                      pattern-either:
+                        - pattern: "($C: DirContext)"
+                        - pattern: "($IDC: InitialDirContext)"
+                        - pattern: "($LC: LdapContext)"
+                        - pattern: "($EDC: EventDirContext)"
+                        - pattern: "($LC: LdapCtx)"
+                        - pattern: "($C: javax.naming.directory.DirContext)"
+                        - pattern: "($IDC: javax.naming.directory.InitialDirContext)"
+                        - pattern: "($LC: javax.naming.ldap.LdapContext)"
+                        - pattern: "($EDC: javax.naming.event.EventDirContext)"
+                        - pattern: "($LC: com.sun.jndi.ldap.LdapCtx)"
+              # repeat the previous rule with flow constraints on $CTX instead of type constraints
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$CTX.lookup(...)"
+                      - patterns:
+                          - pattern-inside: |-
+                              $CTX.search($QUERY, ...)
+                          - pattern: "$QUERY"
+                      - patterns:
+                          - pattern-inside: |-
+                              $CTX.search($NAME, $FILTER, ...)
+                          - pattern: "$FILTER"
+                  - pattern-inside:
+                      pattern-either:
+                        - pattern: "$CTX = DirContext(...);..."
+                        - pattern: "$CTX = InitialDirContext(...);..."
+                        - pattern: "$CTX = LdapContext(...);..."
+                        - pattern: "$CTX = EventDirContext(...);..."
+                        - pattern: "$CTX = LdapCtx(...);..."
+                        - pattern: "$CTX = javax.naming.directory.DirContext(...);..."
+                        - pattern: "$CTX = javax.naming.directory.InitialDirContext(...);..."
+                        - pattern: "$CTX = javax.naming.ldap.LdapContext(...);..."
+                        - pattern: "$CTX = javax.naming.event.EventDirContext(...);..."
+                        - pattern: "$CTX = com.sun.jndi.ldap.LdapCtx(...);..."
+      - pattern-either:
+          - patterns:
+              - pattern-either:
+                  - patterns:
+                      - pattern-inside: |-
+                          $CTX.list($QUERY, ...)
+                      - pattern: "$QUERY"
+                  - patterns:
+                      - pattern-inside: |-
+                          $CTX.lookup($QUERY, ...)
+                      - pattern: "$QUERY"
+                  - patterns:
+                      - pattern-inside: |-
+                          $CTX.search($QUERY, ...)
+                      - pattern: "$QUERY"
+                  - patterns:
+                      - pattern-inside: |-
+                          $CTX.search($NAME, $FILTER, ...)
+                      - pattern: "$FILTER"
+              - metavariable-pattern:
+                  metavariable: "$CTX"
+                  pattern-either:
+                    - pattern: "($LT: LdapTemplate)"
+                    - pattern: "($LO: LdapOperations)"
+                    - pattern: "($LT: org.springframework.ldap.core.LdapTemplate)"
+                    - pattern: "($LO: org.springframework.ldap.core.LdapOperations)"
+          # again with flow constraints instead of type constraints on CTX
+          - patterns:
+              - pattern-either:
+                  - patterns:
+                      - pattern-inside: |-
+                          $CTX.list($QUERY, ...)
+                      - pattern: "$QUERY"
+                  - patterns:
+                      - pattern-inside: |-
+                          $CTX.lookup($QUERY, ...)
+                      - pattern: "$QUERY"
+                  - patterns:
+                      - pattern-inside: |-
+                          $CTX.search($QUERY, ...)
+                      - pattern: "$QUERY"
+                  - patterns:
+                      - pattern-inside: |-
+                          $CTX.search($NAME, $FILTER, ...)
+                      - pattern: "$FILTER"
+              - pattern-inside:
+                  pattern-either:
+                    - pattern: "$CTX = LdapTemplate(...);..."
+                    - pattern: "$CTX = LdapOperations(...);..."
+                    - pattern: "$CTX = org.springframework.ldap.core.LdapTemplate(...);..."
+                    - pattern: "$CTX = org.springframework.ldap.core.LdapOperations(...);..."
+    pattern-sources:
+      - patterns:
+          - pattern-inside: |
+              fun $FUNC(..., $VAR: String, ...) {
+                ...
+              }
+          - pattern: "$VAR"
+      - patterns:
+          - pattern-inside: |
+              fun $FUNC(..., $X: String, ...) {
+                ...
+                $VAR = ... + $X
+                ...
+              }
+          - pattern: "$VAR"

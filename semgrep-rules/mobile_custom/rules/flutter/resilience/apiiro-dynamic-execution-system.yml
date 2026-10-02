@@ -1,0 +1,15 @@
+rules:
+  - id: flutter.apiiro.dart-dynamic-system-commands
+    metadata:
+      source: https://github.com/apiiro/malicious-code-ruleset
+      license: MIT
+    pattern-either:
+      - patterns:
+          - pattern: Process.$RUN('dart', ['-e', ...]);
+          - metavariable-pattern:
+              metavariable: $RUN
+              pattern-regex: (run|runSync|start)
+    message: Dynamic execution by system commands.
+    severity: ERROR
+    languages:
+      - dart

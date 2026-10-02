@@ -1,0 +1,82 @@
+rules:
+  - id: react-native.storage.asyncstorage-sensitive-data
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Sensitive data is stored in AsyncStorage without platform-backed encryption.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-312, technology: [react-native]}
+    patterns:
+      - pattern: AsyncStorage.setItem($KEY, $VALUE)
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: '(?i).*(token|secret|password|credential|session|auth|pin|ssn|private).*'
+  - id: react-native.storage.asyncstorage-pii
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Personally identifiable information is stored in AsyncStorage.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-359, technology: [react-native]}
+    patterns:
+      - pattern: AsyncStorage.setItem($KEY, $VALUE)
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: '(?i).*(email|phone|address|passport|birth|medical|card|account).*'
+  - id: react-native.storage.redux-persist-unencrypted
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Redux Persist stores sensitive state without an encryption transform.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-311, technology: [react-native, redux]}
+    patterns:
+      - pattern: |
+          $CONFIG = {key: $KEY, storage: $STORAGE, ...}
+      - pattern-not: |
+          $CONFIG = {key: $KEY, storage: $STORAGE, transforms: [..., $ENCRYPT, ...], ...}
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: '(?i).*(auth|user|session|account|payment|token).*'
+  - id: react-native.storage.mmkv-without-encryption-key
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: MMKV instance for sensitive data is created without encryptionKey.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-311, technology: [react-native, mmkv]}
+    patterns:
+      - pattern-either:
+          - pattern: 'new MMKV({id: $ID})'
+          - pattern: 'new MMKV({id: $ID, ...})'
+      - pattern-not: 'new MMKV({... , encryptionKey: $KEY, ...})'
+      - metavariable-regex:
+          metavariable: $ID
+          regex: '(?i).*(auth|secure|secret|user|session|token|payment).*'
+  - id: react-native.storage.realm-without-encryption-key
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Realm database for sensitive objects is opened without encryptionKey.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-311, technology: [react-native, realm]}
+    patterns:
+      - pattern-either:
+          - pattern: 'Realm.open({schema: $SCHEMA, ...})'
+          - pattern: 'new Realm({schema: $SCHEMA, ...})'
+      - pattern-not: 'Realm.open({... , encryptionKey: $KEY, ...})'
+      - pattern-not: 'new Realm({... , encryptionKey: $KEY, ...})'
+      - metavariable-regex:
+          metavariable: $SCHEMA
+          regex: '(?i).*(user|auth|account|payment|medical|credential|token).*'
+  - id: react-native.storage.expo-secure-store-weak-accessibility
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Expo SecureStore uses an accessibility level that permits access after first unlock or always.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-922, technology: [react-native, expo]}
+    pattern-either:
+      - pattern: 'SecureStore.setItemAsync($KEY, $VALUE, {..., keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK, ...})'
+      - pattern: 'SecureStore.setItemAsync($KEY, $VALUE, {..., keychainAccessible: SecureStore.ALWAYS, ...})'
+  - id: react-native.storage.sensitive-clipboard-write
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Sensitive value is copied to the shared system clipboard.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-200, technology: [react-native, expo]}
+    patterns:
+      - pattern-either:
+          - pattern: Clipboard.setString($VALUE)
+          - pattern: Clipboard.setStringAsync($VALUE)
+          - pattern: Clipboard.setImageAsync($VALUE)
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: '(?i).*(token|password|secret|credential|private|pin|card|ssn).*'

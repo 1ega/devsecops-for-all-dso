@@ -1,0 +1,47 @@
+rules:
+  - id: react-native.authentication.expo-auth-session-pkce-disabled
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Expo AuthSession explicitly disables PKCE.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-940, technology: [react-native, expo, oauth]}
+    pattern-either:
+      - pattern: 'AuthSession.startAsync({... , usePKCE: false, ...})'
+      - pattern: 'useAuthRequest({... , usePKCE: false, ...}, ...)'
+  - id: react-native.authentication.jwt-decoded-without-expiry-check
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: JWT is decoded but its expiration claim is not checked in the same function.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-613, technology: [react-native, jwt]}
+    patterns:
+      - pattern-inside: |
+          function $FUNC(...) {
+            ...
+          }
+      - pattern: $PAYLOAD = jwtDecode($TOKEN)
+      - pattern-not-inside: |
+          function $FUNC(...) {
+            ...
+            $PAYLOAD.exp
+            ...
+          }
+  - id: react-native.authentication.insecure-random-token
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Math.random is not suitable for tokens, nonces, identifiers, or cryptographic secrets.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-338, technology: [react-native]}
+    patterns:
+      - pattern: $NAME = Math.random(...)
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: '(?i).*(token|nonce|secret|key|session|otp|code|uuid).*'
+  - id: react-native.authentication.textinput-sensitive-not-secure
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Sensitive TextInput does not enable secureTextEntry.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-200, technology: [react-native]}
+    patterns:
+      - pattern: <TextInput ... placeholder=$PLACEHOLDER ... />
+      - pattern-not: <TextInput ... secureTextEntry={true} ... />
+      - metavariable-regex:
+          metavariable: $PLACEHOLDER
+          regex: '(?i).*(password|passcode|pin|cvv|secret).*'

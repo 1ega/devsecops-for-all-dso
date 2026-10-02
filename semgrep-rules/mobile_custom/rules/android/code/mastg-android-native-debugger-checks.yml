@@ -1,0 +1,14 @@
+rules:
+  - id: android.owasp.native-debugger-checks
+    severity: WARNING
+    languages: [java]
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: Detects Java references to native anti-debugging checks based on TracerPid and ptrace-related indicators.
+    message: "[MASVS-RESILIENCE-4] native anti-debugging check indicator detected."
+    patterns:
+      - pattern-either:
+          - pattern: '"/proc/self/status"'
+          - pattern: '"TracerPid:"'
+          - pattern-regex: PTRACE_(ATTACH|SEIZE)

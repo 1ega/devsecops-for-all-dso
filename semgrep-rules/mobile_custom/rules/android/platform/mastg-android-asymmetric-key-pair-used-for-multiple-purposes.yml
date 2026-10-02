@@ -1,0 +1,15 @@
+rules:
+  - id: android.owasp.asymmetric-key-pair-used-for-multiple-purposes
+    severity: WARNING
+    languages:
+      - java
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: Detects usage of KeyGenParameterSpec.Builder to collect observations for key-purposes evaluation.
+    message: |
+      [MASVS-CRYPTO-1] Detected usage of KeyGenParameterSpec.Builder. Review the configured purposes to ensure key separation (avoid mixing encryption/decryption with signing/verification or wrapping).
+
+    # Match any construction of KeyGenParameterSpec.Builder, capturing alias and purposes.
+    pattern: |
+      new KeyGenParameterSpec.Builder($ALIAS, $PURPOSES)

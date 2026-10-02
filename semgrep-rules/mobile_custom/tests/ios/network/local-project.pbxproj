@@ -1,0 +1,14 @@
+/* Release */ = {
+  isa = XCBuildConfiguration;
+  buildSettings = {
+    // ruleid: ios.local.release-pinning-disabled-pbxproj
+    SSL_PINNING_ENABLED = NO;
+  };
+};
+/* Debug */ = {
+  isa = XCBuildConfiguration;
+  buildSettings = {
+    // ok: ios.local.release-pinning-disabled-pbxproj
+    SSL_PINNING_ENABLED = NO;
+  };
+};

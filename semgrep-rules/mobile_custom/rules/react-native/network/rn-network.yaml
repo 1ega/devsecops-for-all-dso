@@ -1,0 +1,56 @@
+rules:
+  - id: react-native.network.cleartext-http
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: React Native application connects to a cleartext HTTP endpoint.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-319, technology: [react-native]}
+    patterns:
+      - pattern-either:
+          - pattern: fetch($URL, ...)
+          - pattern: axios.$METHOD($URL, ...)
+          - pattern: '$CLIENT = axios.create({... , baseURL: $URL, ...})'
+      - metavariable-regex:
+          metavariable: $URL
+          regex: '.*http://(?!localhost|127[.]0[.]0[.]1).*'
+  - id: react-native.network.insecure-websocket
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: WebSocket uses unencrypted ws:// transport.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-319, technology: [react-native, websocket]}
+    patterns:
+      - pattern-either:
+          - pattern: new WebSocket($URL, ...)
+          - pattern: $SOCKET_URL = $URL
+      - metavariable-regex:
+          metavariable: $URL
+          regex: '.*ws://(?!localhost|127[.]0[.]0[.]1).*'
+  - id: react-native.network.request-without-timeout
+    languages: [javascript, typescript]
+    severity: INFO
+    message: Network client is configured without a request timeout.
+    metadata: {license: GPL-3.0, category: security, confidence: LOW, cwe: CWE-400, technology: [react-native]}
+    patterns:
+      - pattern: axios.create($CONFIG)
+      - pattern-not: 'axios.create({... , timeout: $TIMEOUT, ...})'
+  - id: react-native.network.certificate-validation-disabled
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: TLS certificate validation or certificate pinning is explicitly disabled.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-295, technology: [react-native]}
+    pattern-either:
+      - pattern: '$CONFIG = {..., rejectUnauthorized: false, ...}'
+      - pattern: '$CONFIG = {..., sslPinning: false, ...}'
+      - pattern: '$CONFIG = {..., disableCertificateValidation: true, ...}'
+  - id: react-native.network.oauth-token-in-url
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: OAuth token is included in a URL and may leak through logs, history, or referrers.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-598, technology: [react-native, oauth]}
+    patterns:
+      - pattern-either:
+          - pattern: fetch($URL, ...)
+          - pattern: axios.$METHOD($URL, ...)
+          - pattern: Linking.openURL($URL)
+      - metavariable-regex:
+          metavariable: $URL
+          regex: '(?i).*(access_token|id_token|refresh_token)=.*'

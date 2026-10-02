@@ -1,0 +1,22 @@
+rules:
+  - id: android.local.release-security-feature-disabled
+    languages: [generic]
+    severity: WARNING
+    message: >-
+      A security feature is disabled in the release Gradle configuration. Confirm that screen
+      protection, root detection, and certificate pinning remain enabled in production builds.
+    metadata:
+      license: GPL-3.0
+      category: security
+      confidence: MEDIUM
+      technology: [android, gradle]
+    paths:
+      include:
+        - "*build.gradle"
+        - "*build.gradle.kts"
+    patterns:
+      - pattern-inside: |
+          release {
+            ...
+          }
+      - pattern-regex: '(?i)(FLAG_SECURE|CHECK_ROOT|SSL_PINNING)[^\n]{0,40}false'

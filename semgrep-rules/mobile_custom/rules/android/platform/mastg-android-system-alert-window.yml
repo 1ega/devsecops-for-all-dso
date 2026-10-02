@@ -1,0 +1,11 @@
+rules:
+  - id: android.owasp.system-alert-window-permission
+    severity: INFO
+    languages:
+      - xml
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: Detects SYSTEM_ALERT_WINDOW permission in the manifest, enabling the app to draw overlays over other apps
+    message: "[MASVS-PLATFORM-3] SYSTEM_ALERT_WINDOW permission is declared, enabling the app to draw overlays over other apps"
+    pattern: android:name="android.permission.SYSTEM_ALERT_WINDOW"

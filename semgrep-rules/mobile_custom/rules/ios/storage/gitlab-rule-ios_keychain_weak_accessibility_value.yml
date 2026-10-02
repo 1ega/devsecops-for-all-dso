@@ -1,0 +1,73 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://github.com/mobsf/mobsfscan/blob/main/mobsfscan/rules/patterns/ios/swift/swift_rules.yaml
+# hash: e29e85c3
+# yamllint enable
+---
+rules:
+  - id: ios.gitlab.rules_lgpl_swift_other_rule-ios-keychain-weak-accessibility-value
+    pattern-either:
+      - pattern: kSecAttrAccessibleAlways
+      - pattern: kSecAttrAccessibleAfterFirstUnlock
+    message: |
+      A key stored in the Keychain is using a weak accessibility value. 
+      
+      kSecAttrAccessibleAlways allows access to the keychain item at all 
+      times, even when the device is locked. Storing sensitive data with 
+      this accessibility option means that the data is accessible to anyone 
+      who gains physical access to the device, regardless of whether it's 
+      locked or not. This increases the risk of unauthorized access to 
+      sensitive information. kSecAttrAccessibleAfterFirstUnlock allows access
+      to the keychain item only after the device has been unlocked once after
+      a reboot. While this provides some level of protection, the data becomes
+      accessible as soon as the device is unlocked for the first time after a
+      reboot. If sensitive data is stored with this accessibility option, it 
+      could still be accessed by an attacker who gains physical access to the
+      device before it's unlocked for the first time after a reboot.
+      
+      To mitigate these security risks, it's important to use the appropriate 
+      accessibility option based on the sensitivity of the data being stored. 
+      For sensitive data that should only be accessible when the device is 
+      unlocked, the kSecAttrAccessibleWhenUnlocked or 
+      kSecAttrAccessibleWhenUnlockedThisDeviceOnly 
+      options should be used.
+
+      Here's an example code that fixes the problem by using the 
+      kSecAttrAccessibleWhenUnlocked option:
+      ```
+      import Foundation
+      import Security
+  
+      // Define the data to be stored in the keychain
+      let secretData = "superSecretData".data(using: .utf8)!
+      
+      // Create query dictionary to specify the keychain item
+      let query: [String: Any] = [
+                 kSecClass as String: kSecClassGenericPassword,
+                 kSecAttrService as String: "com.example.myApp",
+                 kSecAttrAccount as String: "userPassword",
+                 kSecValueData as String: secretData,
+                 kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
+      ]
+      
+      // Add the keychain item
+      let status = SecItemAdd(query as CFDictionary, nil)
+      if status == errSecSuccess {
+        print("Secret data successfully stored in keychain.")
+      } else {
+        print("Error storing secret data in keychain: \(status)")
+      }
+      ```
+    languages:
+      - swift
+    severity: WARNING
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      category: security
+      cwe: "CWE-305"
+      shortDescription: "Authentication bypass by primary weakness"
+      owasp:
+        - "A2:2017-Broken Authentication"
+        - "A07:2021-Identification and Authentication Failures"
+      security-severity: MEDIUM

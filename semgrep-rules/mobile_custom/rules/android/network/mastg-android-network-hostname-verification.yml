@@ -1,0 +1,13 @@
+rules:
+  - id: android.owasp.network-hostname-verification
+    severity: WARNING
+    languages:
+      - java
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: This rule looks for the use of HostnameVerifier in the app
+    message: Improper server hostname verification detected
+    match:
+      any:
+        - new HostnameVerifier() {...}

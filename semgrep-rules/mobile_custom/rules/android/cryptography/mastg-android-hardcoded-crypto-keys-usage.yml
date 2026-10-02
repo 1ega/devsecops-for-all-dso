@@ -1,0 +1,16 @@
+rules:
+  - id: android.owasp.hardcoded-crypto-keys-usage
+    severity: WARNING
+    languages:
+      - java
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: This rule looks for hardcoded keys in use.
+    message: "[MASVS-CRYPTO-1] Hardcoded cryptographic keys found in use."
+    pattern-either:
+      - pattern: SecretKeySpec $_ = new SecretKeySpec($KEY, $ALGO);
+      - pattern: |-
+          byte[] $KEY = {...};
+          ...
+          new SecretKeySpec($KEY, $ALGO);

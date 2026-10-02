@@ -1,0 +1,39 @@
+rules:
+  - id: flutter.storage.shared-preferences-sensitive-data
+    languages: [dart]
+    severity: ERROR
+    message: Sensitive data is stored in SharedPreferences instead of platform-backed secure storage.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-312, technology: [flutter]}
+    patterns:
+      - pattern-either:
+          - pattern: $PREFS.setString($KEY, $VALUE)
+          - pattern: $PREFS.setInt($KEY, $VALUE)
+          - pattern: $PREFS.setStringList($KEY, $VALUE)
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: '(?i).*(token|secret|password|credential|session|auth|private|pin|card).*'
+  - id: flutter.storage.sensitive-clipboard-write
+    languages: [dart]
+    severity: WARNING
+    message: Sensitive data is written to the system clipboard.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-200, technology: [flutter]}
+    patterns:
+      - pattern: 'Clipboard.setData(ClipboardData(text: $VALUE))'
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: '(?i).*(token|secret|password|credential|private|pin|card|ssn).*'
+  - id: flutter.storage.hardcoded-sensitive-constant
+    languages: [dart]
+    severity: WARNING
+    message: A secret-like constant is hardcoded in Dart source.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-798, technology: [flutter]}
+    patterns:
+      - pattern-either:
+          - pattern: const $NAME = $VALUE;
+          - pattern: final $NAME = $VALUE;
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: '(?i).*(secret|api.?key|password|private.?key|access.?token|client.?secret).*'
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: "[\"'][^\"']{8,}[\"']"

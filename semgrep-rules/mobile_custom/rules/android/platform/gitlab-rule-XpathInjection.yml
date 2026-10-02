@@ -1,0 +1,56 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_xpathi_rule-XpathInjection
+    languages:
+      - "kotlin"
+    message: |
+      The input values included in SQL queries need to be passed in safely. Bind
+      variables in prepared statements can be used to easily mitigate the risk of
+      SQL injection.
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Improper neutralization of data within XPath expressions ('XPath Injection')"
+      category: "security"
+      cwe: "CWE-643"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      security-severity: "CRITICAL"
+    severity: "ERROR"
+
+    mode: "taint"
+    pattern-sources:
+      - patterns:
+          - pattern-inside: |
+              fun $FUNC(..., $VAR: $T, ...) {
+                ...
+              }
+          - pattern: "$VAR"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern-inside: "import javax.xml.xpath.*; \n...\n"
+              - pattern-inside: "import javax.xml.xpath.XPath; \n...\n"
+          - patterns:
+              - pattern-either:
+                  - patterns:
+                      - pattern: "$X.compile($VAR)"
+                      - pattern-not: '$X.compile("...")'
+                  - patterns:
+                      - pattern: "$X.evaluate($VAR, ...)"
+                      - pattern-not: '$X.evaluate("...", ...)'
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern-inside: |
+              $X.xPathVariableResolver = ...;
+              ...;
+              $X.compile("...");
+          - pattern-inside: |
+              $X.setXPathVariableResolver(...);
+              ...;
+              $X.compile("...");

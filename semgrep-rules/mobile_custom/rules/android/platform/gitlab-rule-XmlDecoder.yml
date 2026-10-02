@@ -1,0 +1,88 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_xml_rule-XmlDecoder
+    languages:
+      - "kotlin"
+    message: |
+      Avoid using XMLDecoder to parse content from an untrusted source.
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Deserialization of untrusted data"
+      category: "security"
+      cwe: "CWE-502"
+      owasp:
+        - "A8:2017-Insecure Deserialization"
+        - "A08:2021-Software and Data Integrity Failures"
+      security-severity: "MEDIUM"
+    severity: "WARNING"
+
+    patterns:
+      - pattern-either:
+          - pattern: "($D: java.beans.XMLDecoder).readObject()"
+          - patterns:
+              - pattern: "$D.readObject()"
+              - pattern-inside: |
+                  $D = XMLDecoder(...)
+                  ...
+      - pattern-not:
+          pattern-either:
+            - patterns:
+                - pattern-inside: |
+                    $DEC = java.beans.XMLDecoder(..., $CL)
+                    ...
+                - pattern: $DEC.readObject()
+                - metavariable-pattern:
+                    metavariable: $CL
+                    patterns:
+                      - pattern: |
+                          object : ClassLoader() {
+                            ...
+                            fun loadClass(name: String, resolve: Boolean): $RET {
+                              if($X){
+                                throw ...
+                              }
+                              ...
+                            }
+                            ...
+                          }
+                      - metavariable-pattern:
+                          metavariable: $X
+                          pattern-either:
+                            - pattern: |
+                                name != ...
+                            - pattern: |
+                                !$LIST.contains(name)
+            - patterns:
+                - pattern-inside: |
+                    $CLASS_LOADER  = $CL
+                    ...
+                - pattern-inside: |
+                    $DEC = java.beans.XMLDecoder(..., $CLASS_LOADER)
+                    ...
+                - pattern: $DEC.readObject()
+                - metavariable-pattern:
+                    metavariable: $CL
+                    patterns:
+                      - pattern: |
+                          object : ClassLoader(){
+                            ...
+                            fun loadClass(name: String, resolve: Boolean): $RET{
+                              if($X){
+                                throw ...
+                              }
+                              ...
+                            }
+                            ...
+                          }
+                      - metavariable-pattern:
+                          metavariable: $X
+                          pattern-either:
+                            - pattern: |
+                                name != ...
+                            - pattern: |
+                                !$LIST.contains(name)

@@ -1,0 +1,32 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_crypto_rule-CipherDESInsecure
+    languages:
+      - "kotlin"
+    message: |
+      DES is considered strong ciphers for modern applications. Currently, NIST recommends the usage
+      of AES block ciphers instead of DES.
+    severity: "WARNING"
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Inadequate encryption strength"
+      category: "security"
+      cwe: "CWE-326"
+      owasp:
+        - "A3:2017-Sensitive Data Exposure"
+        - "A02:2021-Cryptographic Failures"
+      technology:
+        - "kotlin"
+      security-severity: "MEDIUM"
+
+    patterns:
+      - pattern-inside: |-
+          javax.crypto.Cipher.getInstance($TRANSFORMATION, ...)
+      - metavariable-regex:
+          metavariable: "$TRANSFORMATION"
+          regex: '^"DES(/|"$)'

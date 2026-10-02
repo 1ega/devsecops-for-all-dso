@@ -1,0 +1,40 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_inject_rule-HttpParameterPollution
+    languages:
+      - "kotlin"
+    message: |
+      Concatenating unvalidated user input into a URL can allow an attacker to override the value of
+      a request parameter. Attacker may be able to override existing parameter values, inject a new
+      parameter or exploit variables out of a direct reach. HTTP Parameter Pollution (HPP) attacks
+      consist of injecting encoded query string delimiters into other existing parameters. If a web
+      application does not properly sanitize the user input, a malicious user may compromise the
+      logic of the application to perform either client-side or server-side attacks.
+    severity: "ERROR"
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Improper neutralization of argument delimiters in a command ('Argument Injection')"
+      category: "security"
+      cwe: "CWE-88"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      technology:
+        - "kotlin"
+      security-severity: "CRITICAL"
+
+    mode: "taint"
+    pattern-sources:
+      - pattern: "($REQ: HttpServletRequest).getParameter(...)"
+    pattern-sanitizers:
+      - pattern: "java.net.URLEncoder.encode(...)"
+      - pattern: "com.google.common.net.UrlEscapers.urlPathSegmentEscaper().escape(...)"
+    pattern-sinks:
+      - pattern: "org.apache.http.client.methods.HttpGet(...)"
+      - pattern: "org.apache.commons.httpclient.methods.GetMethod(...)"
+      - pattern: "($GM: org.apache.commons.httpclient.methods.GetMethod).setQueryString(...)"

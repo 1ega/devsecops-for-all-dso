@@ -1,0 +1,64 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_smtp_rule-SmtpClient
+    languages:
+      - "kotlin"
+    message: |
+      Simple Mail Transfer Protocol (SMTP) is a the text based protocol used for
+      email delivery. Like with HTTP, headers are separate by new line separator. If
+      kuser input is place in a header line, the application should remove or replace
+      new line characters (CR / LF). You should use a safe wrapper such as Apache
+      Common Email and Simple Java Mail which filter special characters that can lead
+      to header injection.
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Improper neutralization of special elements used in a command"
+      category: "security"
+      cwe: "CWE-77"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      security-severity: "CRITICAL"
+    severity: "ERROR"
+
+    patterns:
+      - pattern-inside: |
+          $M = MimeMessage(...);
+          ...
+      - pattern-either:
+          - patterns:
+              - pattern-either:
+                  - pattern: "$M.setSubject($VAR)"
+                  - pattern: "$M.addHeader($ARG, $VAR)"
+                  - pattern: "$M.addHeader($VAR, $ARG)"
+                  - pattern: "$M.setDescription($VAR)"
+                  - pattern: "$M.setDisposition($VAR)"
+              - metavariable-regex:
+                  metavariable: $VAR
+                  regex: "^[a-zA-Z_$][a-zA-Z0-9_$]*$"
+          - patterns:
+              - pattern-either:
+                  - pattern: "$M.setSubject($OBJ.$GETTER(...))"
+                  - pattern: "$M.setSubject($OBJ.$GETTER(...) + ...)"
+                  - pattern: "$M.setSubject(... + $OBJ.$GETTER(...))"
+                  - pattern: "$M.setSubject(... + $OBJ.$GETTER(...) + ...)"
+                  - pattern: "$M.addHeader($ARG, $OBJ.$GETTER(...))"
+                  - pattern: "$M.addHeader($ARG, $OBJ.$GETTER(...) + ...)"
+                  - pattern: "$M.addHeader($ARG, ... + $OBJ.$GETTER(...))"
+                  - pattern: "$M.addHeader($ARG, ... + $OBJ.$GETTER(...) + ...)"
+                  - pattern: "$M.addHeader($OBJ.$GETTER(...), $ARG)"
+                  - pattern: "$M.addHeader($OBJ.$GETTER(...) + ..., $ARG)"
+                  - pattern: "$M.addHeader(... + $OBJ.$GETTER(...), $ARG)"
+                  - pattern: "$M.addHeader(... + $OBJ.$GETTER(...) + ..., $ARG)"
+                  - pattern: "$M.setDescription($OBJ.$GETTER(...))"
+                  - pattern: "$M.setDisposition($OBJ.$GETTER(...) + ...)"
+                  - pattern: "$M.setDisposition(... + $OBJ.$GETTER(...))"
+                  - pattern: "$M.setDisposition(... + $OBJ.$GETTER(...) + ...)"
+              - metavariable-regex:
+                  metavariable: $GETTER
+                  regex: ^get

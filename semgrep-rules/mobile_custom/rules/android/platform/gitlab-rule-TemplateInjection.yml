@@ -1,0 +1,47 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_templateinjection_rule-TemplateInjection
+    languages:
+      - "kotlin"
+    message: |
+      A malicious user in control of a template can run malicious code on the
+      server-side. Velocity templates should be seen as scripts.
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Improper control of generation of code ('Code Injection')"
+      category: "security"
+      cwe: "CWE-94"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      security-severity: "CRITICAL"
+    severity: "ERROR"
+
+    pattern-either:
+      - patterns:
+          - pattern: "org.apache.velocity.app.Velocity.evaluate(..., $VAR)"
+          - pattern-not: 'org.apache.velocity.app.Velocity.evaluate(..., "...")'
+      - patterns:
+          - pattern-not-inside: |
+              $C = ($CFG: freemarker.template.Configuration).getTemplate("...");
+              ...
+          - pattern-inside: |
+              $C = ($CFG: freemarker.template.Configuration).getTemplate($IN);
+              ...
+          - pattern: "$C.process(...)"
+      - patterns:
+          - pattern-inside: |
+              import com.mitchellbosecke.pebble.PebbleEngine;
+              ...
+          - pattern-inside: |
+              $C = $T.getTemplate($IN);
+              ...
+          - pattern-not-inside: |
+              $C = $T.getTemplate("...");
+              ...
+          - pattern: "$C.evaluate(...)"

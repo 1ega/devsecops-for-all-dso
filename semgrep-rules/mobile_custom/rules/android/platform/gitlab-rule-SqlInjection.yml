@@ -1,0 +1,109 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_inject_rule-SqlInjection
+    languages:
+      - "kotlin"
+    message: |
+      The input values included in SQL queries need to be passed in safely. Bind
+      variables in prepared statements can be used to easily mitigate the risk of
+      SQL injection.
+    options:
+      taint_assume_safe_functions: true
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+      category: "security"
+      cwe: "CWE-89"
+      technology:
+        - "java"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      security-severity: "CRITICAL"
+    severity: "ERROR"
+
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern-inside: "fun $FUNC(..., $SRC: String, ...) { ... }"
+          - pattern: $SRC
+    pattern-propagators:
+      - pattern: $SB.append($SRC)
+        from: $SRC
+        to: $SB
+      - patterns:
+          - pattern: $F(..., $SRC, ...)
+          - focus-metavariable: $F
+          - pattern-either:
+              - pattern: String.format
+              - pattern: StringBuilder
+        from: $SRC
+        to: $F
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "($PM: javax.jdo.PersistenceManager).newQuery($ARG)"
+              - pattern: "($PM: javax.jdo.PersistenceManager).newQuery(..., $ARG)"
+              - pattern: "($Q: javax.jdo.Query).setFilter($ARG)"
+              - pattern: "($Q: javax.jdo.Query).setGrouping($ARG)"
+              - pattern: "org.hibernate.criterion.Restrictions.sqlRestriction($ARG, ...)"
+              - pattern: "($S: org.hibernate.Session).createQuery($ARG, ...)"
+              - pattern: "($S: org.hibernate.Session).createSQLQuery($ARG, ...)"
+              - pattern: "($S: java.sql.Statement).executeQuery($ARG, ...)"
+              - pattern: "($S: java.sql.Statement).execute($ARG, ...)"
+              - pattern: "($S: java.sql.Statement).executeUpdate($ARG, ...)"
+              - pattern: "($S: java.sql.Statement).executeLargeUpdate($ARG, ...)"
+              - pattern: "($S: java.sql.Statement).addBatch($ARG, ...)"
+              - pattern: "($S: java.sql.PreparedStatement).executeQuery($ARG, ...)"
+              - pattern: "($S: java.sql.PreparedStatement).execute($ARG, ...)"
+              - pattern: "($S: java.sql.PreparedStatement).executeUpdate($ARG, ...)"
+              - pattern: "($S: java.sql.PreparedStatement).executeLargeUpdate($ARG, ...)"
+              - pattern: "($S: java.sql.PreparedStatement).addBatch($ARG, ...)"
+              - pattern: "($S: java.sql.Connection).prepareCall($ARG, ...)"
+              - pattern: "($S: java.sql.Connection).prepareStatement($ARG, ...)"
+              - pattern: "($S: java.sql.Connection).nativeSQL($ARG, ...)"
+              - pattern: "org.springframework.jdbc.core.PreparedStatementCreatorFactory($ARG, ...)"
+              - pattern: "($F: org.springframework.jdbc.core.PreparedStatementCreatorFactory).newPreparedStatementCreator($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcOperations).batchUpdate($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcOperations).execute($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcOperations).query($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcOperations).queryForList($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcOperations).queryForMap($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcOperations).queryForObject($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcOperations).queryForObject($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcOperations).queryForRowSet($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcOperations).queryForInt($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcOperations).queryForLong($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcOperations).update($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcTemplate).batchUpdate($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcTemplate).execute($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcTemplate).query($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcTemplate).queryForList($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcTemplate).queryForMap($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcTemplate).queryForObject($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcTemplate).queryForRowSet($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcTemplate).queryForInt($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcTemplate).queryForLong($ARG, ...)"
+              - pattern: "($O: org.springframework.jdbc.core.JdbcTemplate).update($ARG, ...)"
+              - pattern: "($O: io.vertx.sqlclient.SqlClient).query($ARG, ...)"
+              - pattern: "($O: io.vertx.sqlclient.SqlClient).preparedQuery($ARG, ...)"
+              - pattern: "($O: io.vertx.sqlclient.SqlConnection).prepare($ARG, ...)"
+              - pattern: "($O: org.apache.turbine.om.peer.BasePeer).executeQuery($ARG, ...)"
+              - pattern: "($O: org.apache.torque.util.BasePeer).executeQuery($ARG, ...)"
+              - pattern: "($O: javax.persistence.EntityManager).createQuery($ARG, ...)"
+              - pattern: "($O: javax.persistence.EntityManager).createNativeQuery($ARG, ...)"
+              - pattern: "($H: org.jdbi.v3.core.Handle).createQuery($ARG, ...)"
+              - pattern: "($H: org.jdbi.v3.core.Handle).createScript($ARG, ...)"
+              - pattern: "($H: org.jdbi.v3.core.Handle).createUpdate($ARG, ...)"
+              - pattern: "($H: org.jdbi.v3.core.Handle).execute($ARG, ...)"
+              - pattern: "($H: org.jdbi.v3.core.Handle).prepareBatch($ARG, ...)"
+              - pattern: "($H: org.jdbi.v3.core.Handle).select($ARG, ...)"
+              - pattern: "org.jdbi.v3.core.statement.Script($H, $ARG)"
+              - pattern: "org.jdbi.v3.core.statement.Update($H, $ARG)"
+              - pattern: "org.jdbi.v3.core.statement.PreparedBatch($H, $ARG)"
+          - focus-metavariable: $ARG

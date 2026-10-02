@@ -1,0 +1,74 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://github.com/mobsf/mobsfscan/blob/main/mobsfscan/rules/patterns/ios/swift/swift_rules.yaml
+# hash: e29e85c3
+# yamllint enable
+---
+rules:
+  - id: ios.gitlab.rules_lgpl_swift_other_rule-ios-tls3-not-used
+    pattern-either:
+      - patterns:
+          - pattern: $X.TLSMinimumSupportedProtocolVersion = $VAL
+          - metavariable-pattern:
+              metavariable: $VAL
+              pattern-either:
+                - pattern: |
+                    .TLSv1_0
+                - pattern: |
+                    .TLSv1_1
+                - pattern: |
+                    .TLSv1_2
+    message: |
+      The app uses TLS 1.0, TLS 1.1 or TLS 1.2. TLS 1.3 should be used instead.
+      TLS versions 1.1 and 1.0 were deprecated by the IETF in June 2018 due to 
+      a number of attacks against the vulnerable versions. Use of a deprecated 
+      TLS version may result in the unauthorized retrieval of sensitive 
+      information. It is strongly recommended that all TLS connections
+      use TLS 1.3
+      
+      TLS 1.3 includes several security improvements over previous versions, such
+      as stronger cryptographic algorithms and negotiation mechanisms, reducing 
+      the risk of security vulnerabilities and attacks like BEAST and POODLE.
+      
+
+      Example using TLS 1.3:
+      ```
+      import Foundation
+      // Create a URLSession configuration with TLS 1.3 support
+      let configuration = URLSessionConfiguration.default
+      configuration.tlsMinimumSupportedProtocol = .TLSv13
+      // Create a URLSession with the custom configuration
+      let session = URLSession(configuration: configuration)        
+      // Define the URL to connect to
+      let url = URL(string: "https://example.com")!
+      // Create a data task to fetch data from the URL
+      let task = session.dataTask(with: url) { data, response, error in
+          // Handle response
+          if let error = error {
+          print("Error: \(error)")
+          return
+        }
+        if let httpResponse = response as? HTTPURLResponse {
+          print("Status code: \(httpResponse.statusCode)")
+        }  
+        if let data = data {
+          // Process received data
+          print("Received data: \(data)")
+        }
+      }
+      // Start the data task
+      task.resume()
+      ```
+    languages:
+      - swift
+    severity: ERROR
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      category: security
+      cwe: "CWE-757"
+      shortDescription: "Selection of less-secure algorithm during negotiation ('algorithm downgrade')"
+      owasp:
+        - "A6:2017-Security Misconfiguration"
+        - "A05:2021-Security Misconfiguration"
+      security-severity: CRITICAL

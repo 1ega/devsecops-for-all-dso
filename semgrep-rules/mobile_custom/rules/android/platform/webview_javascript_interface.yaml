@@ -1,0 +1,23 @@
+rules:
+  - id: android.mobsf.webview_javascript_interface
+    patterns:
+      - pattern-either:
+          - pattern: |
+              addJavascriptInterface(...)
+          - pattern: |
+              $W.addJavascriptInterface(...)
+    message: >-
+      Ensure that javascript interface is implemented securely.
+      Execution of user controlled code in WebView is a 
+      critical Security issue.
+    languages:
+      - java
+    severity: WARNING
+    metadata:
+      source: https://github.com/MobSF/mobsfscan
+      license: LGPL-3.0
+      cwe: cwe-749
+      owasp-mobile: m1
+      masvs: platform-7
+      reference: >-
+        https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05h-Testing-Platform-Interaction.md#determining-whether-java-objects-are-exposed-through-webviews-mstg-platform-7

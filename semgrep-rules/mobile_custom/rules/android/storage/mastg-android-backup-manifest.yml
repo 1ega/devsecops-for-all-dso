@@ -1,0 +1,28 @@
+rules:
+  - id: android.owasp.backup-manifest-allow-backup
+    severity: WARNING
+    languages:
+      - xml
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: This rule inspects the AndroidManifest.xml for allowBackup.
+      references:
+        - https://developer.android.com/guide/topics/data/autobackup
+    message: "[MASVS-STORAGE-2] allowBackup detected as $ARG."
+    patterns:
+      - pattern: 'android:allowBackup="$ARG"'
+  - id: android.owasp.backup-manifest-backup-rules
+    severity: WARNING
+    languages:
+      - xml
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: This rule inspects the AndroidManifest.xml for backup rules.
+      references:
+        - https://developer.android.com/guide/topics/data/autobackup
+    message: "[MASVS-STORAGE-2] Backup rules detected."
+    pattern-either:
+      - pattern: 'android:fullBackupContent="@xml/backup_rules"'
+      - pattern: 'android:dataExtractionRules="@xml/data_extraction_rules"'

@@ -1,0 +1,71 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://github.com/mobsf/mobsfscan/blob/main/mobsfscan/rules/patterns/ios/oc/objective_c_rules.yaml
+# hash: e29e85c3
+# yamllint enable
+---
+rules:
+  - id: ios.gitlab.rules_lgpl_oc_other_rule-ios-webview-ignore-ssl
+    pattern-either:
+      - pattern: allowsAnyHTTPSCertificateForHost
+      - patterns:
+          - pattern: loadingUnvalidatedHTTPSPage = $YES
+          - metavariable-regex:
+              metavariable: "$YES"
+              regex: "YES|yes"
+      - patterns:
+          - pattern: allowsAnyHTTPSCertificate = $YES
+          - metavariable-regex:
+              metavariable: "$YES"
+              regex: "YES|yes"
+    paths:
+      include:
+        - "**/*.m"
+    message: |
+      UIWebView in App ignore SSL errors and accept any SSL Certificate. 
+      App is vulnerable to MITM attacks. If the app does not verify the 
+      authenticity of the server's SSL certificate, an attacker could 
+      impersonate the server and intercept sensitive data transmitted 
+      between the app and the server.
+      To fix these security issues, you should ensure proper SSL certificate 
+      validation in your Objective-C code. Here's how you can do it:
+      ```
+      - (void)loadSecureURL {
+        NSURL *url = [NSURL URLWithString:@"https://example.com"];
+        NSURLRequest *request = [NSURLRequest requestWithURL:url];
+        
+        // Create session configuration
+        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+        configuration.TLSMinimumSupportedProtocol = kTLSProtocol12;
+        
+        // Create session with configuration
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
+        
+        // Create data task
+        NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+            if (error) {
+                NSLog(@"Error loading URL: %@", error);
+                // Handle error
+            } else {
+                // Handle response
+                NSLog(@"Response: %@", response);
+            }
+        }];
+        
+        // Start task
+        [task resume];
+      }
+      ```
+    languages:
+      - generic
+    severity: ERROR
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      category: security
+      cwe: "CWE-295"
+      shortDescription: "Improper certificate validation"
+      owasp:
+        - "A6:2017-Security Misconfiguration"
+        - "A05:2021-Security Misconfiguration"
+      security-severity: CRITICAL

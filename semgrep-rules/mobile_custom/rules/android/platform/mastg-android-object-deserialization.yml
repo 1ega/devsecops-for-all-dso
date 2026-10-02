@@ -1,0 +1,16 @@
+rules:
+  - id: android.owasp.object-deserialization
+    severity: WARNING
+    languages:
+      - java
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: This rule looks for use of Object Deserialization
+    message: "[MASVS-CODE-4] The application makes use of Object deserialization in the code using the ObjectInputStream.readObject() function call."
+    patterns:
+      - pattern: |-
+          $VAR = new java.io.ObjectInputStream(...);
+          ...
+          $OBJ = $VAR.readObject();
+          

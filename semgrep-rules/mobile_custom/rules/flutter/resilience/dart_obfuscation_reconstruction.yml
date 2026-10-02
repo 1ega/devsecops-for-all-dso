@@ -1,0 +1,19 @@
+rules:
+  - id: flutter.apiiro.dart-obfuscation-reconstruction
+    metadata:
+      source: https://github.com/apiiro/malicious-code-ruleset
+      license: MIT
+    patterns:
+      - pattern-regex: ^.{,401}$
+      - pattern-either:
+          - pattern: |
+              $VAR.join($CONCAT)
+          - pattern: |
+              $VAR = $CONCAT.join()
+      - metavariable-pattern:
+          metavariable: $CONCAT
+          pattern-regex: \[\s*((((["'])(?:(?!\4).)*\4)|(\d+|(0|\\{1,})[beoux]\d+))\s*,\s*){5,}(((((["'])(?:(?!\11).)))*\11)|(\d+|(0|\\{1,})[beoux]\d+))\s*\]
+    message: Obfuscation by reconstruction of hardcoded data.
+    severity: WARNING
+    languages:
+      - dart

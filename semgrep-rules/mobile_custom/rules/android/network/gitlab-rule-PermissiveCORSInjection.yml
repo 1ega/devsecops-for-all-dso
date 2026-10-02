@@ -1,0 +1,55 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_cors_rule-PermissiveCORSInjection
+    languages:
+      - "kotlin"
+    message: |
+      Prior to HTML5, Web browsers enforced the Same Origin Policy which ensures that in order for
+      JavaScript to access the contents of a Web page, both the JavaScript and the Web page must
+      originate from the same domain. Without the Same Origin Policy, a malicious website could serve
+      up JavaScript that loads sensitive information from other websites using a client's
+      credentials, cull through it, and communicate it back to the attacker. HTML5 makes it possible
+      for JavaScript to access data across domains if a new HTTP header called
+      Access-Control-Allow-Origin is defined. With this header, a Web server defines which other
+      domains are allowed to access its domain using cross-origin requests. However, caution should
+      be taken when defining the header because an overly permissive CORS policy will allow a
+      malicious application to communicate with the victim application in an inappropriate way,
+      leading to spoofing, data theft, relay and other attacks.
+    severity: "ERROR"
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Permissive cross-domain policy with untrusted domains"
+      cwe: "CWE-942"
+      category: "security"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      technology:
+        - "kotlin"
+      security-severity: "CRITICAL"
+
+    mode: "taint"
+    pattern-sources:
+      - pattern: "($REQ: HttpServletRequest).getParameter(...)"
+      - pattern: "($REQ: HttpServletRequest).getHeader(...)"
+      - pattern: "($REQ: HttpServletRequest).getPathInfo()"
+      - pattern: "($REQ: HttpServletRequest).getQueryString()"
+      - pattern: "($REQ: HttpServletRequest).getAttribute(...)"
+      - pattern: "($REQ: HttpServletRequest).getSession().getAttribute(...)"
+      - pattern: "($REQ: HttpServletRequest).getServletContext().getAttribute(...)"
+      - pattern: "($REQ: HttpServletRequest).getParameterValues(...)"
+      - pattern: "($REQ: HttpServletRequest).getParameterNames()"
+      - pattern: "($REQ: HttpServletRequest).getParameterMap()"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: '($RES: HttpServletResponse).setHeader("$HEADER", ...)'
+              - pattern: '($RES: HttpServletResponse).addHeader("$HEADER", ...)'
+          - metavariable-regex:
+              metavariable: "$HEADER"
+              regex: "(?i)(Access-Control-Allow-Origin)"

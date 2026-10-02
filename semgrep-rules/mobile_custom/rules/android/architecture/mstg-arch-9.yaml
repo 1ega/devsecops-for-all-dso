@@ -1,0 +1,45 @@
+rules:
+  - id: MSTG-ARCH-9
+    severity: WARNING
+    languages:
+      - java
+    metadata:
+      source: https://github.com/mindedsecurity/semgrep-rules-android-security
+      license: GPL-3.0
+      authors:
+        - Riccardo Cardelli @gand3lf (IMQ Minded Security)
+      owasp-mobile: M7
+      category: security
+      area: arch
+      verification-level:
+        - L2
+      references:
+        - https://github.com/OWASP/owasp-mastg/blob/v1.5.0/Document/0x05h-Testing-Platform-Interaction.md#testing-enforced-updating-mstg-arch-9
+      confidence: LOW
+      likelihood: LOW
+      impact: MEDIUM
+      technology: [android]
+    message: >-
+      The activity does not implement a mechanism for enforcing updates.
+      Check whether it is the launcher activity declared in AndroidManifest.xml.
+    # The original rule used `mode: join` to correlate the Java class with the
+    # MAIN/LAUNCHER activity in AndroidManifest.xml. Join mode reads
+    # metavariables from the JSON output, which no longer contains them, so the
+    # rule crashed Semgrep. It now checks Activity subclasses directly.
+    patterns:
+      - pattern: |
+          class $CLASSNAME extends $ACTIVITY {
+            void onCreate(...) { ... }
+          }
+      - pattern-not: |
+          class $CLASSNAME extends $ACTIVITY {
+            $RET $METHOD(...) {
+              ...
+              $MANAGER.startUpdateFlowForResult(...);
+              ...
+            }
+          }
+      - metavariable-regex:
+          metavariable: $ACTIVITY
+          regex: ^\w*Activity$
+      - focus-metavariable: $CLASSNAME

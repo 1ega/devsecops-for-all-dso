@@ -1,0 +1,24 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_xml_rule-SAMLIgnoreComments
+    languages:
+      - "kotlin"
+    message: |
+      Ignoring XML comments in SAML may lead to authentication bypass
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Weak authentication"
+      cwe: "CWE-1390"
+      category: "security"
+      owasp:
+        - "A5:2017-Broken Access Control"
+        - "A01:2021-Broken Access Control"
+      security-severity: "MEDIUM"
+    severity: "WARNING"
+
+    pattern: "($POOL: org.opensaml.xml.parse.BasicParserPool).setIgnoreComments(false);"

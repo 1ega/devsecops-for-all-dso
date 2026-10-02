@@ -1,0 +1,18 @@
+rules:
+  - id: android.mobsf.insecure_sslv3
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $S.getInstance("SSLv3");
+    message: SSLv3 is insecure and has multiple known vulnerabilities.
+    languages:
+      - java
+    severity: ERROR
+    metadata:
+      source: https://github.com/MobSF/mobsfscan
+      license: LGPL-3.0
+      cwe: cwe-327
+      owasp-mobile: m5
+      masvs: crypto-4
+      reference: >-
+        https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4

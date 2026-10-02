@@ -1,0 +1,30 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_crypto_rule-CipherECBMode
+    languages:
+      - "kotlin"
+    message: |
+      An authentication cipher mode which provides better confidentiality of the encrypted data
+      should be used instead of Electronic Code Book (ECB) mode, which does not provide good
+      confidentiality. Specifically, ECB mode produces the same output for the same input each time.
+      This allows an attacker to intercept and replay the data.
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      category: "security"
+      cwe: "CWE-326"
+      shortDescription: "Inadequate Encryption Strength"
+      technology:
+        - "kotlin"
+      security-severity: "CRITICAL"
+    severity: "ERROR"
+
+    patterns:
+      - pattern: javax.crypto.Cipher.getInstance($TRANSFORMATION, ...)
+      - metavariable-regex:
+          metavariable: "$TRANSFORMATION"
+          regex: '^"[^/]*/ECB(/.*)?"$'

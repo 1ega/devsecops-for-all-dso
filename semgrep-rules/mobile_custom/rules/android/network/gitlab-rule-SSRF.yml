@@ -1,0 +1,67 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_ssrf_rule-SSRF
+    languages:
+      - "kotlin"
+    message: |
+      Server-Side Request Forgery occur when a web server executes a request to a user supplied
+      destination parameter that is not validated. Such vulnerabilities could allow an attacker to
+      access internal services or to launch attacks from your web server.
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Server-Side Request Forgery (SSRF)"
+      category: "security"
+      cwe: "CWE-918"
+      owasp:
+        - "A1:2017-Injection"
+        - "A10:2021-Server-Side Request Forgery"
+      security-severity: "CRITICAL"
+    severity: "ERROR"
+
+    pattern-either:
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  import java.net.*;
+                  ...
+              - pattern-inside: |
+                  import java.net.URL;
+                  ...
+              - pattern-inside: |
+                  import java.net.URI;
+                  ...
+          - pattern: "$TYPE(...). ... .$FUNC"
+          - pattern-not: '$TYPE("..."). ... .$FUNC'
+          - metavariable-pattern:
+              metavariable: "$FUNC"
+              pattern-either:
+                - pattern: "connect"
+                - pattern: "GetContent"
+                - pattern: "openConnection"
+                - pattern: "openStream"
+                - pattern: "getContent"
+                - pattern: "content"
+          - metavariable-pattern:
+              metavariable: "$TYPE"
+              pattern-either:
+                - pattern: "URL"
+                - pattern: "java.net.URL"
+                - pattern: "URI"
+                - pattern: "java.net.URI"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  import java.net.*;
+                  ...
+              - pattern-inside: |
+                  import java.net.InetSocketAddress;
+                  ...
+          - pattern: |
+              InetSocketAddress(..., $PORT)
+          - pattern-not: |
+              InetSocketAddress("...", $PORT)

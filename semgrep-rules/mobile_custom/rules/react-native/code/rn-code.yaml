@@ -1,0 +1,51 @@
+rules:
+  - id: react-native.code.eval-with-dynamic-data
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Dynamic data is executed with eval or Function.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-95, technology: [react-native]}
+    pattern-either:
+      - pattern: eval($DATA)
+      - pattern: new Function($DATA)
+      - pattern: Function($DATA)(...)
+  - id: react-native.code.custom-xor-cryptography
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: XOR is used in a crypto-named function; use a reviewed cryptographic library.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-327, technology: [react-native]}
+    patterns:
+      - pattern-inside: |
+          function $FUNC(...) {
+            ...
+          }
+      - pattern: $A ^ $B
+      - metavariable-regex:
+          metavariable: $FUNC
+          regex: '(?i).*(encrypt|decrypt|cipher|hash|crypto).*'
+  - id: react-native.code.sensitive-console-logging
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Sensitive value is written to the JavaScript console.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-532, technology: [react-native]}
+    patterns:
+      - pattern-either:
+          - pattern: console.log(..., $VALUE, ...)
+          - pattern: console.error(..., $VALUE, ...)
+          - pattern: console.debug(..., $VALUE, ...)
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: '(?i).*(token|password|secret|credential|authorization|card|pin|ssn).*'
+  - id: react-native.code.suspicious-lifecycle-script
+    languages: [json]
+    severity: WARNING
+    message: Package lifecycle hook executes a shell, downloads content, or evaluates code during dependency installation.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-506, technology: [react-native, npm]}
+    paths: {include: ["*package.json"]}
+    patterns:
+      - pattern: '"$HOOK": $COMMAND'
+      - metavariable-regex:
+          metavariable: $HOOK
+          regex: '"(preinstall|install|postinstall)"'
+      - metavariable-regex:
+          metavariable: $COMMAND
+          regex: '(?i)".*(curl|wget|powershell|bash -c|sh -c|node -e|eval).*"'

@@ -1,0 +1,77 @@
+rules:
+  - id: flutter.network.cleartext-http
+    languages: [dart]
+    severity: WARNING
+    message: Flutter application connects to a cleartext HTTP endpoint.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-319, technology: [flutter]}
+    patterns:
+      - pattern-either:
+          - pattern: Uri.parse($URL)
+          - pattern: Uri.http(...)
+          - pattern: http.$METHOD(Uri.parse($URL), ...)
+      - metavariable-regex:
+          metavariable: $URL
+          regex: '.*http://(?!localhost|127[.]0[.]0[.]1).*'
+  - id: flutter.network.bad-certificate-callback-accepts-all
+    languages: [dart]
+    severity: ERROR
+    message: HttpClient accepts every TLS certificate.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-295, technology: [flutter]}
+    pattern-either:
+      - pattern: $CLIENT.badCertificateCallback = (...) => true
+      - pattern: '$CLIENT.badCertificateCallback = ($CERT, $HOST, $PORT) { return true; }'
+  - id: flutter.network.insecure-websocket
+    languages: [dart]
+    severity: ERROR
+    message: WebSocket uses unencrypted ws:// transport.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-319, technology: [flutter, websocket]}
+    patterns:
+      - pattern-either:
+          - pattern: WebSocket.connect($URL)
+          - pattern: IOWebSocketChannel.connect($URL)
+          - pattern: WebSocketChannel.connect(Uri.parse($URL))
+      - metavariable-regex:
+          metavariable: $URL
+          regex: '.*ws://(?!localhost|127[.]0[.]0[.]1).*'
+  - id: flutter.network.user-controlled-request-url
+    mode: taint
+    languages: [dart]
+    severity: WARNING
+    message: Externally controlled URL reaches an HTTP request and may permit SSRF or unintended schemes.
+    metadata: {license: GPL-3.0, category: security, confidence: MEDIUM, cwe: CWE-918, technology: [flutter]}
+    pattern-sources:
+      - pattern-either:
+          - pattern: $CONTROLLER.text
+          - pattern: $REQUEST.queryParameters[$KEY]
+          - pattern: $ROUTE.settings.arguments
+          - pattern: await Clipboard.getData(...)
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: $ALLOWED.contains(...)
+          - pattern: $URI.scheme == "https"
+          - pattern: validateUrl(...)
+    pattern-sinks:
+      - pattern-either:
+          - pattern: http.$METHOD($URL, ...)
+          - pattern: $DIO.$METHOD($URL, ...)
+          - pattern: $CLIENT.openUrl($METHOD, $URL)
+  - id: flutter.network.webview-unrestricted-javascript
+    languages: [dart]
+    severity: WARNING
+    message: Flutter WebView enables unrestricted JavaScript execution.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-749, technology: [flutter, webview]}
+    pattern-either:
+      - pattern: $CONTROLLER.setJavaScriptMode(JavaScriptMode.unrestricted)
+      - pattern: 'WebView(..., javascriptMode: JavascriptMode.unrestricted, ...)'
+  - id: flutter.network.webview-unsafe-content
+    languages: [dart]
+    severity: ERROR
+    message: Flutter WebView permits mixed content or loads a local file/content URL.
+    metadata: {license: GPL-3.0, category: security, confidence: HIGH, cwe: CWE-319, technology: [flutter, webview]}
+    pattern-either:
+      - pattern: $CONTROLLER.setMixedContentMode(MixedContentMode.alwaysAllow)
+      - patterns:
+          - pattern: $CONTROLLER.loadRequest(Uri.parse($URL))
+          - metavariable-regex:
+              metavariable: $URL
+              regex: '.*(file|content)://.*'

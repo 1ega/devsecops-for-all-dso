@@ -1,0 +1,82 @@
+# yamllint disable
+# License: GNU Lesser General Public License v3.0
+# source (original): https://find-sec-bugs.github.io/bugs.htm
+# yamllint enable
+---
+rules:
+  - id: android.gitlab.kotlin_inject_rule-CommandInjection
+    languages:
+      - "kotlin"
+    message: |
+      The highlighted API is used to execute a system command. If unfiltered input is passed to this
+      API, it can lead to arbitrary command execution.
+    severity: "WARNING"
+    metadata:
+      source: https://gitlab.com/gitlab-org/security-products/sast-rules
+      license: LGPL-3.0
+      shortDescription: "Improper neutralization of special elements used in an OS command ('OS Command Injection')"
+      category: "security"
+      cwe: "CWE-78"
+      owasp:
+        - "A1:2017-Injection"
+        - "A03:2021-Injection"
+      technology:
+        - "kotlin"
+      security-severity: "MEDIUM"
+
+    pattern-either:
+      - patterns:
+          - pattern-inside: |
+              fun $FUNC(..., $PARAM: String, ...) {
+                ...
+              }
+          - pattern-inside: |
+              $R = Runtime.getRuntime()
+              ...
+          - pattern-either:
+              - pattern: "$R.exec(<...$PARAM...>,...)"
+              - patterns:
+                  - pattern-either:
+                      - pattern: |
+                          $CMDARR = arrayOf("$SHELL",...,<...$PARAM...>,...)
+                          ...
+                          $R.exec($CMDARR,...)
+                      - pattern: '$R.exec(arrayOf("$SHELL",...,<...$PARAM...>,...), ...)'
+                      - pattern: '$R.exec(java.util.String.format("...", ...,<...$PARAM...>,...))'
+                      - pattern: "$R.exec(($A: String) + ($B: String))"
+                  - metavariable-regex:
+                      metavariable: "$SHELL"
+                      regex: "(/.../)?(sh|bash|ksh|csh|tcsh|zsh)$"
+          - pattern-not: '$R.exec("...","...","...",...)'
+          - pattern-not: |
+              $R.exec(arrayOf("...","...","...",...),...)
+      - patterns:
+          - pattern-inside: |
+              fun $FUNC(..., $PARAM: String, ...) {
+                ...
+              }
+          - pattern-inside: |
+              $PB = ProcessBuilder()
+              ...
+          - pattern-either:
+              - pattern: "$PB.command(<...$PARAM...>,...)"
+              - patterns:
+                  - pattern-inside: |-
+                      $VAL = <...$PARAM...>; ...
+                  - pattern: "$PB.command(<...$VAL...>,...)"
+              - patterns:
+                  - pattern-either:
+                      - pattern: '$PB.command("$SHELL",...,<...$PARAM...>,...)'
+                      - pattern: |
+                          $CMDARR = java.util.Arrays.asList("$SHELL",...,<...$PARAM...>,...)
+                          ...
+                          $PB.command($CMDARR,...)
+                      - pattern: '$PB.command(java.util.Arrays.asList("$SHELL",...,<...$PARAM...>,...),...)'
+                      - pattern: '$PB.command(java.util.String.format("...", ...,<...$PARAM...>,...))'
+                      - pattern: "$PB.command(($A: String) + ($B: String))"
+                  - metavariable-regex:
+                      metavariable: "$SHELL"
+                      regex: "(/.../)?(sh|bash|ksh|csh|tcsh|zsh)$"
+          - pattern-not: '$PB.command("...","...","...",...)'
+          - pattern-not: |
+              $PB.command(java.util.Arrays.asList("...","...","...",...))

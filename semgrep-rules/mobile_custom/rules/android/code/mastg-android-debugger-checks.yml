@@ -1,0 +1,14 @@
+rules:
+  - id: android.owasp.debugger-checks
+    severity: WARNING
+    languages: [java]
+    metadata:
+      source: https://github.com/OWASP/mastg
+      license: CC-BY-SA-4.0
+      summary: Detects Android debugger checks in code.
+    message: "[MASVS-RESILIENCE-4] debugger checks detected."
+    patterns:
+      - pattern-either:
+          - pattern: Debug.isDebuggerConnected(...)
+          - pattern: Debug.isDebuggerConnected()
+          - pattern: ApplicationInfo.FLAG_DEBUGGABLE
