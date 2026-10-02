@@ -58,7 +58,8 @@ Locally verified: Python starter Semgrep rules 3/3, evidence/exception/wrapper
 tests, repository contracts, GitHub workflow syntax, Helm rendering with all 16
 local rules, and Trivy 0.75.0 detecting the insecure Terraform fixture while the
 restricted fixture passes. Trivy used an existing checks bundle, so this verifies
-behavior rather than proving current vulnerability-data freshness. Falco compiler
-and live smoke tests remain unexecuted locally because Docker is unavailable.
+behavior rather than proving current vulnerability-data freshness. Falco compilation
+and the live smoke test were run later with Docker; see the
+[test record](../../rules/falco/tests/README.md).
 Other generated manuals and imported packs still need per-tool acceptance
 testing; this review does not claim universal CI or deployed coverage.

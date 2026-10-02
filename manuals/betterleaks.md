@@ -1,5 +1,7 @@
 # betterleaks
 
+**Version reviewed:** v1.9.0 ([official release](https://github.com/betterleaks/betterleaks/releases/tag/v1.9.0)); metadata checked 2026-10-02.
+
 **Area:** 1. Protect your code → Secret scanning  
 **License:** MIT  
 **Notes:** JSON reports; can scan GitLab issues, MRs, and CI logs
@@ -13,7 +15,7 @@ Successor to gitleaks by the same author; reads .gitleaks.toml and validates fin
 Worth watching if you already use gitleaks: it keeps the config format, adds rule validation, and can scan GitLab projects directly, including merge requests and CI job logs.
 
 > [!WARNING]
-> Version 2 removed SARIF output: reports are JSON or JSONL only. Several flags were renamed from gitleaks, for example `--report-path` became `--output`.
+> This manual covers the stable v1.9.0. Version 2 is still a release candidate (v2.0.0-rc.1) with no published image: it removes SARIF output and renames flags, for example `--report-path` becomes `--output`, and `dir` becomes `fs`.
 
 ## Install
 
@@ -26,13 +28,13 @@ brew install betterleaks
 **Go**
 
 ```bash
-go install github.com/betterleaks/betterleaks/v2@latest
+go install github.com/betterleaks/betterleaks@v1.9.0
 ```
 
 **Container image**
 
 ```bash
-docker pull ghcr.io/betterleaks/betterleaks:v2
+docker pull ghcr.io/betterleaks/betterleaks:v1.9.0@sha256:e3b95b0db6c2735db17165c009b0ad6d9cef34fb4578659232b98f69d7346cac
 ```
 
 ## Use
@@ -40,13 +42,13 @@ docker pull ghcr.io/betterleaks/betterleaks:v2
 **Scan the git history**
 
 ```bash
-betterleaks git .
+betterleaks git . --redact
 ```
 
 **Scan a directory to JSON**
 
 ```bash
-betterleaks fs . --output findings.json
+betterleaks dir . --redact --report-format json --report-path findings.json
 ```
 
 **Scan a GitLab project (reads GITLAB_TOKEN)**
@@ -65,12 +67,12 @@ Pin images and actions to a version or digest before relying on this example.
 betterleaks:
   stage: test
   image:
-    name: ghcr.io/betterleaks/betterleaks:v2
+    name: ghcr.io/betterleaks/betterleaks:v1.9.0@sha256:e3b95b0db6c2735db17165c009b0ad6d9cef34fb4578659232b98f69d7346cac
     entrypoint: [""]
   variables:
     GIT_DEPTH: 0
   script:
-    - betterleaks git . --output betterleaks.json
+    - betterleaks git . --redact --report-format json --report-path betterleaks.json
   artifacts:
     when: always
     paths: [betterleaks.json]
@@ -78,7 +80,7 @@ betterleaks:
 
 ## Output and triage
 
-Exit code 1 when findings exist (change with `--exit-code`).
+Exit code 1 when findings exist (change with `--exit-code`). Logs and reports contain the raw secret unless you pass `--redact`. Use `--report-format sarif` for code scanning.
 
 ## Concepts to know
 

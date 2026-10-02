@@ -1,5 +1,7 @@
 # KICS
 
+**Version reviewed:** v2.2.0 ([official release](https://github.com/Checkmarx/kics/releases/tag/v2.2.0)); metadata checked 2026-10-02.
+
 **Area:** 4. Check infrastructure code → Infrastructure as code  
 **License:** Apache-2.0  
 **Notes:** GitLab SAST output (glsast)
@@ -13,27 +15,31 @@ Rego queries for Terraform, Helm, Docker, Ansible, and more; behind GitLab IaC S
 The engine GitLab uses for IaC scanning. Running it directly lets you pick report formats and severity gates.
 
 > [!WARNING]
-> In March and April 2026 KICS GitHub Actions and Docker Hub images were reported compromised. Pin by digest and verify.
+> In March and April 2026 KICS GitHub Actions and Docker Hub images were reported compromised. Docker Hub images stop at v2.1.20, last updated on 2026-04-22 inside that window, and v2.2.0 publishes no image or binary. Do not pull `checkmarx/kics:latest`; build the reviewed tag yourself.
 
 ## Install
 
-**Container image**
+**Build from source** (Go 1.26.2 or later; the same flags as the official Dockerfile)
 
 ```bash
-docker pull checkmarx/kics:latest
+git clone --depth 1 --branch v2.2.0 https://github.com/Checkmarx/kics.git
+cd kics
+CGO_ENABLED=0 go build -ldflags "-X github.com/Checkmarx/kics/v2/internal/constants.Version=v2.2.0" \
+  -o ./bin/kics cmd/console/main.go
+./bin/kics version
 ```
 
 ## Use
 
-**Scan a directory**
+**Scan a directory** (run from the checkout, which provides `assets/queries`)
 
 ```bash
-docker run -t -v "$PWD":/path checkmarx/kics scan -p /path -o /path/
+./bin/kics scan -p /path/to/iac -o /private/reports --report-formats json,sarif
 ```
 
 ## CI example
 
-Pin images and actions to a version or digest before relying on this example.
+Build an image from the reviewed tag's Dockerfile in a trusted pipeline, push it to your registry and pin that digest.
 
 ### GitLab CI
 
@@ -41,7 +47,7 @@ Pin images and actions to a version or digest before relying on this example.
 kics:
   stage: test
   image:
-    name: checkmarx/kics:latest        # pin by digest
+    name: registry.example/security/kics:v2.2.0@sha256:DIGEST  # your build of the v2.2.0 tag
     entrypoint: [""]
   script:
     - kics scan -p "$CI_PROJECT_DIR" --ignore-on-exit all

@@ -7,6 +7,8 @@
 | pre-commit | [Hook config](pre-commit/README.md) | Pinned Gitleaks hook |
 | DefectDojo | [Design notes](defectdojo/README.md) | Upload/deduplication still unimplemented |
 
+Also planned: Jira tickets from findings, Slack alerts for critical findings and merge request comments.
+
 Gitleaks blocks findings; OSV/Semgrep produce findings for triage and scanner
 errors fail the job. This is not a normalized severity/delta gate. Network is
 needed for images, OSV data and Semgrep registry rules. Secret scanning covers

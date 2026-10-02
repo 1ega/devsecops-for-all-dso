@@ -584,21 +584,21 @@ window.ROADMAP = {
             },
             {
               "label": "Go",
-              "code": "go install github.com/betterleaks/betterleaks/v2@latest"
+              "code": "go install github.com/betterleaks/betterleaks@v1.9.0"
             },
             {
               "label": "Container image",
-              "code": "docker pull ghcr.io/betterleaks/betterleaks:v2"
+              "code": "docker pull ghcr.io/betterleaks/betterleaks:v1.9.0@sha256:e3b95b0db6c2735db17165c009b0ad6d9cef34fb4578659232b98f69d7346cac"
             }
           ],
           "run": [
             {
               "label": "Scan the git history",
-              "code": "betterleaks git ."
+              "code": "betterleaks git . --redact"
             },
             {
               "label": "Scan a directory to JSON",
-              "code": "betterleaks fs . --output findings.json"
+              "code": "betterleaks dir . --redact --report-format json --report-path findings.json"
             },
             {
               "label": "Scan a GitLab project (reads GITLAB_TOKEN)",
@@ -608,16 +608,17 @@ window.ROADMAP = {
           "ciExamples": [
             {
               "label": "GitLab CI",
-              "code": "betterleaks:\n  stage: test\n  image:\n    name: ghcr.io/betterleaks/betterleaks:v2\n    entrypoint: [\"\"]\n  variables:\n    GIT_DEPTH: 0\n  script:\n    - betterleaks git . --output betterleaks.json\n  artifacts:\n    when: always\n    paths: [betterleaks.json]"
+              "code": "betterleaks:\n  stage: test\n  image:\n    name: ghcr.io/betterleaks/betterleaks:v1.9.0@sha256:e3b95b0db6c2735db17165c009b0ad6d9cef34fb4578659232b98f69d7346cac\n    entrypoint: [\"\"]\n  variables:\n    GIT_DEPTH: 0\n  script:\n    - betterleaks git . --redact --report-format json --report-path betterleaks.json\n  artifacts:\n    when: always\n    paths: [betterleaks.json]"
             }
           ],
           "notes": [],
           "role": "Successor to gitleaks by the same author; reads .gitleaks.toml and validates findings.",
-          "why": "<p>Successor to gitleaks by the same author; reads .gitleaks.toml and validates findings.</p><p>Worth watching if you already use gitleaks: it keeps the config format, adds rule validation, and can scan GitLab projects directly, including merge requests and CI job logs.</p><p>Version 2 removed SARIF output: reports are JSON or JSONL only. Several flags were renamed from gitleaks, for example <code>--report-path</code> became <code>--output</code>.</p>",
+          "why": "<p>Successor to gitleaks by the same author; reads .gitleaks.toml and validates findings.</p><p>Worth watching if you already use gitleaks: it keeps the config format, adds rule validation, and can scan GitLab projects directly, including merge requests and CI job logs.</p><p>This manual covers the stable v1.9.0. Version 2 is still a release candidate (v2.0.0-rc.1) with no published image: it removes SARIF output and renames flags, for example <code>--report-path</code> becomes <code>--output</code>, and <code>dir</code> becomes <code>fs</code>.</p>",
+          "versionInfo": "v1.9.0 (<a href=\"https://github.com/betterleaks/betterleaks/releases/tag/v1.9.0\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
           "installNotes": "",
           "runNotes": "",
           "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
-          "results": "<p>Exit code 1 when findings exist (change with <code>--exit-code</code>).</p>"
+          "results": "<p>Exit code 1 when findings exist (change with <code>--exit-code</code>). Logs and reports contain the raw secret unless you pass <code>--redact</code>. Use <code>--report-format sarif</code> for code scanning.</p>"
         },
         {
           "id": "detect-secrets",
@@ -799,7 +800,7 @@ window.ROADMAP = {
             },
             {
               "label": "Container image",
-              "code": "docker pull ghcr.io/securego/gosec:latest"
+              "code": "docker pull ghcr.io/securego/gosec:2.29.0@sha256:a6cd2f302b5f692e0b77b25751b299ddfbc0763a9711fa36e5a6bccd5292b0e8"
             }
           ],
           "run": [
@@ -815,7 +816,7 @@ window.ROADMAP = {
           "ciExamples": [
             {
               "label": "GitLab CI",
-              "code": "gosec:\n  stage: test\n  image:\n    name: ghcr.io/securego/gosec:latest\n    entrypoint: [\"\"]\n  script:\n    - gosec -fmt sarif -out gosec.sarif ./...\n  artifacts:\n    when: always\n    paths: [gosec.sarif]"
+              "code": "gosec:\n  stage: test\n  image:\n    name: ghcr.io/securego/gosec:2.29.0@sha256:a6cd2f302b5f692e0b77b25751b299ddfbc0763a9711fa36e5a6bccd5292b0e8\n    entrypoint: [\"\"]\n  script:\n    - gosec -fmt sarif -out gosec.sarif ./...\n  artifacts:\n    when: always\n    paths: [gosec.sarif]"
             }
           ],
           "notes": [],
@@ -2112,28 +2113,29 @@ window.ROADMAP = {
           "validation": "Reference manual; confirm behavior and permissions in your environment.",
           "install": [
             {
-              "label": "Container image",
-              "code": "docker pull checkmarx/kics:latest"
+              "label": "Install",
+              "code": "git clone --depth 1 --branch v2.2.0 https://github.com/Checkmarx/kics.git\ncd kics\nCGO_ENABLED=0 go build -ldflags \"-X github.com/Checkmarx/kics/v2/internal/constants.Version=v2.2.0\" \\\n  -o ./bin/kics cmd/console/main.go\n./bin/kics version"
             }
           ],
           "run": [
             {
-              "label": "Scan a directory",
-              "code": "docker run -t -v \"$PWD\":/path checkmarx/kics scan -p /path -o /path/"
+              "label": "Use",
+              "code": "./bin/kics scan -p /path/to/iac -o /private/reports --report-formats json,sarif"
             }
           ],
           "ciExamples": [
             {
               "label": "GitLab CI",
-              "code": "kics:\n  stage: test\n  image:\n    name: checkmarx/kics:latest        # pin by digest\n    entrypoint: [\"\"]\n  script:\n    - kics scan -p \"$CI_PROJECT_DIR\" --ignore-on-exit all\n        --report-formats glsast -o \"$CI_PROJECT_DIR\" --output-name kics-results\n  artifacts:\n    reports:\n      sast: gl-sast-kics-results.json"
+              "code": "kics:\n  stage: test\n  image:\n    name: registry.example/security/kics:v2.2.0@sha256:DIGEST  # your build of the v2.2.0 tag\n    entrypoint: [\"\"]\n  script:\n    - kics scan -p \"$CI_PROJECT_DIR\" --ignore-on-exit all\n        --report-formats glsast -o \"$CI_PROJECT_DIR\" --output-name kics-results\n  artifacts:\n    reports:\n      sast: gl-sast-kics-results.json"
             }
           ],
           "notes": [],
           "role": "Rego queries for Terraform, Helm, Docker, Ansible, and more; behind GitLab IaC SAST.",
-          "why": "<p>Rego queries for Terraform, Helm, Docker, Ansible, and more; behind GitLab IaC SAST.</p><p>The engine GitLab uses for IaC scanning. Running it directly lets you pick report formats and severity gates.</p><p>In March and April 2026 KICS GitHub Actions and Docker Hub images were reported compromised. Pin by digest and verify.</p>",
-          "installNotes": "",
-          "runNotes": "",
-          "ciNotes": "<p>Pin images and actions to a version or digest before relying on this example.</p>",
+          "why": "<p>Rego queries for Terraform, Helm, Docker, Ansible, and more; behind GitLab IaC SAST.</p><p>The engine GitLab uses for IaC scanning. Running it directly lets you pick report formats and severity gates.</p><p>In March and April 2026 KICS GitHub Actions and Docker Hub images were reported compromised. Docker Hub images stop at v2.1.20, last updated on 2026-04-22 inside that window, and v2.2.0 publishes no image or binary. Do not pull <code>checkmarx/kics:latest</code>; build the reviewed tag yourself.</p>",
+          "versionInfo": "v2.2.0 (<a href=\"https://github.com/Checkmarx/kics/releases/tag/v2.2.0\" target=\"_blank\" rel=\"noopener\">official release</a>); metadata checked 2026-10-02.",
+          "installNotes": "<p><strong>Build from source</strong> (Go 1.26.2 or later; the same flags as the official Dockerfile)</p>",
+          "runNotes": "<p><strong>Scan a directory</strong> (run from the checkout, which provides <code>assets/queries</code>)</p>",
+          "ciNotes": "<p>Build an image from the reviewed tag&#x27;s Dockerfile in a trusted pipeline, push it to your registry and pin that digest.</p>",
           "results": "<p>Exit codes encode the highest severity found (60 critical, 50 high, 40 medium, 30 low); <code>--fail-on high</code> and <code>--ignore-on-exit</code> control gating.</p>"
         },
         {

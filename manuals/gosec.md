@@ -24,7 +24,7 @@ go install github.com/securego/gosec/v2/cmd/gosec@v2.29.0
 **Container image**
 
 ```bash
-docker pull ghcr.io/securego/gosec:latest
+docker pull ghcr.io/securego/gosec:2.29.0@sha256:a6cd2f302b5f692e0b77b25751b299ddfbc0763a9711fa36e5a6bccd5292b0e8
 ```
 
 ## Use
@@ -51,7 +51,7 @@ Pin images and actions to a version or digest before relying on this example.
 gosec:
   stage: test
   image:
-    name: ghcr.io/securego/gosec:latest
+    name: ghcr.io/securego/gosec:2.29.0@sha256:a6cd2f302b5f692e0b77b25751b299ddfbc0763a9711fa36e5a6bccd5292b0e8
     entrypoint: [""]
   script:
     - gosec -fmt sarif -out gosec.sarif ./...
