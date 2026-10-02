@@ -59,14 +59,12 @@ if pid == 0:
 os.waitpid(pid, 0)
 os.close(terminal)
 
-libc = ctypes.CDLL(None, use_errno=True)
-pid = os.fork()
-if pid == 0:
-    libc.prctl(15, b'nginx', 0, 0, 0)  # Set only our dummy parent's process name.
-    subprocess.run(['/bin/sh', '-c', 'true'], check=True)
-    os._exit(0)
-os.waitpid(pid, 0)
+# Falco records process names at exec, so the dummy web server must be executed
+# under that name; renaming with prctl leaves the parent named "python".
+shutil.copy('/bin/sh', '/usr/local/bin/nginx')
+subprocess.run(['/usr/local/bin/nginx', '-c', '/bin/sh -c true; true'], check=True)
 
+libc = ctypes.CDLL(None, use_errno=True)
 pid = os.fork()
 if pid == 0:
     descriptor = os.memfd_create('dso-fixture', 0)

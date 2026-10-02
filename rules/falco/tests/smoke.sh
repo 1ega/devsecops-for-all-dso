@@ -24,7 +24,7 @@ docker pull "$test_image" >/dev/null
 sensor_id="$(docker run -d --privileged --pid=host -p 127.0.0.1::8765 --entrypoint /usr/bin/falco \
   -v /proc:/host/proc:ro -v /sys:/host/sys:ro \
   -v "$falco_dir:/dso:ro" "$falco_image" \
-  -r /dso/dso-runtime.yaml -o engine.kind=modern_ebpf -o load_plugins=[] \
+  -r /dso/dso-runtime.yaml -o engine.kind=modern_ebpf \
   -o rule_matching=all -o json_output=true -o priority=notice -o stdout_output.enabled=true \
   -o syslog_output.enabled=false -o buffered_outputs=false)"
 health_address="$(docker port "$sensor_id" 8765/tcp)"
@@ -40,6 +40,17 @@ for attempt in {1..30}; do
   sleep 1
 done
 if [[ "$ready" != true ]]; then echo 'Falco health check did not become ready' >&2; exit 2; fi
+# /healthz answers before the syscall probe is attached; wait for a real alert.
+captured=false
+for attempt in {1..30}; do
+  docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges "$test_image" \
+    sh -c 'cp /usr/bin/true /tmp/dso-canary && /tmp/dso-canary' >/dev/null 2>&1 || true
+  if docker logs "$sensor_id" 2>&1 | grep -qF '"rule":"DSO Executable launched from temporary directory"'; then
+    captured=true; break
+  fi
+  sleep 1
+done
+if [[ "$captured" != true ]]; then echo 'Falco did not report the canary event' >&2; exit 2; fi
 for mode in positive negative; do
   # Unconfined seccomp is restricted to the fixture container for PTRACE_TRACEME.
   identity="$(docker create --network none --cap-drop ALL \

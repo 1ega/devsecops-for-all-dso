@@ -25,6 +25,8 @@ reports/
 evidence/
 *.sarif
 *.sarif.json
+# Imported SARIF test fixtures, not scan results.
+!skills/trailofbits/static-analysis/skills/sarif-parsing/resources/fixtures/*.sarif
 *.scap
 baseline/assessment*.json
 !baseline/assessment.example.json

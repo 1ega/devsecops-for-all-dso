@@ -1,0 +1,37 @@
+---
+# Lints YAML this repository authors. Imported packs keep their upstream layout.
+extends: default
+rules:
+  document-start: disable
+  line-length: disable
+  truthy:
+    allowed-values: ['true', 'false', 'on', 'off']
+  comments:
+    min-spaces-from-content: 1
+  braces:
+    max-spaces-inside: 1
+ignore: |
+  .git/
+  .venv/
+  reports/
+  evidence/
+  guides/owasp-cheatsheets/
+  guides/owasp-mastg/
+  policies/cicd/poutine-rego/
+  policies/containers/distroless-examples/
+  policies/kubernetes/gatekeeper-library/
+  policies/kubernetes/kyverno-policies/
+  policies/supply-chain/sigstore-policy-controller/
+  policies/terraform/conftest-examples/
+  reporting/compliance-mapping/
+  rules/nuclei/
+  rules/secrets/
+  rules/semgrep/elttam/
+  rules/semgrep/mobile/
+  rules/semgrep/trailofbits/
+  rules/yara/
+  scanners/zap/community-scripts/
+  skills/
+  templates/threat-models/
+  # Falco rule files follow upstream's unindented-sequence style.
+  rules/falco/dso-runtime.yaml

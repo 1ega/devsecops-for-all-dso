@@ -1,5 +1,6 @@
 # Original DSO syscall rules; MIT. Load after the pinned upstream rules.
-# Falco 0.45.0. No upstream macros or plugin-specific fields are required.
+# Falco 0.45.0. No upstream macros are required; container.id comes from the
+# container plugin that Falco bundles and enables by default.
 - macro: dso_container
   condition: container.id != host and container.id != ""
 - macro: dso_exec
@@ -55,13 +56,10 @@
   - /etc/gshadow
   - /root/.aws/credentials
   - /root/.kube/config
-- list: dso_runtime_sockets
-  items:
-  - /var/run/docker.sock
-  - /run/docker.sock
-  - /run/containerd/containerd.sock
-  - /run/crio/crio.sock
-  - /run/k3s/containerd/containerd.sock
+# For Unix sockets fd.name is "<address>-><address> <path>", so match the path
+# suffix. This also covers sockets mounted under other directories.
+- macro: dso_runtime_socket
+  condition: (fd.name endswith /docker.sock or fd.name endswith /containerd.sock or fd.name endswith /crio.sock or fd.name endswith /podman.sock)
 - rule: DSO Interactive shell in container
   desc: Interactive shell execution in a container; correlate with approved troubleshooting and exec audit events.
   condition: dso_exec and dso_container and proc.name in (dso_shells) and proc.tty != 0
@@ -143,8 +141,8 @@
     - '='
     values: []
 - rule: DSO Container accessed runtime socket
-  desc: A container successfully accessed a named container runtime socket.
-  condition: dso_container and evt.type in (connect, open, openat, openat2) and evt.rawres >= 0 and fd.name in (dso_runtime_sockets)
+  desc: A container successfully connected to a container runtime API socket.
+  condition: dso_container and evt.type=connect and evt.rawres >= 0 and fd.typechar=u and dso_runtime_socket
   output: DSO Container accessed runtime socket (rule_id=runtime.local.runtime-socket process=%proc.name executable=%proc.exepath parent=%proc.pname user=%user.name uid=%user.uid pid=%proc.pid container_id=%container.id event=%evt.type) path=%fd.name
   priority: ERROR
   source: syscall

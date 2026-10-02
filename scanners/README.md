@@ -12,11 +12,12 @@ Ready-to-use configurations for third-party scanners: which checks are enabled, 
 | [zap](zap/README.md) | Dynamic testing of web apps and APIs | OWASP ZAP |
 | [nuclei](nuclei/README.md) | Template-based checks for exposed services | nuclei |
 | [mobsf](mobsf/README.md) | Built APK, AAB, and IPA files | MobSF |
+| [osquery](osquery/README.md) | Scheduled endpoint inventory | osquery |
 
 Each configuration should pin the tool version, explain every disabled check or allowlist entry, and include a small synthetic fixture that shows the expected result.
 
 Imported upstream content keeps its license; each imported directory has a `SOURCE.md`. See [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 
-**Status:** Upstream reference content is imported. Grype and Prowler contain local wrappers; the other scanner directories vary in readiness, so check each README.
+Use the [baseline](../baseline/README.md) and [finding lifecycle](../reporting/finding-lifecycle.md) to track coverage and ownership.
 
-Original additions: [Trivy configs/wrapper](trivy/README.md) and [osquery inventory](osquery/README.md). Use the [baseline](../baseline/README.md) and [finding lifecycle](../reporting/finding-lifecycle.md) to track coverage and ownership.
+**Status:** Upstream reference content is imported. Grype, Prowler and Trivy contain local wrappers, Trivy also has configs and fixtures, and osquery has an inventory configuration; the other scanner directories vary in readiness, so check each README.

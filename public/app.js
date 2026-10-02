@@ -15,6 +15,7 @@
   const areaOfStage = Object.fromEntries(D.areas.flatMap(area => area.stages.map(id => [id, area])));
   const tools = D.stages.flatMap(stage => stage.tools.map(tool => ({ ...tool, stage })));
   const toolById = Object.fromEntries(tools.map(tool => [tool.id, tool]));
+  const controlById = Object.fromEntries((D.controls || []).map(control => [control.id, control]));
   const STORE = 'dso-adopted';
   let adopted;
   try { adopted = new Set(JSON.parse(localStorage.getItem(STORE) || '[]')); }
@@ -36,7 +37,7 @@
     const x = scroller.scrollLeft;
     map.innerHTML = D.areas.map((area, index) => `<section class="map-area" id="area-${area.id}" aria-labelledby="area-title-${area.id}"><button type="button" class="map-area__head${selected.kind === 'area' && selected.id === area.id ? ' is-selected' : ''}" data-area="${area.id}"><span class="map-area__number">${String(index + 1).padStart(2, '0')}</span><span><strong id="area-title-${area.id}">${esc(area.title)}</strong><small>${esc(area.short)}</small></span></button><div class="branches">${area.stages.map((stageId, i) => {
       const stage = stageById[stageId];
-      return `<div class="branch"><button type="button" class="topic-node${selected.kind === 'topic' && selected.id === stage.id ? ' is-selected' : ''}" data-topic="${stage.id}"><span class="topic-node__index">${String(i + 1).padStart(2, '0')}</span><span><strong>${esc(stage.title)}</strong><small>${count(stage.tools.length, 'tool')}</small></span><span class="node-arrow" aria-hidden="true">↗</span></button><div class="tool-nodes" aria-label="Tools for ${esc(stage.title)}">${stage.tools.map(tool => `<button type="button" class="tool-node${tool.pick === 'start' ? ' is-start' : ''}${adopted.has(tool.id) ? ' is-done' : ''}${selected.kind === 'tool' && selected.id === tool.id ? ' is-selected' : ''}" data-tool="${tool.id}">${esc(tool.name)}${tool.pick === 'start' ? '<span aria-label="Suggested first tool">★</span>' : ''}${adopted.has(tool.id) ? '<span aria-label="Adopted">✓</span>' : ''}</button>`).join('')}</div></div>`;
+      return `<div class="branch"><button type="button" class="topic-node${selected.kind === 'topic' && selected.id === stage.id ? ' is-selected' : ''}" data-topic="${stage.id}"><span class="topic-node__index">${String(i + 1).padStart(2, '0')}</span><span><strong>${esc(stage.title)}</strong><small>${stage.tools.length ? count(stage.tools.length, 'tool') : count((stage.resources || []).length, 'guide')}</small></span><span class="node-arrow" aria-hidden="true">↗</span></button>${stage.tools.length ? `<div class="tool-nodes" aria-label="Tools for ${esc(stage.title)}">${stage.tools.map(tool => `<button type="button" class="tool-node${tool.pick === 'start' ? ' is-start' : ''}${adopted.has(tool.id) ? ' is-done' : ''}${selected.kind === 'tool' && selected.id === tool.id ? ' is-selected' : ''}" data-tool="${tool.id}">${esc(tool.name)}${tool.pick === 'start' ? '<span aria-label="Suggested first tool">★</span>' : ''}${adopted.has(tool.id) ? '<span aria-label="Adopted">✓</span>' : ''}</button>`).join('')}</div>` : ''}</div>`;
     }).join('')}</div></section>`).join('');
     scroller.scrollLeft = x;
     progress();
@@ -48,7 +49,7 @@
     return (items || []).map(item => `<div class="instruction">${item.label ? `<h4>${esc(item.label)}</h4>` : ''}${codeBlock(item.code)}</div>`).join('');
   }
   function welcome() {
-    return `<div class="inspector__header"><p class="eyebrow">NODE DETAILS</p><h2>Pick a node on the map</h2><p>Choose an area, a topic, or a tool. Its information will appear here while the roadmap stays in view.</p></div><div class="info-card"><strong>Reading the map</strong><p>Follow the line from left to right. Green ★ nodes are suggested starting tools. Use “Jump to” to move to a different area.</p></div>`;
+    return `<div class="inspector__header"><p class="eyebrow">NODE DETAILS</p><h2>Pick a node on the map</h2><p>Choose an area, a topic, or a tool. Its information will appear here while the roadmap stays in view.</p></div><div class="info-card"><strong>Reading the map</strong><p>Follow the line from left to right. Start with the company baseline and owners. Green ★ nodes suggest a first tool for each topic; use its acceptance checks before marking it adopted.</p></div><div class="info-card"><button type="button" class="panel-row" data-topic="baseline">Open the company baseline <span>→</span></button><p>Topic guides cover identity, backups, alert delivery and response alongside scanner tools.</p></div>`;
   }
   function areaInfo(area) {
     const total = area.stages.reduce((n, id) => n + stageById[id].tools.length, 0);
@@ -56,22 +57,28 @@
   }
   function topicInfo(stage) {
     const area = areaOfStage[stage.id];
+    const resources = stage.resources || [];
+    const controls = (stage.controlIds || []).map(id => controlById[id]);
     return `<div class="inspector__header"><button type="button" class="inspector__close" data-close aria-label="Close details">×</button><p class="eyebrow">${esc(area.title.toUpperCase())} / TOPIC</p><h2>${esc(stage.title)}</h2><p>${esc(stage.goal)}</p></div>
-      <div class="info-card"><h3>Tools · ${stage.tools.length}</h3>${stage.tools.map(tool => `<button type="button" class="panel-row" data-tool="${tool.id}">${esc(tool.name)}${tool.pick === 'start' ? '<span class="panel-row__hint">Start here</span>' : '<span>→</span>'}</button>`).join('')}</div>
+      ${stage.tools.length ? `<div class="info-card"><h3>Tools · ${stage.tools.length}</h3>${stage.tools.map(tool => `<button type="button" class="panel-row" data-tool="${tool.id}">${esc(tool.name)}${tool.pick === 'start' ? '<span class="panel-row__hint">Start here</span>' : '<span>→</span>'}</button>`).join('')}</div>` : ''}
+      ${resources.length ? `<div class="info-card"><h3>Repository guides and starters</h3>${resources.map(resource => `<a class="panel-row" href="${esc(D.fileBase + resource.path)}" target="_blank" rel="noopener">${esc(resource.label)} <span>↗</span></a>`).join('')}</div>` : ''}
+      ${stage.acceptance && stage.acceptance.length ? `<div class="info-card"><h3>How to verify adoption</h3><ul>${stage.acceptance.map(item => `<li>${esc(item)}</li>`).join('')}</ul></div>` : ''}
+      ${controls.length ? `<div class="info-card"><h3>Company baseline controls</h3><ul>${controls.map(control => `<li><strong>${esc(control.id)}:</strong> ${esc(control.title)}<br><small>Owner: ${esc(control.owner_role)}</small></li>`).join('')}</ul></div>` : ''}
       ${stage.concepts && stage.concepts.length ? `<div class="info-card"><h3>Concepts to know</h3><div class="chips">${stage.concepts.map(c => `<span>${esc(c)}</span>`).join('')}</div></div>` : ''}
       ${stage.builtins && stage.builtins.length ? `<div class="info-card"><h3>Built into your platform</h3>${stage.builtins.map(x => `<p><strong>${esc(x.platform)}:</strong> ${x.text}</p>`).join('')}</div>` : ''}`;
   }
   function toolInfo(tool) {
     const stage = tool.stage;
     const area = areaOfStage[stage.id];
-    const ci = [['GitHub Actions', tool.github], ['GitLab CI', tool.ci]].filter(x => x[1]);
+    const ci = tool.ciExamples || [];
     return `<div class="inspector__header"><button type="button" class="inspector__close" data-close aria-label="Close details">×</button><p class="eyebrow">${esc(area.title.toUpperCase())} / ${esc(stage.title.toUpperCase())}</p><h2>${esc(tool.name)}</h2><p>${esc(tool.role)}</p></div>
       <div class="inspector__actions"><button type="button" class="adopt" data-adopt="${tool.id}" aria-pressed="${adopted.has(tool.id)}">${adopted.has(tool.id) ? '✓ Adopted' : 'Mark as adopted'}</button><a class="primary-link" href="${D.manualBase}${tool.id}.md" target="_blank" rel="noopener">Full manual ↗</a>${tool.repoPath ? `<a href="${D.repoBase}${tool.repoPath}" target="_blank" rel="noopener">Repository files ↗</a>` : ''}</div>
-      <div class="info-card"><h3>Why use it</h3><p>${tool.why}</p>${tool.caution ? `<p class="caution">${tool.caution}</p>` : ''}</div>
-      ${tool.install && tool.install.length ? `<div class="info-card"><h3>Install</h3>${instructions(tool.install)}</div>` : ''}
-      ${tool.run && tool.run.length ? `<div class="info-card"><h3>Run it</h3>${instructions(tool.run)}</div>` : ''}
-      ${ci.length ? `<div class="info-card"><h3>Automate</h3><p class="fine">Review and pin versions before using a CI example.</p>${ci.map(([name, code]) => `<div class="instruction"><h4>${name}</h4>${codeBlock(code)}</div>`).join('')}</div>` : ''}
-      ${tool.results ? `<div class="info-card"><h3>Read the results</h3><p>${tool.results}</p></div>` : ''}
+      <div class="info-card"><h3>Why use it</h3>${tool.why}<p class="fine">${esc(tool.validation)}</p>${tool.versionInfo ? `<p class="fine">${tool.versionInfo}</p>` : ''}</div>
+      ${(tool.install && tool.install.length) || tool.installNotes ? `<div class="info-card"><h3>Install and prepare</h3>${tool.installNotes || ''}${instructions(tool.install)}</div>` : ''}
+      ${(tool.run && tool.run.length) || tool.runNotes ? `<div class="info-card"><h3>Run it</h3>${tool.runNotes || ''}${instructions(tool.run)}</div>` : ''}
+      ${ci.length ? `<div class="info-card"><h3>Automate</h3>${tool.ciNotes || ''}${instructions(ci)}</div>` : ''}
+      ${tool.results ? `<div class="info-card"><h3>Read the results</h3>${tool.results}</div>` : ''}
+      ${(tool.notes || []).map(note => `<div class="info-card"><h3>${esc(note.title)}</h3>${note.html}</div>`).join('')}
       <div class="info-card info-card--small"><span>License: ${esc(tool.license)}</span>${tool.docs ? `<a href="${esc(tool.docs)}" target="_blank" rel="noopener">Official docs ↗</a>` : ''}${tool.repo ? `<a href="https://github.com/${esc(tool.repo)}" target="_blank" rel="noopener">GitHub project ↗</a>` : ''}</div>`;
   }
   function renderInspector() {
@@ -108,7 +115,7 @@
     const q = search.value.trim().toLowerCase();
     if (!q) { searchResults.hidden = true; searchResults.innerHTML = ''; return; }
     const foundTools = tools.filter(tool => `${tool.name} ${tool.role} ${tool.keywords || ''} ${tool.stage.title} ${areaOfStage[tool.stage.id].title}`.toLowerCase().includes(q)).slice(0, 10);
-    const foundTopics = D.stages.filter(stage => `${stage.title} ${stage.goal} ${stage.keywords || ''}`.toLowerCase().includes(q)).slice(0, 4);
+    const foundTopics = D.stages.filter(stage => `${stage.title} ${stage.goal} ${stage.keywords || ''} ${(stage.controlIds || []).join(' ')}`.toLowerCase().includes(q)).slice(0, 4);
     searchResults.hidden = false;
     searchResults.innerHTML = `<p>Search results</p>${foundTopics.map(stage => `<button type="button" data-topic="${stage.id}"><b>Topic</b> ${esc(stage.title)}</button>`).join('')}${foundTools.map(tool => `<button type="button" data-tool="${tool.id}"><b>Tool</b> ${esc(tool.name)} <small>${esc(tool.stage.title)}</small></button>`).join('')}${!foundTools.length && !foundTopics.length ? '<span class="search-results__empty">No match. Try “Grype” or “cloud”.</span>' : ''}`;
   }

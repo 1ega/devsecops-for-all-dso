@@ -5,6 +5,12 @@
 [Upstream](https://github.com/falcosecurity/falco) ·
 [Helm documentation](https://falco.org/docs/setup/kubernetes/).
 
+## What it is for
+
+Falco detects suspicious process and file activity in running Linux containers.
+Use the local rules to identify behaviors such as unexpected shells and access
+to sensitive files, then route alerts to an assigned responder for triage.
+
 ## Prerequisites
 
 Use supported Linux nodes with kernel/BTF support for `modern_ebpf`. The example

@@ -1,7 +1,7 @@
 # GitHub Actions starter scans
 
-Copy this caller into the application repository, replacing `OWNER/REPO` and
-`FULL_COMMIT_SHA` with this repository and a reviewed 40-character commit.
+Copy this caller into the application repository, replacing `FULL_COMMIT_SHA`
+with a reviewed 40-character commit of this repository (or of your reviewed fork).
 
 ```yaml
 name: Security
@@ -10,7 +10,7 @@ permissions:
   contents: read
 jobs:
   security:
-    uses: OWNER/REPO/.github/workflows/security.yml@FULL_COMMIT_SHA
+    uses: 1ega/devsecopsforall/.github/workflows/security.yml@FULL_COMMIT_SHA
     with:
       run_secrets: true
       run_sca: true
@@ -19,7 +19,8 @@ jobs:
 
 Ubuntu hosted runner and Docker/network access are required. The workflow pins
 scanner image digests, uses read-only source mounts and produces separate SARIF
-artifacts retained seven days. Secrets block; SAST/SCA findings are report-only.
+artifacts retained seven days. Semgrep runs the registry `p/default` ruleset with
+metrics off. Secrets block; SAST/SCA findings are report-only.
 Tool failures and missing reports fail. Keep secrets out of this untrusted PR
 job; deploy from a separate reviewed, protected workflow with scoped OIDC.
 
