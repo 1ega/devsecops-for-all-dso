@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">
+  <title id="title">Daniel · 1ega — Red Team and DevSecOps</title>
+  <desc id="desc">Dark editorial banner with oversized 1EGA lettering and Daniel's Red Team and DevSecOps focus.</desc>
+  <defs>
+    <linearGradient id="line" x1="0" x2="1">
+      <stop stop-color="#c3a979"/>
+      <stop offset="1" stop-color="#5dd8cf"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="300" fill="#0b0c10"/>
+  <path d="M0 252h1200" stroke="#272c34" stroke-width="2"/>
+  <text x="-40" y="278" fill="#24252a" font-family="Georgia, serif" font-size="315" font-weight="700" letter-spacing="-18">1EGA</text>
+  <path d="M677 70h418" stroke="url(#line)" stroke-width="2"/>
+  <text x="675" y="142" fill="#eee8dc" font-family="Georgia, serif" font-size="53" letter-spacing="7">DANIEL</text>
+  <text x="680" y="191" fill="#b8a37c" font-family="Arial, Helvetica, sans-serif" font-size="21" letter-spacing="6">RED TEAM  /  DEVSECOPS</text>
+  <text x="680" y="229" fill="#8d9ea6" font-family="Arial, Helvetica, sans-serif" font-size="17" letter-spacing="2">BUILD  ·  VERIFY  ·  SECURE</text>
+  <circle cx="1103" cy="70" r="5" fill="#5dd8cf"/>
+</svg>
