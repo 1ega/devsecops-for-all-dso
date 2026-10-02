@@ -34,3 +34,6 @@ baseline/assets*.csv
 !baseline/assets.example.csv
 reporting/exceptions*.json
 !reporting/exceptions.example.json
+
+# Local QA notes
+problems.md

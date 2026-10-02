@@ -18,7 +18,7 @@ Rules look like the code they match, so the team can write its own. This reposit
 **pip or Homebrew**
 
 ```bash
-python3 -m pip install semgrep==1.178.0
+python3 -m pip install semgrep==1.179.0
 # or
 brew install semgrep
 ```
@@ -26,7 +26,7 @@ brew install semgrep
 **Container image**
 
 ```bash
-docker pull semgrep/semgrep:1.178.0@sha256:32e459968daabe7ab86968184a29109b9564aa00392401156f9788452b42786b
+docker pull semgrep/semgrep:1.179.0@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b
 ```
 
 ## Use
@@ -54,7 +54,7 @@ Pin images and actions to a version or digest before relying on this example.
 ```yaml
 semgrep:
   stage: test
-  image: semgrep/semgrep:1.178.0@sha256:32e459968daabe7ab86968184a29109b9564aa00392401156f9788452b42786b
+  image: semgrep/semgrep:1.179.0@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b
   variables:
     SEMGREP_RULES: rules/semgrep/python/           # path to your rule pack
   script:

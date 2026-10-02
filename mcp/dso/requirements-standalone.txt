@@ -1,0 +1,2 @@
+-r requirements.txt
+semgrep==1.179.0

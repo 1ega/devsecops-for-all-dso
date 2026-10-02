@@ -1,0 +1,2 @@
+# Official MCP Python SDK v1 API used by this server.
+mcp==1.29.0

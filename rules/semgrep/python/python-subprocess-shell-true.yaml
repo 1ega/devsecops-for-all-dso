@@ -1,7 +1,7 @@
 rules:
   - id: python-subprocess-shell-true
     languages: [python]
-    severity: WARNING
+    severity: ERROR
     message: Avoid shell=True when executing commands; use an argument list and keep untrusted input out of shell syntax.
     metadata:
       category: security

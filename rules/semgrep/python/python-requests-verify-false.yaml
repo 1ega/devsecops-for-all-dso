@@ -1,13 +1,20 @@
 rules:
   - id: python-requests-verify-false
     languages: [python]
-    severity: WARNING
+    severity: ERROR
     message: TLS verification is disabled. Remove verify=False or provide a trusted CA bundle.
     metadata:
       category: security
       cwe: CWE-295
     patterns:
-      - pattern: requests.$METHOD(..., verify=False, ...)
+      - pattern-either:
+          - pattern: requests.$METHOD(..., verify=False, ...)
+          - pattern: requests.Session().$METHOD(..., verify=False, ...)
+          - patterns:
+              - pattern-inside: |
+                  $SESSION = requests.Session(...)
+                  ...
+              - pattern: $SESSION.$METHOD(..., verify=False, ...)
       - metavariable-regex:
           metavariable: $METHOD
           regex: ^(get|post|put|patch|delete|head|options|request)$

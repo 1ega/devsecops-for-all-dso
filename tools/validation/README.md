@@ -7,6 +7,8 @@ python3 tools/roadmap/sync.py --check
 python3 -m unittest discover -s tools/roadmap/tests -v
 python3 -m yamllint .
 python3 -m unittest discover -s tools/dso/tests -v
+python3 -m pip install --require-hashes -r mcp/dso/requirements.lock
+python3 -m unittest discover -s mcp/dso/tests -v
 bash rules/falco/validate.sh
 ```
 
