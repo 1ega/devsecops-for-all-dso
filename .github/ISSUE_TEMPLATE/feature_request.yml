@@ -1,0 +1,24 @@
+name: Tool or feature request
+description: Suggest a new tool or improvement
+title: "[Idea]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Who has this problem and what is difficult today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+      description: Describe inputs, outputs, and how someone would use it.
+    validations:
+      required: true
+  - type: textarea
+    id: security
+    attributes:
+      label: Scope and safety
+      description: Note required permissions, target systems, data handling, and side effects.

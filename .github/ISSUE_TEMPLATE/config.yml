@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a vulnerability
+    url: https://github.com/1ega/devsecopsforall/security/advisories/new
+    about: Share security reports privately if private vulnerability reporting is enabled.

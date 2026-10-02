@@ -1,0 +1,13 @@
+rules:
+  - id: python-requests-verify-false
+    languages: [python]
+    severity: WARNING
+    message: TLS verification is disabled. Remove verify=False or provide a trusted CA bundle.
+    metadata:
+      category: security
+      cwe: CWE-295
+    patterns:
+      - pattern: requests.$METHOD(..., verify=False, ...)
+      - metavariable-regex:
+          metavariable: $METHOD
+          regex: ^(get|post|put|patch|delete|head|options|request)$

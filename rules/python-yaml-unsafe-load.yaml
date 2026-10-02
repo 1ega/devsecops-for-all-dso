@@ -1,0 +1,12 @@
+rules:
+  - id: python-yaml-unsafe-load
+    languages: [python]
+    severity: WARNING
+    message: Unsafe YAML loading can construct arbitrary Python objects. Use yaml.safe_load for untrusted data.
+    metadata:
+      category: security
+      cwe: CWE-502
+    pattern-either:
+      - pattern: yaml.unsafe_load(...)
+      - pattern: yaml.load(..., Loader=yaml.Loader, ...)
+      - pattern: yaml.load(..., Loader=yaml.UnsafeLoader, ...)

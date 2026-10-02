@@ -1,0 +1,27 @@
+name: Bug report
+description: Report a reproducible, non-sensitive problem
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "For vulnerabilities, follow [SECURITY.md](https://github.com/1ega/devsecopsforall/blob/main/SECURITY.md). Do not post secrets or sensitive findings here."
+  - type: input
+    id: tool
+    attributes:
+      label: Affected tool or file
+      placeholder: tools/example or README.md
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Include expected behavior and steps to reproduce.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Relevant OS, runtime, and tool versions. Redact sensitive data.
