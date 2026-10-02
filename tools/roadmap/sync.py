@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import html
 import json
 import re
@@ -190,20 +191,38 @@ def build(root=ROOT, catalog=None):
     return GENERATED_HEADER + "window.ROADMAP = " + json.dumps(catalog, indent=2, ensure_ascii=False) + ";\n"
 
 
+def versioned_index(root, generated_data):
+    """Give changed assets a new URL instead of reusing a cached browser copy."""
+    index = (root / "public/index.html").read_text()
+    assets = {"data.js": generated_data.encode(),
+              **{name: (root / "public" / name).read_bytes()
+                 for name in ("app.js", "styles.css")}}
+    for name, contents in assets.items():
+        digest = hashlib.sha256(contents).hexdigest()[:12]
+        pattern = r'((?:src|href)="' + re.escape(name) + r')(?:\?v=[a-f0-9]+)?(")'
+        index, count = re.subn(pattern, lambda match: match[1] + "?v=" + digest + match[2], index)
+        if count != 1:
+            raise ValueError(f"index.html must reference {name} exactly once")
+    return index
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="Fail if the committed site differs from its sources")
     args = parser.parse_args()
     try:
-        expected = build()
-        destination = ROOT / "public/data.js"
+        data = build()
+        expected_files = {ROOT / "public/data.js": data,
+                          ROOT / "public/index.html": versioned_index(ROOT, data)}
         if args.check:
-            if not destination.exists() or destination.read_text() != expected:
+            if any(not path.exists() or path.read_text() != expected
+                   for path, expected in expected_files.items()):
                 raise ValueError("Roadmap is stale. Run: python3 tools/roadmap/sync.py")
             print("Roadmap manuals, topic links and baseline coverage: OK")
         else:
-            destination.write_text(expected)
-            print("Updated public/data.js from all manuals and baseline controls")
+            for path, expected in expected_files.items():
+                path.write_text(expected)
+            print("Updated roadmap data and asset versions from manuals and baseline controls")
         return 0
     except (ValueError, KeyError, OSError) as exc:
         print(exc, file=sys.stderr)

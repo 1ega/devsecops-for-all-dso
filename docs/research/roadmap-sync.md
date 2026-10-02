@@ -24,7 +24,9 @@ break the rules. Re-running the current `validate.sh` locally compiled both rule
 files with Falco 0.45.0 (aarch64). The [test record](../../rules/falco/tests/README.md)
 reports 16/16 positive rules and no negative alerts on a Docker Desktop Linux VM,
 with the host `uname` guard bypassed; rule-specific non-match scenarios remain
-unautomated. Confirm the next remote CI run. Runtime smoke in the earlier remote
+unautomated. The subsequent [kit run](https://github.com/1ega/devsecopsforall/actions/runs/37035950123)
+and [Pages run](https://github.com/1ega/devsecopsforall/actions/runs/37035950179)
+both passed on `6679703`. Runtime smoke in the earlier remote
 run was skipped. [Semgrep CI](https://github.com/1ega/devsecopsforall/actions/runs/37031112656)
 passed for the original three Python rules, not for every imported pack.
 
@@ -43,3 +45,9 @@ means an entry point exists, not that those controls are deployed.
 
 These are local changes for review. The live site updates after they are pushed
 and the publishing workflow succeeds.
+
+After publication, direct requests to the live files confirmed ten areas, 29
+topics and 95 tools, while an already-open browser still showed the old nine-area
+map. Pages serves assets with `Cache-Control: max-age=600`. The generator now
+adds content hashes to JS/CSS URLs and checks those references, so changed files
+receive fresh browser cache entries on the next page load.
