@@ -11,7 +11,7 @@ DevSecOps for All collects security checks, policies, detection rules, standards
 
 > 🗺️ **[Explore the interactive DevSecOps roadmap →](https://1ega.github.io/devsecopsforall/)**
 >
-> Browse 9 security areas and 91 tools, with installation steps, usage examples, and full manuals.
+> Browse 10 security areas, 29 topics, and 95 tools, with installation steps, usage examples, full manuals, and links to 32 company baseline controls.
 
 **[Quick start](#quick-start)** · **[Find by task](#find-by-task)** · **[What's inside](#whats-inside)** · **[How the repository is organized](#how-the-repository-is-organized)** · **[Roadmap](ROADMAP.md)** · **[Contributing](#contributing)**
 

@@ -1,0 +1,1956 @@
+{
+  "repoBase": "https://github.com/1ega/devsecopsforall/tree/main/",
+  "manualBase": "https://github.com/1ega/devsecopsforall/blob/main/manuals/",
+  "scopes": [
+    "Code",
+    "Pipeline",
+    "Containers",
+    "Cloud",
+    "Kubernetes",
+    "Running apps",
+    "Team"
+  ],
+  "areas": [
+    {
+      "id": "company",
+      "title": "Protect the company",
+      "short": "Owners, identities, SaaS, devices, recovery",
+      "stages": [
+        "baseline",
+        "business-identity",
+        "saas",
+        "endpoints",
+        "recovery",
+        "exposure"
+      ]
+    },
+    {
+      "id": "code",
+      "title": "Protect your code",
+      "short": "Secrets, code, dependencies, malware",
+      "stages": [
+        "secrets",
+        "sast",
+        "sca",
+        "malware"
+      ]
+    },
+    {
+      "id": "pipeline",
+      "title": "Secure the pipeline",
+      "short": "Runners, variables, vaults",
+      "stages": [
+        "cicd",
+        "vault"
+      ]
+    },
+    {
+      "id": "containers",
+      "title": "Harden containers",
+      "short": "Dockerfiles and images",
+      "stages": [
+        "containers"
+      ]
+    },
+    {
+      "id": "iac",
+      "title": "Check infrastructure code",
+      "short": "Terraform, Helm, manifests",
+      "stages": [
+        "iac"
+      ]
+    },
+    {
+      "id": "artifacts",
+      "title": "Trust your artifacts",
+      "short": "SBOM, signing, provenance",
+      "stages": [
+        "supply"
+      ]
+    },
+    {
+      "id": "k8s",
+      "title": "Guard Kubernetes",
+      "short": "Admission, audit, runtime",
+      "stages": [
+        "k8s",
+        "runtime"
+      ]
+    },
+    {
+      "id": "test",
+      "title": "Test what runs",
+      "short": "Web, API, mobile builds",
+      "stages": [
+        "dast",
+        "authorization",
+        "mobile"
+      ]
+    },
+    {
+      "id": "cloud",
+      "title": "Secure the cloud",
+      "short": "Posture, IAM, native services, keys",
+      "stages": [
+        "cloud",
+        "cloud-iam",
+        "cloud-native",
+        "cloud-secrets"
+      ]
+    },
+    {
+      "id": "program",
+      "title": "Run the program",
+      "short": "Findings, threats, maturity",
+      "stages": [
+        "vm",
+        "tm",
+        "maturity",
+        "logging",
+        "response"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "id": "code",
+      "title": "Protect the code",
+      "goal": "Stop secrets, vulnerable code, and known-bad dependencies before they are merged. These checks are cheap to add and give results on day one."
+    },
+    {
+      "id": "build",
+      "title": "Secure the pipeline and the build",
+      "goal": "Treat the pipeline as production: lock down how jobs get credentials, what they build on, and what infrastructure they create."
+    },
+    {
+      "id": "ship",
+      "title": "Ship artifacts you can trust",
+      "goal": "Know what is inside every release, sign it, and refuse anything unsigned or non-compliant at the cluster door."
+    },
+    {
+      "id": "run",
+      "title": "Test and watch what runs",
+      "goal": "Attack the running application, check built mobile apps, and keep an eye on cloud accounts and containers after deploy."
+    },
+    {
+      "id": "program",
+      "title": "Run it as a program",
+      "goal": "Collect every finding in one place, decide what blocks a release, design security in early, and measure maturity over time."
+    }
+  ],
+  "stages": [
+    {
+      "id": "baseline",
+      "phase": "program",
+      "title": "Company baseline and ownership",
+      "goal": "Know which assets and data you protect, who owns them, and which vendors can access them.",
+      "appliesTo": [
+        "Team"
+      ],
+      "keywords": "smb small company inventory assets vendors privacy retention evidence risk exceptions",
+      "controlIds": [
+        "GOV-01",
+        "GOV-02",
+        "GOV-03",
+        "GOV-04"
+      ],
+      "resources": [
+        {
+          "label": "32-control baseline",
+          "path": "baseline/README.md"
+        },
+        {
+          "label": "SMB adoption checklist",
+          "path": "guides/smb-security.md"
+        },
+        {
+          "label": "Inventory, evidence and exception checker",
+          "path": "tools/dso/README.md"
+        }
+      ],
+      "acceptance": [
+        "Inventory critical assets and sensitive data with an accountable owner.",
+        "Record vendor access, retention decisions and incident contacts.",
+        "Review dated evidence and risk exceptions; remove expired exceptions."
+      ],
+      "tools": []
+    },
+    {
+      "id": "business-identity",
+      "phase": "program",
+      "title": "Workforce and service identities",
+      "goal": "Require strong sign-in, constrain privileged access and revoke departed or compromised identities.",
+      "appliesTo": [
+        "Team"
+      ],
+      "keywords": "sso mfa access offboarding joiner mover leaver oidc workload credentials recovery",
+      "controlIds": [
+        "ID-01",
+        "ID-02",
+        "ID-03"
+      ],
+      "resources": [
+        {
+          "label": "Identity controls and acceptance evidence",
+          "path": "baseline/README.md"
+        },
+        {
+          "label": "Leaked credential response",
+          "path": "playbooks/leaked-secret.md"
+        },
+        {
+          "label": "Pipeline identities and runners",
+          "path": "guides/cicd-hardening.md"
+        }
+      ],
+      "acceptance": [
+        "Test MFA, administrator recovery and offboarding across business services.",
+        "Record service identities, least privilege and short-lived credentials.",
+        "Verify active sessions are revoked separately from changing a password or key."
+      ],
+      "tools": []
+    },
+    {
+      "id": "saas",
+      "phase": "program",
+      "title": "SaaS and email security",
+      "goal": "Review business tenants, sharing, OAuth apps, forwarding and domain mail authentication.",
+      "appliesTo": [
+        "Team"
+      ],
+      "keywords": "microsoft 365 google workspace email oauth forwarding spf dkim dmarc",
+      "controlIds": [
+        "SAAS-01"
+      ],
+      "resources": [
+        {
+          "label": "SaaS acceptance checklist",
+          "path": "guides/smb-security.md"
+        },
+        {
+          "label": "Identity and SaaS log requirements",
+          "path": "guides/logging-and-detection.md"
+        }
+      ],
+      "acceptance": [
+        "Assess only in-scope products using a reviewed read-access identity.",
+        "Review OAuth consent, external sharing, forwarding and privileged settings.",
+        "Test SPF, DKIM and DMARC separately; record unsupported and license-dependent checks."
+      ],
+      "tools": [
+        {
+          "id": "scuba",
+          "name": "CISA SCuBA",
+          "repo": "cisagov/ScubaGear",
+          "license": "Upstream component licenses",
+          "docs": "https://github.com/cisagov/ScubaGear",
+          "pick": "start",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ]
+    },
+    {
+      "id": "endpoints",
+      "phase": "program",
+      "title": "Employee devices and host protection",
+      "goal": "Manage device ownership, encryption, patching and endpoint telemetry; test lost-device response.",
+      "appliesTo": [
+        "Team"
+      ],
+      "keywords": "mdm edr patching device encryption laptops windows macos linux fim",
+      "controlIds": [
+        "END-01",
+        "END-02"
+      ],
+      "resources": [
+        {
+          "label": "osquery starter configuration",
+          "path": "scanners/osquery/README.md"
+        },
+        {
+          "label": "Endpoint acceptance checklist",
+          "path": "guides/smb-security.md"
+        }
+      ],
+      "acceptance": [
+        "Measure enrolled, encrypted, patched and protected device coverage for every supported OS.",
+        "Verify a harmless detection and a missing-agent notification.",
+        "Test offboarding and lost-device response through existing device tooling."
+      ],
+      "tools": [
+        {
+          "id": "osquery",
+          "name": "osquery",
+          "repo": "osquery/osquery",
+          "license": "Apache-2.0",
+          "docs": "https://osquery.readthedocs.io/en/stable/",
+          "repoPath": "scanners/osquery",
+          "pick": "start",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "wazuh",
+          "name": "Wazuh",
+          "repo": "wazuh/wazuh",
+          "license": "Upstream component licenses",
+          "docs": "https://documentation.wazuh.com/current/quickstart.html",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ]
+    },
+    {
+      "id": "recovery",
+      "phase": "program",
+      "title": "Backups and recovery",
+      "goal": "Restore a critical business service within its recorded recovery objectives.",
+      "appliesTo": [
+        "Team"
+      ],
+      "keywords": "backup restore ransomware immutable offsite rpo rto disaster recovery",
+      "controlIds": [
+        "BKP-01",
+        "BKP-02"
+      ],
+      "resources": [
+        {
+          "label": "Restore drill playbook",
+          "path": "playbooks/restore-drill.md"
+        },
+        {
+          "label": "Recovery evidence and ownership",
+          "path": "baseline/README.md"
+        }
+      ],
+      "acceptance": [
+        "Record scope, RPO/RTO, retention, backup owner and failure destination.",
+        "Keep database-consistent, offsite recovery material with isolated credentials.",
+        "Restore in isolation, verify integrity and a business flow, and measure elapsed time."
+      ],
+      "tools": [
+        {
+          "id": "restic",
+          "name": "Restic",
+          "repo": "restic/restic",
+          "license": "BSD-2-Clause",
+          "docs": "https://restic.readthedocs.io/en/stable/",
+          "pick": "start",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ]
+    },
+    {
+      "id": "exposure",
+      "phase": "program",
+      "title": "External exposure, domains and TLS",
+      "goal": "Know your internet-facing services and retain control of their domains and management access.",
+      "appliesTo": [
+        "Team"
+      ],
+      "keywords": "dns tls certificate expiry registrar domains attack surface external exposure management",
+      "controlIds": [
+        "NET-01",
+        "NET-02"
+      ],
+      "resources": [
+        {
+          "label": "Exposure and domain controls",
+          "path": "baseline/README.md"
+        },
+        {
+          "label": "Cloud evidence map",
+          "path": "policies/cloud/evidence-map.md"
+        },
+        {
+          "label": "SMB acceptance checklist",
+          "path": "guides/smb-security.md"
+        }
+      ],
+      "acceptance": [
+        "Inventory public services, DNS records, certificates and registrar owners.",
+        "Test certificate-expiry alerts and registrar MFA/recovery.",
+        "Restrict management interfaces and retest actual deployed exposure."
+      ],
+      "tools": []
+    },
+    {
+      "id": "secrets",
+      "phase": "code",
+      "title": "Secret scanning",
+      "goal": "Find API keys, tokens, and passwords in code and git history before an attacker does.",
+      "appliesTo": [
+        "Code",
+        "Pipeline"
+      ],
+      "keywords": "secrets credentials leaks keys tokens passwords",
+      "builtins": [
+        {
+          "platform": "GitHub",
+          "text": "Secret scanning and push protection are free for public repositories; private repositories need GitHub Secret Protection."
+        },
+        {
+          "platform": "GitLab",
+          "text": "<code>include: - template: Jobs/Secret-Detection.gitlab-ci.yml</code> runs on every tier. The merge request widget, vulnerability report, and push protection need GitLab Ultimate."
+        }
+      ],
+      "concepts": [
+        "Secret detection",
+        "Pre-commit hooks",
+        "Full git history scans",
+        "Verified vs unverified findings",
+        "Rotate first, then remove",
+        "Secret zero"
+      ],
+      "tools": [
+        {
+          "id": "gitleaks",
+          "name": "gitleaks",
+          "pick": "start",
+          "repo": "gitleaks/gitleaks",
+          "license": "MIT",
+          "docs": "https://github.com/gitleaks/gitleaks#readme",
+          "repoPath": "scanners/gitleaks",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "trufflehog",
+          "name": "TruffleHog",
+          "repo": "trufflesecurity/trufflehog",
+          "license": "AGPL-3.0",
+          "docs": "https://docs.trufflesecurity.com",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "betterleaks",
+          "name": "betterleaks",
+          "repo": "betterleaks/betterleaks",
+          "license": "MIT",
+          "docs": "https://github.com/betterleaks/betterleaks#readme",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "detect-secrets",
+          "name": "detect-secrets",
+          "repo": "Yelp/detect-secrets",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/Yelp/detect-secrets#readme",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ],
+      "controlIds": [
+        "DEV-02"
+      ],
+      "resources": [
+        {
+          "label": "Pinned starter CI and pre-commit",
+          "path": "integrations/README.md"
+        },
+        {
+          "label": "Leaked-secret response",
+          "path": "playbooks/leaked-secret.md"
+        }
+      ],
+      "acceptance": [
+        "Test a synthetic secret, a clean fixture and a scanner failure.",
+        "Revoke exposed credentials; protect/redact report content."
+      ]
+    },
+    {
+      "id": "sast",
+      "phase": "code",
+      "title": "Static code analysis (SAST)",
+      "goal": "Catch injection, unsafe APIs, and weak crypto in source code during review.",
+      "appliesTo": [
+        "Code"
+      ],
+      "keywords": "sast static analysis code review semgrep injection",
+      "builtins": [
+        {
+          "platform": "GitHub",
+          "text": "Code scanning with CodeQL is free for public repositories; private repositories need GitHub Code Security. Code scanning also accepts SARIF from the tools below."
+        },
+        {
+          "platform": "GitLab",
+          "text": "<code>include: - template: Jobs/SAST.gitlab-ci.yml</code> runs analyzers for most languages on every tier. Merge request findings need GitLab Ultimate."
+        }
+      ],
+      "concepts": [
+        "Taint analysis",
+        "Injection: SQL, command, template",
+        "SSRF",
+        "Weak cryptography",
+        "False positives and triage",
+        "Diff-aware scans"
+      ],
+      "tools": [
+        {
+          "id": "semgrep",
+          "name": "Semgrep",
+          "pick": "start",
+          "repo": "semgrep/semgrep",
+          "license": "LGPL-2.1",
+          "docs": "https://semgrep.dev/docs",
+          "repoPath": "rules/semgrep",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "opengrep",
+          "name": "Opengrep",
+          "repo": "opengrep/opengrep",
+          "license": "LGPL-2.1",
+          "docs": "https://github.com/opengrep/opengrep/wiki",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "gosec",
+          "name": "gosec",
+          "repo": "securego/gosec",
+          "license": "Apache-2.0",
+          "docs": "https://securego.io/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "find-sec-bugs",
+          "name": "Find Security Bugs",
+          "repo": "find-sec-bugs/find-sec-bugs",
+          "license": "LGPL-3.0",
+          "docs": "https://find-sec-bugs.github.io/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "eslint-security",
+          "name": "eslint-plugin-security",
+          "repo": "eslint-community/eslint-plugin-security",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/eslint-community/eslint-plugin-security#readme",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "mobsfscan",
+          "name": "mobsfscan",
+          "repo": "MobSF/mobsfscan",
+          "license": "LGPL-3.0",
+          "docs": "https://github.com/MobSF/mobsfscan#readme",
+          "repoPath": "rules/semgrep/mobile",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "sonarqube",
+          "name": "SonarQube",
+          "repo": "SonarSource/sonarqube",
+          "license": "LGPL-3.0 (Community Build)",
+          "docs": "https://docs.sonarsource.com/sonarqube-community-build/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ],
+      "controlIds": [
+        "DEV-04"
+      ],
+      "resources": [
+        {
+          "label": "Semgrep packs and validation scope",
+          "path": "rules/semgrep/README.md"
+        }
+      ],
+      "acceptance": [
+        "Test the selected rule pack with the pinned engine.",
+        "Treat imported packs as references until their acceptance tests pass."
+      ]
+    },
+    {
+      "id": "sca",
+      "phase": "code",
+      "title": "Dependency scanning (SCA)",
+      "goal": "Find known vulnerabilities and risky packages in the libraries you depend on.",
+      "appliesTo": [
+        "Code",
+        "Containers"
+      ],
+      "keywords": "sca dependencies libraries cve lockfile packages",
+      "builtins": [
+        {
+          "platform": "GitHub",
+          "text": "Dependabot alerts and security updates work on every plan. The dependency review action blocks pull requests that add vulnerable packages (private repositories need GitHub Code Security)."
+        },
+        {
+          "platform": "GitLab",
+          "text": "<code>include: - template: Jobs/Dependency-Scanning.gitlab-ci.yml</code> requires GitLab Ultimate. The tools below work on any tier."
+        }
+      ],
+      "concepts": [
+        "CVE, CPE, and NVD",
+        "Known exploited vulnerabilities (KEV)",
+        "Reachability analysis",
+        "Lockfiles",
+        "Dependency confusion",
+        "Typosquatting",
+        "End-of-life software"
+      ],
+      "tools": [
+        {
+          "id": "osv-scanner",
+          "name": "osv-scanner",
+          "pick": "start",
+          "repo": "google/osv-scanner",
+          "license": "Apache-2.0",
+          "docs": "https://google.github.io/osv-scanner",
+          "repoPath": "scanners/osv-scanner",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "trivy-fs",
+          "name": "Trivy (filesystem)",
+          "repo": "aquasecurity/trivy",
+          "license": "Apache-2.0",
+          "docs": "https://trivy.dev/docs/latest/",
+          "repoPath": "scanners/trivy",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "grype",
+          "name": "Grype",
+          "repo": "anchore/grype",
+          "license": "Apache-2.0",
+          "docs": "https://oss.anchore.com/docs/",
+          "repoPath": "scanners/grype",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "dependency-check",
+          "name": "OWASP Dependency-Check",
+          "repo": "dependency-check/DependencyCheck",
+          "license": "Apache-2.0",
+          "docs": "https://dependency-check.github.io/DependencyCheck",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "retire",
+          "name": "retire.js",
+          "repo": "RetireJS/retire.js",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/RetireJS/retire.js#readme",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ],
+      "controlIds": [
+        "DEV-03"
+      ],
+      "resources": [
+        {
+          "label": "Trivy wrapper and positive/negative fixtures",
+          "path": "scanners/trivy/README.md"
+        },
+        {
+          "label": "Vulnerability triage",
+          "path": "playbooks/vulnerability-triage.md"
+        }
+      ],
+      "acceptance": [
+        "Check lockfile/ecosystem coverage and vulnerability database freshness.",
+        "Assign findings to owners; distinguish findings, missing reports and tool failures."
+      ]
+    },
+    {
+      "id": "malware",
+      "phase": "code",
+      "title": "Malware and malicious code",
+      "goal": "Catch deliberately malicious code: backdoors in your repositories, malicious packages, and malware inside images and artifacts.",
+      "appliesTo": [
+        "Code",
+        "Containers"
+      ],
+      "keywords": "malware malicious backdoor packages typosquatting yara ioc antivirus supply chain attack",
+      "concepts": [
+        "Malicious packages",
+        "Typosquatting and dependency confusion",
+        "Backdoors and logic bombs",
+        "Obfuscated code",
+        "Indicators of compromise (IOC)",
+        "YARA rules"
+      ],
+      "tools": [
+        {
+          "id": "guarddog",
+          "name": "GuardDog",
+          "pick": "start",
+          "repo": "DataDog/guarddog",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/DataDog/guarddog#readme",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "yara-x",
+          "name": "YARA-X",
+          "repo": "VirusTotal/yara-x",
+          "license": "BSD-3-Clause",
+          "docs": "https://virustotal.github.io/yara-x/",
+          "repoPath": "skills/trailofbits/yara-authoring",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "clamav",
+          "name": "ClamAV",
+          "repo": "Cisco-Talos/clamav",
+          "license": "GPL-2.0",
+          "docs": "https://docs.clamav.net/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "thor-lite",
+          "name": "THOR Lite",
+          "license": "Free for use, closed source (Nextron Systems)",
+          "docs": "https://www.nextron-systems.com/thor-lite/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "claude-security-review",
+          "name": "Claude Code security review",
+          "repo": "anthropics/claude-code-security-review",
+          "license": "MIT",
+          "docs": "https://github.com/anthropics/claude-code-security-review#readme",
+          "repoPath": "skills",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ]
+    },
+    {
+      "id": "cicd",
+      "phase": "build",
+      "title": "Pipeline security",
+      "goal": "Make sure the pipeline itself cannot be abused to steal secrets or push malicious builds.",
+      "appliesTo": [
+        "Pipeline"
+      ],
+      "keywords": "cicd pipeline gitlab-ci runners variables poisoned pipeline",
+      "builtins": [
+        {
+          "platform": "GitHub",
+          "text": "Make the default GITHUB_TOKEN read-only, pin actions by commit SHA, require approval for workflows from forks, and use OIDC (<code>permissions: id-token: write</code>) instead of long-lived cloud keys."
+        },
+        {
+          "platform": "GitLab",
+          "text": "Use protected branches and tags, protected and masked CI/CD variables, separate runners for protected branches, and <code>id_tokens</code> (OIDC) instead of long-lived cloud keys. Pipeline execution policies (Ultimate) can force security jobs into every project."
+        }
+      ],
+      "concepts": [
+        "Hosted vs self-hosted runners",
+        "Protected and masked variables",
+        "Pipeline templates and includes",
+        "Pipeline triggers",
+        "Poisoned pipeline execution",
+        "OIDC id_tokens",
+        "Unpinned images and includes"
+      ],
+      "tools": [
+        {
+          "id": "poutine",
+          "name": "poutine",
+          "pick": "start",
+          "repo": "boostsecurityio/poutine",
+          "license": "Apache-2.0",
+          "docs": "https://boostsecurityio.github.io/poutine/",
+          "repoPath": "policies/cicd/poutine-rego",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "zizmor",
+          "name": "zizmor",
+          "repo": "zizmorcore/zizmor",
+          "license": "MIT",
+          "docs": "https://docs.zizmor.sh/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "actionlint",
+          "name": "actionlint",
+          "repo": "rhysd/actionlint",
+          "license": "MIT",
+          "docs": "https://github.com/rhysd/actionlint/tree/main/docs",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "pinact",
+          "name": "pinact",
+          "repo": "suzuki-shunsuke/pinact",
+          "license": "MIT",
+          "docs": "https://github.com/suzuki-shunsuke/pinact/tree/main/docs",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "harden-runner",
+          "name": "Harden-Runner",
+          "repo": "step-security/harden-runner",
+          "license": "Apache-2.0",
+          "docs": "https://docs.stepsecurity.io/harden-runner",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "checkov-cicd",
+          "name": "Checkov (gitlab_ci)",
+          "repo": "bridgecrewio/checkov",
+          "license": "Apache-2.0",
+          "docs": "https://www.checkov.io/1.Welcome/Quick%20Start.html",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "scorecard",
+          "name": "OpenSSF Scorecard",
+          "repo": "ossf/scorecard",
+          "license": "Apache-2.0",
+          "docs": "https://scorecard.dev",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ],
+      "controlIds": [
+        "DEV-01"
+      ],
+      "resources": [
+        {
+          "label": "Runner and identity controls",
+          "path": "guides/cicd-hardening.md"
+        },
+        {
+          "label": "Reusable GitHub/GitLab scans",
+          "path": "integrations/README.md"
+        }
+      ],
+      "acceptance": [
+        "Test untrusted-PR isolation, branch protection and exact OIDC trust.",
+        "Run clean, finding and tool-error cases before making checks required."
+      ]
+    },
+    {
+      "id": "vault",
+      "phase": "build",
+      "title": "Secrets management",
+      "goal": "Give jobs and services short-lived credentials from a vault instead of storing secrets in variables or files.",
+      "appliesTo": [
+        "Pipeline",
+        "Cloud",
+        "Kubernetes"
+      ],
+      "keywords": "secrets management vault sops kms oidc credentials",
+      "builtins": [
+        {
+          "platform": "GitHub",
+          "text": "Environment secrets with required reviewers, and OIDC federation to AWS, Azure, Google Cloud, and HashiCorp Vault."
+        },
+        {
+          "platform": "GitLab",
+          "text": "the <code>secrets:</code> keyword reads from HashiCorp Vault, Azure Key Vault, or Google Secret Manager using an <code>id_tokens</code> JWT (Premium). On any tier, jobs can exchange an <code>id_tokens</code> JWT for short-lived cloud credentials."
+        }
+      ],
+      "concepts": [
+        "Secret zero",
+        "Short-lived credentials",
+        "Workload identity",
+        "Cloud secrets managers and KMS",
+        "Encryption at rest in git",
+        "Rotation"
+      ],
+      "tools": [
+        {
+          "id": "vault",
+          "name": "HashiCorp Vault",
+          "pick": "start",
+          "repo": "hashicorp/vault",
+          "license": "BUSL-1.1",
+          "docs": "https://developer.hashicorp.com/vault/docs",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "sops",
+          "name": "SOPS",
+          "repo": "getsops/sops",
+          "license": "MPL-2.0",
+          "docs": "https://getsops.io/docs/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "external-secrets",
+          "name": "External Secrets Operator",
+          "repo": "external-secrets/external-secrets",
+          "license": "Apache-2.0",
+          "docs": "https://external-secrets.io/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ]
+    },
+    {
+      "id": "containers",
+      "phase": "build",
+      "title": "Container images",
+      "goal": "Build small, non-root images from trusted bases and block images with critical vulnerabilities.",
+      "appliesTo": [
+        "Containers"
+      ],
+      "keywords": "docker dockerfile container image registry distroless",
+      "builtins": [
+        {
+          "platform": "GitHub",
+          "text": "Code scanning shows SARIF results from Trivy, hadolint, and Dockle next to code findings."
+        },
+        {
+          "platform": "GitLab",
+          "text": "<code>include: - template: Jobs/Container-Scanning.gitlab-ci.yml</code> scans images with Trivy on every tier; results in the merge request need Ultimate."
+        }
+      ],
+      "concepts": [
+        "Dockerfile best practices",
+        "Golden and distroless base images",
+        "Non-root users",
+        "Linux capabilities",
+        "Namespaces and cgroups",
+        "Container escape",
+        "Registry hygiene"
+      ],
+      "tools": [
+        {
+          "id": "hadolint",
+          "name": "hadolint",
+          "pick": "start",
+          "repo": "hadolint/hadolint",
+          "license": "GPL-3.0",
+          "docs": "https://github.com/hadolint/hadolint#readme",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "trivy-image",
+          "name": "Trivy (image)",
+          "repo": "aquasecurity/trivy",
+          "license": "Apache-2.0",
+          "docs": "https://trivy.dev/docs/latest/",
+          "repoPath": "scanners/trivy",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "dockle",
+          "name": "Dockle",
+          "repo": "goodwithtech/dockle",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/goodwithtech/dockle#readme",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "distroless",
+          "name": "distroless base images",
+          "repo": "GoogleContainerTools/distroless",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/GoogleContainerTools/distroless#readme",
+          "repoPath": "policies/containers/distroless-examples",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "skopeo",
+          "name": "skopeo",
+          "repo": "podman-container-tools/skopeo",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/podman-container-tools/skopeo#readme",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "crane",
+          "name": "crane",
+          "repo": "google/go-containerregistry",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/google/go-containerregistry/tree/main/cmd/crane",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ],
+      "controlIds": [
+        "DEP-02"
+      ],
+      "resources": [
+        {
+          "label": "Immutable-image scanner wrapper",
+          "path": "scanners/trivy/README.md"
+        }
+      ],
+      "acceptance": [
+        "Scan the actual release digest and retain visible unfixed findings.",
+        "Test non-root execution and required runtime restrictions in staging."
+      ]
+    },
+    {
+      "id": "iac",
+      "phase": "build",
+      "title": "Infrastructure as code",
+      "goal": "Check Terraform, Helm, and Kubernetes manifests before anything is applied.",
+      "appliesTo": [
+        "Code",
+        "Cloud",
+        "Kubernetes"
+      ],
+      "keywords": "iac terraform helm kubernetes manifests policy as code rego",
+      "builtins": [
+        {
+          "platform": "GitLab",
+          "text": "<code>include: - template: Jobs/SAST-IaC.gitlab-ci.yml</code> runs KICS on every tier; merge request findings need Ultimate."
+        }
+      ],
+      "concepts": [
+        "Policy as code",
+        "Terraform plan vs source scans",
+        "Terraform state secrets",
+        "Secure configuration baseline",
+        "Version-controlled configuration",
+        "Drift"
+      ],
+      "tools": [
+        {
+          "id": "checkov",
+          "name": "Checkov",
+          "pick": "start",
+          "repo": "bridgecrewio/checkov",
+          "license": "Apache-2.0",
+          "docs": "https://www.checkov.io/1.Welcome/Quick%20Start.html",
+          "repoPath": "policies/terraform",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "kics",
+          "name": "KICS",
+          "repo": "Checkmarx/kics",
+          "license": "Apache-2.0",
+          "docs": "https://docs.kics.io/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "conftest",
+          "name": "conftest",
+          "repo": "open-policy-agent/conftest",
+          "license": "Apache-2.0",
+          "docs": "https://www.conftest.dev/",
+          "repoPath": "policies/terraform/conftest-examples",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "trivy-config",
+          "name": "Trivy (config)",
+          "repo": "aquasecurity/trivy",
+          "license": "Apache-2.0",
+          "docs": "https://trivy.dev/docs/latest/",
+          "validation": "Local positive/negative Terraform fixtures passed with Trivy 0.75.0 and an existing checks bundle."
+        },
+        {
+          "id": "terraform-compliance",
+          "name": "terraform-compliance",
+          "repo": "terraform-compliance/cli",
+          "license": "MIT",
+          "docs": "https://terraform-compliance.com",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ],
+      "controlIds": [
+        "DEP-01"
+      ],
+      "resources": [
+        {
+          "label": "Tested Trivy IaC fixtures",
+          "path": "scanners/trivy/tests/README.md"
+        },
+        {
+          "label": "Infrastructure CI integrations",
+          "path": "integrations/README.md"
+        }
+      ],
+      "acceptance": [
+        "Run positive/negative fixtures and review parser/coverage gaps.",
+        "Retest deployed state; an IaC scan does not prove cloud enforcement."
+      ]
+    },
+    {
+      "id": "supply",
+      "phase": "ship",
+      "title": "SBOM, signing, and provenance",
+      "goal": "Record what every release contains, sign it, and prove where it was built.",
+      "appliesTo": [
+        "Pipeline",
+        "Containers"
+      ],
+      "keywords": "sbom cyclonedx spdx signing cosign sigstore provenance slsa attestation supply chain",
+      "builtins": [
+        {
+          "platform": "GitHub",
+          "text": "Artifact attestations (<code>actions/attest-build-provenance</code>) create signed SLSA provenance; free for public repositories, private repositories need GitHub Enterprise Cloud."
+        },
+        {
+          "platform": "GitLab",
+          "text": "<code>artifacts:reports:cyclonedx</code> shows SBOMs in the dependency list (Ultimate), and setting <code>RUNNER_GENERATE_ARTIFACTS_METADATA: \"true\"</code> makes runners write SLSA provenance for job artifacts."
+        }
+      ],
+      "concepts": [
+        "Software supply chain",
+        "SBOM: CycloneDX and SPDX",
+        "Artifact repository",
+        "Artifact signing",
+        "Keyless signing with OIDC",
+        "Provenance and SLSA levels",
+        "Artifact integrity"
+      ],
+      "tools": [
+        {
+          "id": "syft",
+          "name": "syft",
+          "pick": "start",
+          "repo": "anchore/syft",
+          "license": "Apache-2.0",
+          "docs": "https://oss.anchore.com/docs/guides/sbom/getting-started/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "cdxgen",
+          "name": "cdxgen",
+          "repo": "cdxgen/cdxgen",
+          "license": "Apache-2.0",
+          "docs": "https://cdxgen.github.io/cdxgen",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "cosign",
+          "name": "cosign",
+          "pick": "start",
+          "repo": "sigstore/cosign",
+          "license": "Apache-2.0",
+          "docs": "https://docs.sigstore.dev/cosign/signing/overview/",
+          "repoPath": "policies/supply-chain/sigstore-policy-controller",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "slsa-github-generator",
+          "name": "SLSA GitHub generator",
+          "repo": "slsa-framework/slsa-github-generator",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/slsa-framework/slsa-github-generator#readme",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "slsa-verifier",
+          "name": "slsa-verifier",
+          "repo": "slsa-framework/slsa-verifier",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/slsa-framework/slsa-verifier#readme",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "witness",
+          "name": "witness",
+          "repo": "in-toto/witness",
+          "license": "Apache-2.0",
+          "docs": "https://witness.dev",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "sbomqs",
+          "name": "sbomqs",
+          "repo": "interlynk-io/sbomqs",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/interlynk-io/sbomqs/tree/main/docs",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ],
+      "controlIds": [
+        "DEP-03"
+      ],
+      "resources": [
+        {
+          "label": "Finding lifecycle and exceptions",
+          "path": "reporting/finding-lifecycle.md"
+        }
+      ],
+      "acceptance": [
+        "Bind SBOM/provenance to the tested immutable release digest.",
+        "Reject unsigned images, wrong signer identities and wrong digests at deploy."
+      ]
+    },
+    {
+      "id": "k8s",
+      "phase": "ship",
+      "title": "Kubernetes admission and audit",
+      "goal": "Reject unsafe workloads at the cluster door and audit clusters against benchmarks.",
+      "appliesTo": [
+        "Kubernetes"
+      ],
+      "keywords": "kubernetes k8s admission policy kyverno gatekeeper opa pod security cis",
+      "concepts": [
+        "Admission control",
+        "Pod Security Standards",
+        "RBAC",
+        "Network policies",
+        "Audit first, then enforce",
+        "Managed Kubernetes",
+        "GitOps"
+      ],
+      "tools": [
+        {
+          "id": "kyverno",
+          "name": "Kyverno",
+          "pick": "start",
+          "repo": "kyverno/kyverno",
+          "license": "Apache-2.0",
+          "docs": "https://kyverno.io/docs/",
+          "repoPath": "policies/kubernetes/kyverno-policies",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "chainsaw",
+          "name": "Chainsaw",
+          "repo": "kyverno/chainsaw",
+          "license": "Apache-2.0",
+          "docs": "https://kyverno.github.io/chainsaw/latest/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "gatekeeper",
+          "name": "Gatekeeper",
+          "repo": "open-policy-agent/gatekeeper",
+          "license": "Apache-2.0",
+          "docs": "https://open-policy-agent.github.io/gatekeeper/website/docs/",
+          "repoPath": "policies/kubernetes/gatekeeper-library",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "kube-linter",
+          "name": "kube-linter",
+          "repo": "stackrox/kube-linter",
+          "license": "Apache-2.0",
+          "docs": "https://docs.kubelinter.io",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "kubescape",
+          "name": "Kubescape",
+          "repo": "kubescape/kubescape",
+          "license": "Apache-2.0",
+          "docs": "https://kubescape.io/docs/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "kube-bench",
+          "name": "kube-bench",
+          "repo": "aquasecurity/kube-bench",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/aquasecurity/kube-bench/blob/main/docs/running.md",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ],
+      "controlIds": [
+        "DEP-04"
+      ],
+      "resources": [
+        {
+          "label": "Restricted workload and network starters",
+          "path": "policies/kubernetes/starter/README.md"
+        }
+      ],
+      "acceptance": [
+        "Test the CNI blocks denied network paths and allows required application traffic.",
+        "Test privileged-pod rejection, the allowed workload and RBAC/token scope."
+      ]
+    },
+    {
+      "id": "dast",
+      "phase": "run",
+      "title": "Dynamic testing (DAST)",
+      "goal": "Attack the running application and API in a test environment, the way an outsider would.",
+      "appliesTo": [
+        "Running apps"
+      ],
+      "keywords": "dast dynamic testing zap nuclei api fuzzing openapi web",
+      "builtins": [
+        {
+          "platform": "GitLab",
+          "text": "<code>include: - template: DAST.gitlab-ci.yml</code> requires GitLab Ultimate. The open-source scanners below work on any tier."
+        }
+      ],
+      "concepts": [
+        "OWASP Top 10",
+        "Security headers: CSP, Referrer-Policy, Permissions-Policy",
+        "XSS and CSRF",
+        "SSRF",
+        "API schema exposure",
+        "Rate limits",
+        "Fuzz testing"
+      ],
+      "tools": [
+        {
+          "id": "zap",
+          "name": "OWASP ZAP",
+          "pick": "start",
+          "repo": "zaproxy/zaproxy",
+          "license": "Apache-2.0",
+          "docs": "https://www.zaproxy.org/docs/docker/baseline-scan/",
+          "repoPath": "scanners/zap",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "nuclei",
+          "name": "nuclei",
+          "repo": "projectdiscovery/nuclei",
+          "license": "MIT",
+          "docs": "https://docs.projectdiscovery.io/tools/nuclei/overview",
+          "repoPath": "scanners/nuclei",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "schemathesis",
+          "name": "Schemathesis",
+          "repo": "schemathesis/schemathesis",
+          "license": "MIT",
+          "docs": "https://schemathesis.readthedocs.io/en/stable/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "restler",
+          "name": "RESTler",
+          "repo": "microsoft/restler-fuzzer",
+          "license": "MIT",
+          "docs": "https://github.com/microsoft/restler-fuzzer/tree/main/docs/user-guide",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "dalfox",
+          "name": "Dalfox",
+          "repo": "hahwul/dalfox",
+          "license": "MIT",
+          "docs": "https://dalfox.hahwul.com/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "burp",
+          "name": "Burp Suite",
+          "license": "Commercial; free Community Edition",
+          "docs": "https://portswigger.net/burp/documentation",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Application authorization matrix",
+          "path": "guides/api-authorization.md"
+        }
+      ]
+    },
+    {
+      "id": "mobile",
+      "phase": "run",
+      "title": "Mobile app builds",
+      "goal": "Check the built APK and IPA for what source scans cannot see: debug flags, embedded secrets, exported components.",
+      "appliesTo": [
+        "Code",
+        "Running apps"
+      ],
+      "keywords": "mobile android ios apk ipa mobsf masvs",
+      "concepts": [
+        "OWASP MASVS and MASTG",
+        "Decompilation",
+        "Exported components",
+        "Certificate pinning",
+        "Root and jailbreak detection",
+        "Obfuscation"
+      ],
+      "tools": [
+        {
+          "id": "mobsf",
+          "name": "MobSF",
+          "pick": "start",
+          "repo": "MobSF/Mobile-Security-Framework-MobSF",
+          "license": "GPL-3.0",
+          "docs": "https://mobsf.github.io/docs",
+          "repoPath": "scanners/mobsf",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "apkleaks",
+          "name": "apkleaks",
+          "repo": "dwisiswant0/apkleaks",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/dwisiswant0/apkleaks",
+          "repoPath": "rules/secrets/apkleaks",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "jadx",
+          "name": "jadx",
+          "repo": "skylot/jadx",
+          "license": "Apache-2.0",
+          "docs": "https://github.com/skylot/jadx/wiki",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "apktool",
+          "name": "Apktool",
+          "repo": "iBotPeaches/Apktool",
+          "license": "Apache-2.0",
+          "docs": "https://apktool.org",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ]
+    },
+    {
+      "id": "cloud",
+      "phase": "run",
+      "title": "Cloud posture (CSPM)",
+      "goal": "Scan AWS, Azure, and Google Cloud accounts for public data, missing encryption and logging, and drift from benchmarks such as CIS and PCI DSS.",
+      "appliesTo": [
+        "Cloud"
+      ],
+      "keywords": "cloud aws gcp azure cspm iam prowler compliance pci cis",
+      "concepts": [
+        "IAM and least privilege",
+        "Cloud activity logs",
+        "Landing zone and organization policy",
+        "Network segmentation",
+        "Encryption by default",
+        "Public exposure"
+      ],
+      "tools": [
+        {
+          "id": "prowler",
+          "name": "Prowler",
+          "pick": "start",
+          "repo": "prowler-cloud/prowler",
+          "license": "Apache-2.0",
+          "docs": "https://docs.prowler.com/",
+          "repoPath": "scanners/prowler",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "scoutsuite",
+          "name": "ScoutSuite",
+          "repo": "nccgroup/ScoutSuite",
+          "license": "GPL-2.0",
+          "docs": "https://github.com/nccgroup/ScoutSuite/wiki",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "cloud-custodian",
+          "name": "Cloud Custodian",
+          "repo": "cloud-custodian/cloud-custodian",
+          "license": "Apache-2.0",
+          "docs": "https://cloudcustodian.io/docs/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "steampipe",
+          "name": "Steampipe and Powerpipe",
+          "repo": "turbot/steampipe",
+          "license": "AGPL-3.0",
+          "docs": "https://steampipe.io/docs",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "cloudsploit",
+          "name": "CloudSploit",
+          "repo": "aquasecurity/cloudsploit",
+          "license": "GPL-3.0",
+          "docs": "https://github.com/aquasecurity/cloudsploit#readme",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ],
+      "controlIds": [
+        "CLD-01",
+        "CLD-03"
+      ],
+      "resources": [
+        {
+          "label": "Provider evidence map",
+          "path": "policies/cloud/evidence-map.md"
+        }
+      ]
+    },
+    {
+      "id": "cloud-iam",
+      "phase": "run",
+      "title": "Cloud identity and access",
+      "goal": "Find over-privileged roles and privilege escalation paths before an attacker uses them.",
+      "appliesTo": [
+        "Cloud"
+      ],
+      "keywords": "iam least privilege privilege escalation aws policy roles",
+      "builtins": [
+        {
+          "platform": "AWS",
+          "text": "IAM Access Analyzer finds resources shared outside your account or organization and unused access: <code>aws accessanalyzer create-analyzer --analyzer-name org --type ORGANIZATION</code>."
+        },
+        {
+          "platform": "Azure and Google Cloud",
+          "text": "Microsoft Entra access reviews and Google Cloud IAM Recommender suggest removing unused permissions."
+        }
+      ],
+      "concepts": [
+        "Least privilege",
+        "Privilege escalation paths",
+        "Wildcard actions and resources",
+        "Unused access",
+        "Workload identity",
+        "Break-glass accounts"
+      ],
+      "tools": [
+        {
+          "id": "pmapper",
+          "name": "PMapper",
+          "pick": "start",
+          "repo": "nccgroup/PMapper",
+          "license": "AGPL-3.0",
+          "docs": "https://github.com/nccgroup/PMapper/wiki",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "cloudsplaining",
+          "name": "Cloudsplaining",
+          "repo": "salesforce/cloudsplaining",
+          "license": "BSD-3-Clause",
+          "docs": "https://cloudsplaining.readthedocs.io/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ],
+      "controlIds": [
+        "CLD-02"
+      ],
+      "resources": [
+        {
+          "label": "Credential leak response",
+          "path": "playbooks/leaked-secret.md"
+        }
+      ]
+    },
+    {
+      "id": "cloud-native",
+      "phase": "run",
+      "title": "Native cloud security services",
+      "goal": "Turn on the threat detection and posture services your cloud provider already offers.",
+      "appliesTo": [
+        "Cloud"
+      ],
+      "keywords": "security hub guardduty security command center defender for cloud aws azure gcp native",
+      "concepts": [
+        "Threat detection",
+        "Posture scores",
+        "Organization-wide enablement",
+        "Delegated administrator account",
+        "Finding aggregation"
+      ],
+      "tools": [
+        {
+          "id": "aws-security-hub",
+          "name": "AWS Security Hub and GuardDuty",
+          "pick": "start",
+          "license": "AWS service (paid)",
+          "docs": "https://docs.aws.amazon.com/securityhub/",
+          "repoPath": "reporting/compliance-mapping/prowler",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "gcp-scc",
+          "name": "Google Security Command Center",
+          "license": "Google Cloud service",
+          "docs": "https://cloud.google.com/security-command-center/docs",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "azure-defender",
+          "name": "Microsoft Defender for Cloud",
+          "license": "Azure service",
+          "docs": "https://learn.microsoft.com/azure/defender-for-cloud/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ]
+    },
+    {
+      "id": "cloud-secrets",
+      "phase": "run",
+      "title": "Cloud secrets and keys",
+      "goal": "Store secrets in the cloud provider vault, rotate them, and control keys with KMS.",
+      "appliesTo": [
+        "Cloud"
+      ],
+      "keywords": "secrets manager key vault secret manager kms rotation encryption",
+      "concepts": [
+        "Secret rotation",
+        "Customer-managed keys (KMS)",
+        "Key policies",
+        "Workload identity instead of keys",
+        "Audit logs for secret access"
+      ],
+      "tools": [
+        {
+          "id": "aws-secrets-manager",
+          "name": "AWS Secrets Manager",
+          "pick": "start",
+          "license": "AWS service (paid)",
+          "docs": "https://docs.aws.amazon.com/secretsmanager/",
+          "repoPath": "skills/secrets-management/aws-secrets-manager",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "azure-key-vault",
+          "name": "Azure Key Vault",
+          "license": "Azure service",
+          "docs": "https://learn.microsoft.com/azure/key-vault/",
+          "repoPath": "skills/secrets-management/azure-keyvault",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "gcp-secret-manager",
+          "name": "Google Secret Manager",
+          "license": "Google Cloud service",
+          "docs": "https://cloud.google.com/secret-manager/docs",
+          "repoPath": "skills/secrets-management/gcp-secret-manager",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ]
+    },
+    {
+      "id": "runtime",
+      "phase": "run",
+      "title": "Runtime detection",
+      "goal": "Detect suspicious behavior in running containers: shells, unexpected network calls, writes to sensitive paths.",
+      "appliesTo": [
+        "Kubernetes",
+        "Running apps"
+      ],
+      "keywords": "runtime detection falco ebpf container escape monitoring",
+      "concepts": [
+        "Container escape",
+        "Process monitoring",
+        "Egress control",
+        "eBPF",
+        "Alert routing"
+      ],
+      "tools": [
+        {
+          "id": "falco",
+          "name": "Falco",
+          "pick": "start",
+          "repo": "falcosecurity/falco",
+          "license": "Apache-2.0",
+          "docs": "https://falco.org/docs/",
+          "repoPath": "rules/falco",
+          "validation": "Falco 0.45.0 compiled both local rule files on 2026-10-02. The test README records 16/16 positive and zero negative alerts on a Docker Desktop Linux VM; staging node coverage and alert delivery still require acceptance."
+        }
+      ],
+      "controlIds": [
+        "LOG-03"
+      ],
+      "resources": [
+        {
+          "label": "16 local rules, pinned Helm values and tests",
+          "path": "rules/falco/README.md"
+        },
+        {
+          "label": "Runtime alert response",
+          "path": "playbooks/runtime-alert.md"
+        },
+        {
+          "label": "Native test results and limits",
+          "path": "rules/falco/tests/README.md"
+        }
+      ],
+      "acceptance": [
+        "Compile the pinned local rules and run Linux positive/negative smoke cases.",
+        "Verify intended node coverage, alert delivery to the responder, output failure and rule-specific negative cases."
+      ]
+    },
+    {
+      "id": "vm",
+      "phase": "program",
+      "title": "Vulnerability management and release gates",
+      "goal": "Collect findings from every scanner, remove duplicates, decide what blocks a release, and track fixes to closure.",
+      "appliesTo": [
+        "Team"
+      ],
+      "keywords": "vulnerability management defectdojo dependency-track triage gates sla kev cvss",
+      "builtins": [
+        {
+          "platform": "GitLab",
+          "text": "the vulnerability report and merge request approval policies, which block merges on new critical findings, need GitLab Ultimate."
+        }
+      ],
+      "concepts": [
+        "Vulnerability lifecycle",
+        "CVSS and SSVC",
+        "KEV catalog",
+        "Prioritization",
+        "Deployment and quality gates",
+        "Risk acceptance with expiry",
+        "Remediation SLAs",
+        "Vulnerability disclosure program"
+      ],
+      "tools": [
+        {
+          "id": "defectdojo",
+          "name": "DefectDojo",
+          "pick": "start",
+          "repo": "DefectDojo/django-DefectDojo",
+          "license": "BSD-3-Clause",
+          "docs": "https://docs.defectdojo.com/",
+          "repoPath": "integrations/defectdojo",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "dependency-track",
+          "name": "Dependency-Track",
+          "repo": "DependencyTrack/dependency-track",
+          "license": "Apache-2.0",
+          "docs": "https://dependencytrack.github.io/docs/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "securecodebox",
+          "name": "secureCodeBox",
+          "repo": "secureCodeBox/secureCodeBox",
+          "license": "Apache-2.0",
+          "docs": "https://www.securecodebox.io/docs/getting-started/installation",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ],
+      "controlIds": [
+        "VUL-01"
+      ],
+      "resources": [
+        {
+          "label": "Finding records, owners and deadlines",
+          "path": "reporting/finding-lifecycle.md"
+        },
+        {
+          "label": "Exception register validation",
+          "path": "tools/dso/README.md"
+        }
+      ],
+      "acceptance": [
+        "Record finding asset/scope/version, owner, due date and deployed retest.",
+        "Do not close findings using incomplete or failed reimports."
+      ]
+    },
+    {
+      "id": "tm",
+      "phase": "program",
+      "title": "Threat modeling",
+      "goal": "Find design flaws before code exists by mapping data flows, trust boundaries, and threats.",
+      "appliesTo": [
+        "Team"
+      ],
+      "keywords": "threat modeling stride design dfd",
+      "concepts": [
+        "STRIDE",
+        "Data flow diagrams",
+        "Trust boundaries",
+        "Attack surface",
+        "Threat model as code"
+      ],
+      "tools": [
+        {
+          "id": "threat-dragon",
+          "name": "OWASP Threat Dragon",
+          "pick": "start",
+          "repo": "OWASP/threat-dragon",
+          "license": "Apache-2.0",
+          "docs": "https://www.threatdragon.com/docs/",
+          "repoPath": "templates/threat-models",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "threagile",
+          "name": "Threagile",
+          "repo": "Threagile/threagile",
+          "license": "MIT",
+          "docs": "https://threagile.io",
+          "repoPath": "templates/threat-models/threagile",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "pytm",
+          "name": "pytm",
+          "repo": "OWASP/pytm",
+          "license": "MIT",
+          "docs": "https://github.com/OWASP/pytm",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "threatcl",
+          "name": "threatcl",
+          "repo": "threatcl/threatcl",
+          "license": "MIT",
+          "docs": "https://threatcl.dev/",
+          "repoPath": "templates/threat-models/threatcl",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ]
+    },
+    {
+      "id": "maturity",
+      "phase": "program",
+      "title": "People, standards, and maturity",
+      "goal": "Measure where the program stands, pick the next improvement, and grow security champions in every team.",
+      "appliesTo": [
+        "Team"
+      ],
+      "keywords": "maturity samm dsomm asvs masvs standards champions awareness",
+      "concepts": [
+        "Security champion program",
+        "Security awareness training",
+        "Acceptable use policy",
+        "Maturity levels",
+        "Security requirements",
+        "Metrics that matter"
+      ],
+      "tools": [
+        {
+          "id": "dsomm",
+          "name": "OWASP DSOMM",
+          "pick": "start",
+          "repo": "devsecopsmaturitymodel/DevSecOps-MaturityModel",
+          "license": "GPL-3.0",
+          "docs": "https://dsomm.owasp.org/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "samm",
+          "name": "OWASP SAMM",
+          "repo": "owaspsamm/core",
+          "license": "CC-BY-SA-4.0",
+          "docs": "https://owaspsamm.org/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "asvs",
+          "name": "OWASP ASVS",
+          "repo": "OWASP/ASVS",
+          "license": "CC-BY-SA-4.0",
+          "docs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "repoPath": "reporting/compliance-mapping/asvs-5.0",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "masvs",
+          "name": "OWASP MASVS",
+          "repo": "OWASP/masvs",
+          "license": "CC-BY-SA-4.0",
+          "docs": "https://mas.owasp.org/",
+          "repoPath": "reporting/compliance-mapping/masvs",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        },
+        {
+          "id": "gophish",
+          "name": "GoPhish",
+          "repo": "gophish/gophish",
+          "license": "MIT",
+          "docs": "https://getgophish.com/documentation/",
+          "validation": "Reference manual; confirm behavior and permissions in your environment."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Practical company adoption",
+          "path": "guides/smb-security.md"
+        },
+        {
+          "label": "32 baseline controls",
+          "path": "baseline/README.md"
+        }
+      ]
+    },
+    {
+      "id": "logging",
+      "phase": "program",
+      "title": "Logging and alert delivery",
+      "goal": "Collect security events, protect evidence and test that alerts reach a responder.",
+      "appliesTo": [
+        "Team"
+      ],
+      "keywords": "siem logs alert routing retention sensor health detection sigma audit",
+      "controlIds": [
+        "LOG-01",
+        "LOG-02"
+      ],
+      "resources": [
+        {
+          "label": "Logging acceptance matrix",
+          "path": "guides/logging-and-detection.md"
+        },
+        {
+          "label": "Falco routing and triage",
+          "path": "rules/falco/triage.md"
+        },
+        {
+          "label": "Incident response",
+          "path": "playbooks/incident-response.md"
+        }
+      ],
+      "acceptance": [
+        "Record log sources, ingestion objectives, retention, access and owners.",
+        "Generate harmless identity/cloud/application events and verify delivery.",
+        "Test stopped collectors, offline agents and failed forwarding; telemetry silence is a gap."
+      ],
+      "tools": []
+    },
+    {
+      "id": "response",
+      "phase": "program",
+      "title": "Incident response and rehearsal",
+      "goal": "Contain incidents, preserve evidence, recover service and track the follow-up work.",
+      "appliesTo": [
+        "Team"
+      ],
+      "keywords": "incident response tabletop leak supply chain containment escalation forensic recovery",
+      "controlIds": [
+        "IR-01",
+        "IR-02"
+      ],
+      "resources": [
+        {
+          "label": "Incident response playbook",
+          "path": "playbooks/incident-response.md"
+        },
+        {
+          "label": "Leaked secret response",
+          "path": "playbooks/leaked-secret.md"
+        },
+        {
+          "label": "Compromised dependency response",
+          "path": "playbooks/compromised-dependency.md"
+        },
+        {
+          "label": "Runtime alert response",
+          "path": "playbooks/runtime-alert.md"
+        }
+      ],
+      "acceptance": [
+        "Keep private contacts, escalation, containment authority and evidence storage current.",
+        "Exercise a credential leak or dependency compromise with synthetic evidence.",
+        "Measure containment/recovery, retest access and assign follow-up owners."
+      ],
+      "tools": []
+    },
+    {
+      "id": "authorization",
+      "phase": "program",
+      "title": "API roles, tenants and business logic",
+      "goal": "Prove denied access has neither data disclosure nor side effects across users, roles and tenants.",
+      "appliesTo": [
+        "Team"
+      ],
+      "keywords": "api authorization bola idor tenant rbac business logic access control",
+      "controlIds": [
+        "DEV-05"
+      ],
+      "resources": [
+        {
+          "label": "Authorization test matrix",
+          "path": "guides/api-authorization.md"
+        },
+        {
+          "label": "Finding ownership and remediation",
+          "path": "reporting/finding-lifecycle.md"
+        }
+      ],
+      "acceptance": [
+        "Test anonymous, owner, other-user, other-tenant, reader/admin and revoked identities.",
+        "Include export, batch, nested-resource, asynchronous and alternate-method routes.",
+        "Assert response content and resulting state using real application fixtures."
+      ],
+      "tools": []
+    }
+  ],
+  "schemaVersion": 1
+}

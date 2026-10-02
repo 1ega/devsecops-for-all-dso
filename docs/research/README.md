@@ -7,3 +7,5 @@ Notes from evaluating tools and existing rule sets before something is added to 
 | All sections | [open-source-map.md](open-source-map.md) | 96 projects surveyed; reusable content from 22 of them imported |
 
 | SMB operations | [smb-operational-gaps.md](smb-operational-gaps.md) | Runtime, evidence, response, SaaS and endpoint gaps; delivery boundaries |
+
+- [Online roadmap synchronization audit](roadmap-sync.md) — manual/control drift, CI failure and publishing checks.

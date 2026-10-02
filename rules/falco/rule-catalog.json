@@ -74,7 +74,7 @@
       "attack": "T1611",
       "owner_role": "Platform or security owner",
       "response": "playbooks/runtime-alert.md",
-      "limitations": "Custom mount paths require adding the resolved path; socket access alone does not prove escape.",
+      "limitations": "Matches connections to docker.sock, containerd.sock, crio.sock or podman.sock at any path; renamed sockets and TCP-exposed runtime APIs are missed. Socket access alone does not prove escape.",
       "source": "local",
       "license": "MIT",
       "references": [

@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - 'public/**'
+      - 'manuals/**'
+      - 'tools/roadmap/**'
+      - 'baseline/controls.json'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -39,6 +42,7 @@ jobs:
           test -s public/app.js
           test -s public/data.js
           test -s public/styles.css
+          python3 tools/roadmap/sync.py --check
           node --check public/app.js
           node --check public/data.js
       - name: Upload static site

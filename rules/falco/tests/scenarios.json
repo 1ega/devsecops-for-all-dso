@@ -7,7 +7,7 @@
       "negative": "noninteractive shell with proc.tty=0",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Web process spawned shell",
@@ -15,7 +15,7 @@
       "negative": "shell parent is an approved test runner, not a web process",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Credential file read in container",
@@ -23,7 +23,7 @@
       "negative": "open /tmp/dso-public.txt",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Service account token read by utility",
@@ -31,7 +31,7 @@
       "negative": "application process python opens the same dummy token",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Container accessed runtime socket",
@@ -39,7 +39,7 @@
       "negative": "connect to /tmp/dso-app.sock",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Executable launched from temporary directory",
@@ -47,7 +47,7 @@
       "negative": "execute /usr/bin/true",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Package manager in running container",
@@ -55,7 +55,7 @@
       "negative": "execute /usr/bin/true",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Network discovery utility in container",
@@ -63,7 +63,7 @@
       "negative": "execute /usr/bin/true",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Known miner process name in container",
@@ -71,7 +71,7 @@
       "negative": "execute /usr/bin/true",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Privilege helper in container",
@@ -79,7 +79,7 @@
       "negative": "execute /usr/bin/id",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Memory backed executable in container",
@@ -87,7 +87,7 @@
       "negative": "execute /usr/bin/true from its disk path",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Ptrace succeeded in container",
@@ -95,7 +95,7 @@
       "negative": "a ptrace call denied by seccomp, or no ptrace syscall",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO SSH authorized keys modified",
@@ -103,7 +103,7 @@
       "negative": "read the same dummy file without write flags",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Scheduler or systemd configuration modified",
@@ -111,7 +111,7 @@
       "negative": "read /etc/cron.d/dso-test",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Account credential database modified",
@@ -119,7 +119,7 @@
       "negative": "read /etc/passwd",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     },
     {
       "rule": "DSO Security log removed",
@@ -127,7 +127,7 @@
       "negative": "unlink /tmp/dso-test.log",
       "expected_positive": true,
       "expected_negative": false,
-      "status": "requires_linux_runtime_validation"
+      "status": "positive_smoke_passed"
     }
   ]
 }
