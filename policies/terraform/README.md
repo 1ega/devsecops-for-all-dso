@@ -14,4 +14,6 @@ Research candidates:
 
 Related skill: [checkov](../../skills/cicd-iac-security/checkov/SKILL.md).
 
-**Status:** Structure only; no policies are published yet.
+Imported: [conftest-examples](conftest-examples/SOURCE.md) — example Rego policies with inputs for Terraform, Kubernetes, Dockerfiles, HCL, and other formats. The KICS query library and Checkov checks stay upstream because they are part of those tools.
+
+**Status:** Examples imported; policies of our own are not published yet.

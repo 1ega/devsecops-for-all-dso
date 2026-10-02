@@ -1,0 +1,23 @@
+name: disallow-host-ports-vpol
+version: 1.0.0
+displayName: Disallow hostPorts in ValidatingPolicy
+description: >-
+  Access to host ports allows potential snooping of network traffic and should not be allowed, or at minimum restricted to a known list. This policy ensures the `hostPort` field is unset or set to `0`. 
+install: |-
+  ```shell
+  kubectl apply -f https://raw.githubusercontent.com/kyverno/policies/main/pod-security-vpol/baseline/disallow-host-ports/disallow-host-ports.yaml
+  ```
+keywords:
+  - kyverno
+  - Pod Security Standards (Baseline)
+  - ValidatingPolicy
+readme: |
+  Access to host ports allows potential snooping of network traffic and should not be allowed, or at minimum restricted to a known list. This policy ensures the `hostPort` field is unset or set to `0`. 
+  
+  Refer to the documentation for more details on Kyverno annotations: https://artifacthub.io/docs/topics/annotations/kyverno/
+annotations:
+  kyverno/category: "Pod Security Standards (Baseline) in ValidatingPolicy"
+  kyverno/kubernetesVersion: "1.30+"
+  kyverno/subject: "Pod"
+digest: 860d61b669f11518aee5406a6a2d8071c0d2c249b3bb8dc4927d82bcd584d4e5
+createdAt: "2025-03-13T23:26:58Z"

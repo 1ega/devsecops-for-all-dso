@@ -5,7 +5,7 @@ Source code and specifications for normalizing, deduplicating, and presenting se
 | Path | Purpose |
 | :--- | :--- |
 | [severity-and-metadata.md](severity-and-metadata.md) | One severity scale across tools and the metadata every rule should carry |
-| [compliance-mapping](compliance-mapping/README.md) | Mapping rules and policies to MASVS, ASVS, PCI DSS, and CIS |
+| [compliance-mapping](compliance-mapping/README.md) | MASVS, ASVS 5.0, and Prowler compliance frameworks, plus mappings of rules and policies to them |
 
 Future work may include SARIF/JSON adapters, review baselines, and local HTML reports. Importing findings into DefectDojo lives in [integrations/defectdojo](../integrations/defectdojo/README.md).
 

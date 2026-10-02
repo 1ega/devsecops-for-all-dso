@@ -12,4 +12,12 @@ Planned templates:
 
 Research candidates: [OWASP/threat-dragon](https://github.com/OWASP/threat-dragon) (diagrams), [OWASP/pytm](https://github.com/OWASP/pytm) (threat model as code), [Threagile/threagile](https://github.com/Threagile/threagile) (YAML model with automatic risks). Related skill: [threat-modeling](../../skills/appsec-testing/threat-modeling/SKILL.md).
 
-**Status:** Structure only; no templates are published yet.
+Imported examples:
+
+| Directory | Contents | License |
+| :--- | :--- | :--- |
+| [threat-model-cookbook](threat-model-cookbook/SOURCE.md) | OWASP collection of flow diagrams, attack trees, and a blank template | CC-BY-4.0 |
+| [threagile](threagile/SOURCE.md) | Example and stub YAML models for Threagile | MIT |
+| [threatcl](threatcl/SOURCE.md) | Example HCL models, including a reusable control library | MIT |
+
+**Status:** Examples imported; templates for the features above are not published yet.

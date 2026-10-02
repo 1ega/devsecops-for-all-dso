@@ -6,4 +6,6 @@ Scan only environments you are authorized to test, such as staging. Document rat
 
 Related skills: [dast-scanning](../../skills/appsec-testing/dast-scanning/SKILL.md), [security-dast](../../skills/appsec-testing/security-dast/SKILL.md).
 
-**Status:** Structure only; no configuration is published yet.
+Imported: [community-scripts](community-scripts/SOURCE.md) — 200+ ZAP scripts (Apache-2.0) for active and passive scan rules, authentication, HTTP sender hooks, and payload generation. Load them through the ZAP script console or the automation framework.
+
+**Status:** Community scripts imported; scan configurations are not published yet.

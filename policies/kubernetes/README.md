@@ -14,4 +14,6 @@ Research candidates:
 
 Related skills: [kyverno](../../skills/kubernetes-containers/kyverno/SKILL.md), [opa](../../skills/kubernetes-containers/opa/SKILL.md), [kubernetes-hardening](../../skills/kubernetes-containers/kubernetes-hardening/SKILL.md).
 
-**Status:** Structure only; no policies are published yet.
+Imported: [kyverno-policies](kyverno-policies/SOURCE.md) (the full Kyverno community library with Chainsaw tests) and [gatekeeper-library](gatekeeper-library/SOURCE.md) (constraint templates with allowed and denied samples). Start from these and keep local changes in a separate directory so upstream updates stay easy.
+
+**Status:** Policy libraries imported; tuned policies of our own are not published yet.

@@ -16,6 +16,13 @@ Changes made when importing:
 - Documentation-site frontmatter was replaced with skill frontmatter (`name`, `description`, `argument-hint`, `license`, `metadata`).
 - `/platform-skills:<topic>` command links were changed to `/<topic>`. Links to another imported topic now name that skill, and links to topics that were not imported point to the upstream file.
 
+## Trail of Bits skills
+
+- Source: https://github.com/trailofbits/skills, see [trailofbits/SOURCE.md](trailofbits/SOURCE.md) for the commit
+- License: CC-BY-SA-4.0, see [trailofbits/LICENSE](trailofbits/LICENSE)
+- Plugins: the 23 security-related plugins listed in [trailofbits/README.md](trailofbits/README.md); plugins unrelated to security were not imported.
+- Imported unchanged. Changes to these files must be shared under CC-BY-SA-4.0.
+
 ## devops-skills
 
 - Author recorded in frontmatter: `devops-skills`

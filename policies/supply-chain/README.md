@@ -14,4 +14,6 @@ Research candidates:
 
 Related skills: [supply-chain](../../skills/supply-chain/supply-chain/SKILL.md), [sbom-supply-chain](../../skills/supply-chain/sbom-supply-chain/SKILL.md). Response to a compromised dependency belongs in [playbooks](../../playbooks/README.md).
 
-**Status:** Structure only; no policies are published yet.
+Imported: [sigstore-policy-controller](sigstore-policy-controller/SOURCE.md) — example ClusterImagePolicy resources that verify keyless signatures and attestations at admission.
+
+**Status:** Examples imported; policies of our own are not published yet.

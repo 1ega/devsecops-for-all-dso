@@ -4,4 +4,4 @@ Notes from evaluating tools and existing rule sets before something is added to 
 
 | Area | Note | Status |
 | :--- | :--- | :--- |
-| — | — | No notes yet |
+| All sections | [open-source-map.md](open-source-map.md) | 96 projects surveyed; reusable content from 22 of them imported |

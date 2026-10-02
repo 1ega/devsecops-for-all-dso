@@ -14,6 +14,7 @@ Reusable instructions for AI coding agents, grouped by security domain. Each ski
 | [ai-security](#ai-security) | 9 | Agents, LLM apps, MCP, prompt injection, AI red teaming, model supply chain |
 | [detection-response](#detection-response) | 2 | Incident response and runtime threat detection |
 | [compliance](#compliance) | 1 | SOC 2 controls and evidence for Terraform |
+| [trailofbits](trailofbits/README.md) | 23 plugins | Imported Trail of Bits plugins: Semgrep rule creation, static analysis and SARIF, variant analysis, insecure defaults, supply-chain risk, false-positive checks, language-specific security review |
 
 ## appsec-testing
 
@@ -115,6 +116,10 @@ Reusable instructions for AI coding agents, grouped by security domain. Each ski
 | Skill | Use it for |
 | :--- | :--- |
 | [compliance](compliance/compliance/SKILL.md) | SOC 2 gap analysis, controls, and evidence for Terraform |
+
+## trailofbits
+
+[23 security plugins](trailofbits/README.md) from Trail of Bits, kept as complete Claude Code plugins rather than split into the categories above. Highlights: [semgrep-rule-creator](trailofbits/semgrep-rule-creator/README.md), [static-analysis](trailofbits/static-analysis/README.md), [variant-analysis](trailofbits/variant-analysis/README.md), [fp-check](trailofbits/fp-check/README.md), [insecure-defaults](trailofbits/insecure-defaults/README.md), [supply-chain-risk-auditor](trailofbits/supply-chain-risk-auditor/README.md), and [agentic-actions-auditor](trailofbits/agentic-actions-auditor/README.md).
 
 ## Using a skill
 

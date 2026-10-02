@@ -1,0 +1,35 @@
+kind: Suite
+apiVersion: test.gatekeeper.sh/v1alpha1
+metadata:
+  name: disallowanonymous
+tests:
+- name: disallow-anonymous
+  template: template.yaml
+  constraint: samples/no-anonymous-bindings/constraint.yaml
+  cases:
+  - name: example-allowed
+    object: samples/no-anonymous-bindings/example_allowed.yaml
+    assertions:
+    - violations: no
+  - name: example-disallowed
+    object: samples/no-anonymous-bindings/example_disallowed.yaml
+    assertions:
+      - message: "system:unauthenticated"
+        violations: 1
+      - message: "system:anonymous"
+        violations: 1
+      - message: "system:authenticated"
+        violations: 0
+- name: disallow-authenticated
+  template: template.yaml
+  constraint: samples/no-authenticated/constraint.yaml
+  cases:
+    - name: authenticated-disallowed-with-parameter-true
+      object: samples/no-anonymous-bindings/example_disallowed.yaml
+      assertions:
+      - message: "system:unauthenticated"
+        violations: 1
+      - message: "system:anonymous"
+        violations: 1
+      - message: "system:authenticated"
+        violations: 1

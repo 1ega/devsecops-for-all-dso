@@ -1,0 +1,25 @@
+name: restrict-loadbalancer-vpol
+version: 1.0.0
+displayName: Disallow Service Type LoadBalancer in ValidatingPolicy
+description: >-
+  Especially in cloud provider environments, a Service having type LoadBalancer will cause the provider to respond by creating a load balancer somewhere in the customer account. This adds cost and complexity to a deployment. Without restricting this ability, users may easily overrun established budgets and security practices set by the organization. This policy restricts use of the Service type LoadBalancer.
+install: |-
+  ```shell
+  kubectl apply -f https://raw.githubusercontent.com/kyverno/policies/main/other-vpol/restrict-loadbalancer/restrict-loadbalancer.yaml
+  ```
+keywords:
+  - kyverno
+  - Sample
+  - ValidatingPolicy
+readme: |
+  Especially in cloud provider environments, a Service having type LoadBalancer will cause the provider to respond by creating a load balancer somewhere in the customer account. This adds cost and complexity to a deployment. Without restricting this ability, users may easily overrun established budgets and security practices set by the organization. This policy restricts use of the Service type LoadBalancer.
+  
+  Refer to the documentation for more details on Kyverno annotations: https://artifacthub.io/docs/topics/annotations/kyverno/
+annotations:
+  kyverno/category: "Sample in Vpol"
+  kyverno/kubernetesVersion: "1.30"
+  kyverno/subject: "Service"
+digest: e3e91b4a2eaa41d0cf69dbef2cc8835d0bc35775d48bc60202b92f5aa80558c1
+
+
+createdAt: "2025-05-11T17:46:11Z"

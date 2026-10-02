@@ -1,34 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">
   <title id="title">DevSecOps for All</title>
-  <desc id="desc">Dark navy banner with a connected shield emblem and the text Security belongs in every workflow.</desc>
+  <desc id="desc">Dark editorial banner for the DevSecOps Swiss Army knife, with warm gold and teal accents.</desc>
   <defs>
-    <linearGradient id="background" x2="1" y2="1">
-      <stop stop-color="#091321"/>
-      <stop offset="1" stop-color="#11283a"/>
+    <linearGradient id="accent" x1="0" x2="1">
+      <stop stop-color="#c3a979"/>
+      <stop offset="1" stop-color="#5dd8cf"/>
     </linearGradient>
-    <linearGradient id="accent" x2="1" y2="1">
-      <stop stop-color="#4ce0c4"/>
-      <stop offset="1" stop-color="#7fb7ff"/>
-    </linearGradient>
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M40 0H0V40" fill="none" stroke="#93c5d3" stroke-opacity=".08"/>
-    </pattern>
   </defs>
-  <rect width="1200" height="340" rx="28" fill="url(#background)"/>
-  <rect width="1200" height="340" rx="28" fill="url(#grid)"/>
-  <circle cx="1030" cy="50" r="220" fill="#4ce0c4" opacity=".04"/>
-  <circle cx="1080" cy="300" r="190" fill="#7fb7ff" opacity=".04"/>
-  <g fill="none" stroke="url(#accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M149 68 227 98v70c0 53-32 93-78 116-46-23-78-63-78-116V98z"/>
-    <path d="m119 173 20 20 43-46" stroke-width="8"/>
-    <path d="M227 129h38m-38 58h55m-55 43h38" opacity=".7"/>
-  </g>
-  <g fill="url(#accent)">
-    <circle cx="270" cy="129" r="6"/>
-    <circle cx="287" cy="187" r="6"/>
-    <circle cx="270" cy="230" r="6"/>
-  </g>
-  <text x="345" y="151" fill="#f2f7fb" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="700" letter-spacing="-2">DevSecOps</text>
-  <text x="348" y="210" fill="url(#accent)" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="700" letter-spacing="-1">for All</text>
-  <text x="349" y="263" fill="#b9ccd8" font-family="Arial, Helvetica, sans-serif" font-size="21">Security belongs in every workflow.</text>
+  <rect width="1200" height="300" fill="#0b0c10"/>
+  <path d="M0 252h1200" stroke="#272c34" stroke-width="2"/>
+  <text x="-27" y="277" fill="#24252a" font-family="Georgia, serif" font-size="300" font-weight="700" letter-spacing="-18">DSO</text>
+  <path d="M608 70h490" stroke="url(#accent)" stroke-width="2"/>
+  <text x="604" y="144" fill="#eee8dc" font-family="Georgia, serif" font-size="49" letter-spacing="5">DEVSECOPS</text>
+  <text x="609" y="189" fill="#b8a37c" font-family="Arial, Helvetica, sans-serif" font-size="24" letter-spacing="8">FOR ALL</text>
+  <text x="609" y="231" fill="#8d9ea6" font-family="Arial, Helvetica, sans-serif" font-size="17" letter-spacing="2">THE SECURITY SWISS ARMY KNIFE</text>
+  <circle cx="1104" cy="70" r="5" fill="#5dd8cf"/>
 </svg>

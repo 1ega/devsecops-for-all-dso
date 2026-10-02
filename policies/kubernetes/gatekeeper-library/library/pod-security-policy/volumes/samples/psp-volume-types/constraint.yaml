@@ -1,0 +1,20 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sPSPVolumeTypes
+metadata:
+  name: psp-volume-types
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+  parameters:
+    volumes:
+    # - "*" # * may be used to allow all volume types
+    - configMap
+    - csi
+    - downwardAPI
+    - emptyDir
+    - ephemeral
+    - persistentVolumeClaim
+    - projected
+    - secret

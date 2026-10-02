@@ -11,6 +11,8 @@ Research candidates:
 | Quark Engine | [quark-engine/quark-engine](https://github.com/quark-engine/quark-engine) | Android behavior analysis |
 | jadx | [skylot/jadx](https://github.com/skylot/jadx) | Decompilation for manual review |
 
+Imported: [../apkleaks](../apkleaks/SOURCE.md) — the regular expressions apkleaks applies to decompiled APKs (Apache-2.0). Related skill: [firebase-apk-scanner](../../skills/trailofbits/firebase-apk-scanner/README.md) for Firebase misconfigurations in APKs.
+
 Open question: a self-hosted MobSF instance with its API, or CLI tools only inside CI.
 
 **Status:** Structure only; no configuration is published yet.

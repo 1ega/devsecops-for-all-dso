@@ -14,4 +14,6 @@ Research candidates:
 
 Related skill: [zizmor](../../skills/cicd-iac-security/zizmor/SKILL.md).
 
-**Status:** Structure only; no policies are published yet.
+Imported: [poutine-rego](poutine-rego/SOURCE.md) — the Rego rules poutine runs against GitHub Actions, GitLab CI, Azure Pipelines, and Tekton, useful as a catalog of pipeline weaknesses and as a base for custom rules.
+
+**Status:** Rule catalog imported; policies of our own are not published yet.

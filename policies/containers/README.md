@@ -13,4 +13,6 @@ Research candidates:
 
 Related skill: [container-hardening](../../skills/kubernetes-containers/container-hardening/SKILL.md).
 
-**Status:** Structure only; no policies are published yet.
+Imported: [distroless-examples](distroless-examples/SOURCE.md) — reference multi-stage Dockerfiles for Go, Java, Node.js, Python, Rust, and other runtimes on distroless base images.
+
+**Status:** Reference Dockerfiles imported; policies of our own are not published yet.

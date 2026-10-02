@@ -8,6 +8,9 @@ The order in which the empty directories get filled. Each item should start with
 - [ ] Agree on [severity and metadata](reporting/severity-and-metadata.md).
 - [ ] Fill missing metadata in the mobile pack: `cwe` is present in 106 of 255 rule files and `masvs` in 40.
 - [ ] Add a Markdown link check to CI.
+- [x] Survey open-source projects for each section — see the [open-source map](docs/research/open-source-map.md).
+- [x] Import reusable upstream content with licenses and `SOURCE.md` files — see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+- [ ] Run `semgrep --validate` and `semgrep --test` for the imported `elttam/` and `trailofbits/` packs in CI.
 
 ## Phase 1 — One way in
 
@@ -27,12 +30,13 @@ The order in which the empty directories get filled. Each item should start with
 ## Phase 3 — Backend and infrastructure
 
 - [ ] Backend Semgrep packs in [semgrep-rules](semgrep-rules/README.md).
-- [ ] [Policies](policies/README.md): Terraform, Kubernetes, containers, CI/CD, cloud, supply chain.
+- [ ] [Policies](policies/README.md): tune the imported Kyverno and Gatekeeper libraries into a default pack; write Terraform, CI/CD, and cloud policies.
 - [ ] [Trivy](scanners/trivy/README.md), [ZAP](scanners/zap/README.md), and [nuclei](scanners/nuclei/README.md) configurations.
 
 ## Phase 4 — Knowledge and operations
 
-- [ ] [Compliance mapping](reporting/compliance-mapping/README.md) to MASVS, ASVS, PCI DSS 4.0, and CIS.
+- [ ] [Manuals](manuals/README.md) for every scanner in `scanners/`, `policies/`, and `integrations/`.
+- [ ] [Compliance mapping](reporting/compliance-mapping/README.md): standards and Prowler cloud mappings are imported; map this repository's rules to MASVS, ASVS, and PCI DSS 4.0.
 - [ ] [Playbooks](playbooks/README.md) for leaked secrets, compromised dependencies, and triage.
-- [ ] [Threat model templates](templates/threat-models/README.md).
+- [ ] [Threat model templates](templates/threat-models/README.md) for login, biometrics, payments, and deep links (examples are imported).
 - [ ] First [detection](detections/README.md) packs and [labs](labs/README.md).

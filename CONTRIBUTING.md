@@ -4,7 +4,7 @@ Thanks for helping make DevSecOps tools easier to use. Improvements to documenta
 
 Semgrep rules should include match and non-match examples in `rules/`, and AI skills should include a focused description and workflow in `skills/<category>/<name>/SKILL.md`. Add new skills to the [skills catalog](skills/README.md), and record the source and license of imported skills in [THIRD_PARTY_NOTICES.md](skills/THIRD_PARTY_NOTICES.md).
 
-Use the directory README for the kind of contribution you are making: [`semgrep-rules/`](semgrep-rules/README.md) for larger rule packs, [`detections/`](detections/README.md) for operational rules, [`policies/`](policies/README.md) for policy-as-code, [`integrations/`](integrations/README.md) for CI/CD recipes, [`playbooks/`](playbooks/README.md) for response procedures, [`templates/`](templates/README.md) for reusable documents, [`labs/`](labs/README.md) for exercises, and [`reporting/`](reporting/README.md) for finding formats and reporting tools, and [`scanners/`](scanners/README.md) for third-party scanner configurations. Planned work is listed in the [roadmap](ROADMAP.md); record tool evaluations in [`docs/research/`](docs/research/README.md) before adding a new scanner or imported rule set.
+Use the directory README for the kind of contribution you are making: [`semgrep-rules/`](semgrep-rules/README.md) for larger rule packs, [`detections/`](detections/README.md) for operational rules, [`policies/`](policies/README.md) for policy-as-code, [`integrations/`](integrations/README.md) for CI/CD recipes, [`playbooks/`](playbooks/README.md) for response procedures, [`templates/`](templates/README.md) for reusable documents, [`labs/`](labs/README.md) for exercises, and [`reporting/`](reporting/README.md) for finding formats and reporting tools, [`scanners/`](scanners/README.md) for third-party scanner configurations, and [`manuals/`](manuals/README.md) for tool manuals. Planned work is listed in the [roadmap](ROADMAP.md); record tool evaluations in [`docs/research/`](docs/research/README.md) before adding a new scanner or imported rule set.
 
 ## Before you start
 
@@ -12,6 +12,7 @@ Use the directory README for the kind of contribution you are making: [`semgrep-
 - For a new tool, open a feature request that describes the problem, intended users, and expected inputs and outputs.
 - Keep tools focused. A tool should be usable and documented on its own.
 - Only submit code and test data that you have the right to share.
+- When importing content from another project, keep its license file, add a `SOURCE.md` with the upstream commit and any changes, and list the directory in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Do not import content from repositories without a license.
 
 ## Add or change a tool
 

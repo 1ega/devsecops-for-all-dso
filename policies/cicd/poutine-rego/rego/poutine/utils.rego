@@ -1,0 +1,196 @@
+package poutine.utils
+
+import rego.v1
+
+unpinned_github_action(purl) if {
+	startswith(purl, "pkg:githubactions/")
+	contains(purl, "@")
+	not regex.match("@[a-f0-9]{40}", purl)
+}
+
+unpinned_docker(purl) if {
+	startswith(purl, "pkg:docker/")
+	not regex.match("@sha256:[a-f0-9]{64}", purl)
+}
+
+unpinned_purl(purl) if {
+	unpinned_github_action(purl)
+} else if {
+	unpinned_docker(purl)
+}
+
+find_pr_checkouts(workflow) := xs if {
+	xs := {{"job_idx": j, "step_idx": i, "workflow": workflow} |
+		s := workflow.jobs[j].steps[i]
+		startswith(s.uses, "actions/checkout@")
+		contains(s.with_ref, "${{")
+	} | {{"job_idx": j, "step_idx": i, "workflow": workflow} |
+		s := workflow.jobs[j].steps[i]
+		regex.match("gh pr checkout ", s.run)
+	}
+}
+
+workflow_steps_after(options) := steps if {
+	steps := {{"step": s, "job_idx": options.job_idx, "step_idx": k} |
+		s := options.workflow.jobs[options.job_idx].steps[k]
+		k > options.step_idx
+	}
+}
+
+filter_workflow_events(workflow, only) if {
+	workflow.events[_].name == only[_]
+}
+
+job_uses_self_hosted_runner(job) if {
+	run_on := job.runs_on[_]
+	not contains(run_on, "$") # skip expressions
+	not regex.match(
+		"(?i)^((ubuntu-(([0-9]{2})\\.04|latest(-(4|8|16)-cores)?|slim)|macos-([0-9]{2}|latest)(-x?large)?|windows-(20[0-9]{2}|latest(-8-cores)?)|(buildjet|warp)-[a-z0-9-]+))$",
+		run_on,
+	)
+} else := false
+
+empty(xs) if {
+	xs == null
+} else if {
+	count(xs) == 0
+}
+
+workflow_run_parents(pkg, workflow) = parents if {
+	parent_names = {name |
+		event := workflow.events[_]
+		event.name == "workflow_run"
+		name := event.workflows[_]
+	}
+	parents := {parent |
+		parent := pkg.github_actions_workflows[_]
+		glob.match(parent_names[_], ["/"], parent.name)
+	}
+}
+
+to_set(xs) = xs if {
+	is_set(xs)
+} else := {v | v := xs[_]} if {
+	is_array(xs)
+} else := {xs}
+
+########################################################################
+# lotp_target resolution
+########################################################################
+
+lotp_static_targets := {
+	"ant": "build.xml",
+	"bundler": "Gemfile",
+	"cargo": "Cargo.toml",
+	"checkov": ".checkov.yml",
+	"docker": "Dockerfile",
+	"eslint": "eslint.config.js",
+	"golangci-lint": ".golangci.yml",
+	"gomplate": ".gomplate.yaml",
+	"goreleaser": ".goreleaser.yaml",
+	"gradle": "build.gradle",
+	"make": "Makefile",
+	"maven": "pom.xml",
+	"mkdocs": "mkdocs.yml",
+	"msbuild": "Directory.Build.props",
+	"mypy": "mypy.ini",
+	"npm": "package.json",
+	"phpstan": "phpstan.neon",
+	"pip": "requirements.txt",
+	"pre-commit": ".pre-commit-config.yaml",
+	"rake": "Rakefile",
+	"rubocop": ".rubocop.yml",
+	"sonar-scanner": "sonar-project.properties",
+	"stylelint": ".stylelintrc.js",
+	"terraform": "main.tf",
+	"tflint": ".tflint.hcl",
+	"tofu": "main.tf",
+	"vale": ".vale.ini",
+	"webpack": "webpack.config.js",
+	"yarn": "package.json",
+}
+
+lotp_dynamic_target_patterns := {
+	"bash": `(\S+\.sh)\b`,
+	"powershell": `(\S+\.ps1)\b`,
+	"python": `python3?\s+(\S+\.py)\b`,
+	"chmod": `chmod\s+\S+\s+(\S+)`,
+}
+
+resolve_lotp_targets(cmd, run_content) := [lotp_static_targets[cmd]] if {
+	lotp_static_targets[cmd]
+} else := targets if {
+	pattern := lotp_dynamic_target_patterns[cmd]
+	matches := regex.find_all_string_submatch_n(pattern, run_content, -1)
+	unique := {trim_left(m[1], "./") | m := matches[_]; not contains(m[1], "://")}
+	count(unique) > 0
+	targets := sort(unique)
+}
+
+########################################################################
+# job order utils
+########################################################################
+
+job_steps_after(options) := steps if {
+	steps := {{"step": s, "step_idx": k} |
+		s := options.job.steps[k]
+		k > options.step_idx
+	}
+}
+
+job_steps_before(options) := steps if {
+	steps := {{"step": s, "step_idx": k} |
+		s := options.job.steps[k]
+		k < options.step_idx
+	}
+}
+
+
+########################################################################
+# find_first_uses_in_job
+########################################################################
+
+find_first_uses_in_job(job, uses) := xs if {
+	xs := {{"job": job, "step_idx": i} |
+		s := job.steps[i]
+		startswith(s.uses, sprintf("%v@", [uses[_]]))
+	}
+}
+
+########################################################################
+# extract_referenced_secrets
+# Extracts all secrets.* references from GitHub Actions expressions (${{ }})
+# Excludes GITHUB_TOKEN. Handles dot and bracket notation.
+########################################################################
+
+# Dot notation: ${{ secrets.FOO }} or ${{ format(secrets.FOO) }}
+_secrets_dot_notation(str) := {m[1] |
+	matches := regex.find_all_string_submatch_n("\\$\\{\\{[^}]*?secrets\\.([a-zA-Z_][a-zA-Z0-9_]*)", str, -1)
+	m := matches[_]
+	m[1] != "GITHUB_TOKEN"
+}
+
+# Bracket notation with single quotes: ${{ secrets['FOO'] }}
+_secrets_bracket_single(str) := {m[1] |
+	matches := regex.find_all_string_submatch_n("\\$\\{\\{[^}]*?secrets\\['([a-zA-Z_][a-zA-Z0-9_]*)'\\]", str, -1)
+	m := matches[_]
+	m[1] != "GITHUB_TOKEN"
+}
+
+# Bracket notation with double quotes: ${{ secrets["FOO"] }}
+# Also handles JSON-escaped quotes: secrets[\"FOO\"] (after json.marshal)
+_secrets_bracket_double(str) := {m[1] |
+	matches := regex.find_all_string_submatch_n("\\$\\{\\{[^}]*?secrets\\[\\\\?\"([a-zA-Z_][a-zA-Z0-9_]*)\\\\?\"\\]", str, -1)
+	m := matches[_]
+	m[1] != "GITHUB_TOKEN"
+}
+
+extract_referenced_secrets(str) := sort(secrets) if {
+	secrets := _secrets_dot_notation(str) | _secrets_bracket_single(str) | _secrets_bracket_double(str)
+}
+
+# Extract secrets from a job by marshaling to JSON and searching
+job_referenced_secrets(job) := secrets if {
+	job_json := json.marshal(job)
+	secrets := extract_referenced_secrets(job_json)
+}

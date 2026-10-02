@@ -1,0 +1,67 @@
+---
+# A simple plan that performs a full scan against a URL in the ZAP_TARGET env var.
+# It uses the standard spider but only runs the AJAX spider if the app appears to be modern.
+# The 2 spider tests will fail as they do not find at least 100 URLs, 
+# but they do not fail the whole plan as they just report at INFO level.
+env:
+  contexts:
+  - name: "Example"
+    urls:
+    - "${ZAP_TARGET}"
+    includePaths: []
+    excludePaths: []
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+  vars: {}
+jobs:
+- parameters:
+    scanOnlyInScope: true
+    enableTags: false
+  rules: []
+  name: "passiveScan-config"
+  type: "passiveScan-config"
+- parameters: {}
+  name: "spider"
+  type: "spider"
+  tests:
+  - onFail: "INFO"
+    statistic: "automation.spider.urls.added"
+    site: ""
+    operator: ">="
+    value: 100
+    type: "stats"
+    name: "At least 100 URLs found"
+- parameters: {}
+  name: "passiveScan-wait-pre-ajax"
+  type: "passiveScan-wait"
+- parameters:
+    maxDuration: 3
+    runOnlyIfModern: true
+  name: "spiderAjax"
+  type: "spiderAjax"
+  tests:
+  - onFail: "INFO"
+    statistic: "spiderAjax.urls.added"
+    site: ""
+    operator: ">="
+    value: 100
+    type: "stats"
+    name: "At least 100 URLs found"
+- parameters:
+  policyDefinition:
+    defaultStrength: "medium"
+    defaultThreshold: "medium"
+    rules: []
+  name: "activeScan"
+  type: "activeScan"
+- parameters: {}
+  name: "passiveScan-wait-pre-report"
+  type: "passiveScan-wait"
+- parameters:
+    template: "modern"
+    reportTitle: "ZAP Scanning Report"
+    reportDescription: ""
+  name: "report"
+  type: "report"
