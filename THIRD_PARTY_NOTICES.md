@@ -6,6 +6,11 @@ Skills imported earlier are recorded in [skills/THIRD_PARTY_NOTICES.md](skills/T
 
 | Directory | Upstream | Commit | License |
 | :--- | :--- | :--- | :--- |
+| [`detections/yara/bartblaze/`](detections/yara/bartblaze/SOURCE.md) | [bartblaze/Yara-rules](https://github.com/bartblaze/Yara-rules) | `5cc871d82361` | MIT |
+| [`detections/yara/elastic/`](detections/yara/elastic/SOURCE.md) | [elastic/protections-artifacts](https://github.com/elastic/protections-artifacts) | `90c1d57c9c22` | Elastic-2.0 |
+| [`detections/yara/reversinglabs/`](detections/yara/reversinglabs/SOURCE.md) | [reversinglabs/reversinglabs-yara-rules](https://github.com/reversinglabs/reversinglabs-yara-rules) | `e0a0be54aa1e` | MIT |
+| [`detections/yara/signature-base/`](detections/yara/signature-base/SOURCE.md) | [Neo23x0/signature-base](https://github.com/Neo23x0/signature-base) | `94a1c48d7ab4` | DRL-1.1 |
+| [`detections/yara/yara-rules-community/`](detections/yara/yara-rules-community/SOURCE.md) | [Yara-Rules/rules](https://github.com/Yara-Rules/rules) | `0f93570194a8` | GPL-2.0 |
 | [`guides/owasp-cheatsheets/`](guides/owasp-cheatsheets/SOURCE.md) | [OWASP/CheatSheetSeries](https://github.com/OWASP/CheatSheetSeries) | `063e9df7b05c` | CC-BY-SA-4.0 |
 | [`guides/owasp-mastg/`](guides/owasp-mastg/SOURCE.md) | [OWASP/mastg](https://github.com/OWASP/mastg) | `02ffd85fb743` | CC-BY-SA-4.0 |
 | [`policies/cicd/poutine-rego/`](policies/cicd/poutine-rego/SOURCE.md) | [boostsecurityio/poutine](https://github.com/boostsecurityio/poutine) | `bd4c1f86fe8c` | Apache-2.0 |

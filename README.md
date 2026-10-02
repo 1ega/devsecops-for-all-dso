@@ -13,20 +13,24 @@ DevSecOps for All collects security checks, policies, standards, and guidance in
 
 ## Quick start
 
-Install [Semgrep](https://semgrep.dev/docs/getting-started/quickstart/), clone this repository, and run from its root against a project you are authorized to assess.
+1. Clone the repository.
+2. Pick your task in [Find by task](#find-by-task), or browse [What's inside](#whats-inside).
+3. Open that directory's README. Each one says what is there, which tool runs it, and how.
+
+A few examples from different parts of the toolbox, run from the repository root:
 
 ```bash
-# Mobile app: Android, iOS, React Native, Flutter
+# Find secrets in a project with the gitleaks default rules
+gitleaks dir --config scanners/gitleaks/default-config/gitleaks.toml path/to/project
+
+# Check Kubernetes manifests against example Rego policies
+conftest test --policy policies/terraform/conftest-examples/examples/kubernetes/policy path/to/deployment.yaml
+
+# Scan a mobile app's source code
 semgrep scan --metrics=off --config semgrep-rules/mobile_custom/rules/ path/to/mobile-app
-
-# Python project
-semgrep scan --metrics=off --config rules/ path/to/python-project
-
-# Backend code with the imported Trail of Bits rules
-semgrep scan --metrics=off --config semgrep-rules/trailofbits/ path/to/project
 ```
 
-Add `--sarif -o results.sarif` to get a file for GitHub code scanning or DefectDojo. Treat every finding as a lead to verify, not as proof of a vulnerability.
+Run tools only against systems you are authorized to assess, and treat every finding as a lead to verify.
 
 ## Find by task
 
@@ -56,12 +60,9 @@ Add `--sarif -o results.sarif` to get a file for GitHub code scanning or DefectD
 
 | Directory | Contents | Status |
 | :--- | :--- | :--- |
-| [`rules/`](rules/README.md) | 3 Python Semgrep rules with tests | ✅ |
-| [`semgrep-rules/mobile_custom/`](semgrep-rules/mobile_custom/README.md) | 320 rules for Android, iOS, React Native / Expo, and Flutter / Dart | ✅ |
-| [`semgrep-rules/trailofbits/`](semgrep-rules/trailofbits/SOURCE.md) | 120 rules for Go, Python, JavaScript, JVM, Rust, Ruby, HCL, and more | 📦 |
-| [`semgrep-rules/elttam/`](semgrep-rules/elttam/SOURCE.md) | 107 rules for Java, Go, PHP, YAML, and generic code; some Java rules need fixes ([details](semgrep-rules/README.md)) | 📦 |
-| [`semgrep-rules/profiles/`](semgrep-rules/profiles/README.md) | Rule selections for CI gates, merge request comments, and audits | 🗺️ |
-| [`scanners/`](scanners/README.md) | gitleaks default config, secret pattern database, apkleaks patterns, 200+ ZAP scripts, nuclei fuzzing templates; our own scanner configs | 📦 · 🗺️ |
+| [`scanners/`](scanners/README.md) | Configurations for gitleaks, osv-scanner, Trivy, ZAP, nuclei, MobSF; imported secret patterns, 200+ ZAP scripts, nuclei fuzzing templates | 📦 · 🗺️ |
+| [`semgrep-rules/`](semgrep-rules/README.md) | Code rule packs: [mobile](semgrep-rules/mobile_custom/README.md) (320 rules, ✅), [Trail of Bits](semgrep-rules/trailofbits/SOURCE.md) (120, 📦), [elttam](semgrep-rules/elttam/SOURCE.md) (107, 📦), planned [profiles](semgrep-rules/profiles/README.md) | ✅ · 📦 |
+| [`rules/`](rules/README.md) | 3 Python starter rules with tests | ✅ |
 
 ### Enforce
 
@@ -86,7 +87,7 @@ Add `--sarif -o results.sarif` to get a file for GitHub code scanning or DefectD
 | [`reporting/`](reporting/README.md) | Normalized severity scale and rule metadata (draft, awaiting agreement) | 🗺️ |
 | [`reporting/compliance-mapping/`](reporting/compliance-mapping/README.md) | MASVS, ASVS 5.0, and 88 Prowler frameworks including PCI DSS 4.0, CIS, ISO 27001 | 📦 |
 | [`templates/threat-models/`](templates/threat-models/README.md) | OWASP Threat Model Cookbook, Threagile and threatcl examples | 📦 |
-| [`manuals/`](manuals/README.md) | How to install, run, and tune each scanner | 🗺️ |
+| [`manuals/`](manuals/README.md) | Install, use, and triage manuals for 91 tools, with links to each tool's GitHub repository | ✅ |
 | [`docs/research/`](docs/research/README.md) | Tool evaluations, including the [map of 96 open-source projects](docs/research/open-source-map.md) | ✅ |
 
 ### Act
@@ -109,7 +110,7 @@ Add `--sarif -o results.sarif` to get a file for GitHub code scanning or DefectD
 
 ```text
 devsecopsforall/
-├── rules/  semgrep-rules/  scanners/        scan
+├── scanners/  semgrep-rules/  rules/        scan
 ├── policies/  integrations/  tools/         enforce
 ├── guides/  reporting/  templates/
 │   manuals/  docs/research/                 know
