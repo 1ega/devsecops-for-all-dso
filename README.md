@@ -17,143 +17,78 @@ DevSecOps for All collects security checks, policies, detection rules, standards
 
 ## Quick start
 
-1. Clone the repository. For company-wide adoption, start with the [SMB checklist](guides/smb-security.md) and [32-control baseline](baseline/README.md).
-2. Pick your task in [Find by task](#find-by-task), or browse [What's inside](#whats-inside).
-3. Open that directory's README. Each one says what is there, which tool runs it, and how.
-
-A few examples from different parts of the toolbox, run from the repository root:
+Clone the repository to use its rules and configurations locally:
 
 ```bash
-# Find secrets in a project with the gitleaks default rules
-gitleaks dir --config rules/secrets/gitleaks-default/gitleaks.toml path/to/project
-
-# Check Kubernetes manifests against example Rego policies
-conftest test --policy policies/terraform/conftest-examples/examples/kubernetes/policy path/to/deployment.yaml
-
-# Scan a mobile app's source code
-semgrep scan --metrics=off --config rules/semgrep/mobile/rules/ path/to/mobile-app
-
-# Look for known malware in a directory with one YARA rule file
-yara -r rules/yara/bartblaze/rules/crimeware/AveMaria.yar path/to/files
+git clone https://github.com/1ega/devsecopsforall.git
+cd devsecopsforall
 ```
 
-Run tools only against systems you are authorized to assess, and treat every finding as a lead to verify.
+Install the scanner you need separately. These examples use [Gitleaks](manuals/gitleaks.md#install) and [Semgrep](manuals/semgrep.md#install):
+
+```bash
+# Find secrets in a project's current files
+gitleaks dir --redact=100 \
+  --config rules/secrets/gitleaks-default/gitleaks.toml ../your-project
+
+# Check Python code with the three starter rules
+semgrep scan --metrics=off --error \
+  --config rules/semgrep/python/ ../your-project
+```
+
+Replace `../your-project` with the directory you want to check. Both examples return exit code `1` when they find a match. Review the findings using the [triage playbook](playbooks/vulnerability-triage.md); for exposed credentials, follow the [leaked secret playbook](playbooks/leaked-secret.md).
+
+For a company-wide rollout, start with the [SMB guide](guides/smb-security.md) and [security baseline](baseline/README.md).
 
 ## Find by task
 
-| I want to… | Start here |
+| Task | Start here |
 | :--- | :--- |
-| Implement a company baseline | [SMB adoption](guides/smb-security.md) · [Evidence checker](tools/dso/README.md) |
-| Review SaaS, identity and endpoints | [32 controls](baseline/README.md) · [SCuBA](manuals/scuba.md) · [osquery](manuals/osquery.md) · [Wazuh](manuals/wazuh.md) |
-| Back up and recover services | [Restic](manuals/restic.md) · [Restore drill](playbooks/restore-drill.md) |
-| Scan source code for vulnerabilities | [Semgrep rule packs](rules/semgrep/README.md) · [Python rules](rules/semgrep/python/README.md) |
-| Review a mobile app | [Mobile rules](rules/semgrep/mobile/README.md) · [OWASP MASTG](guides/owasp-mastg/SOURCE.md) · [MobSF notes](scanners/mobsf/README.md) |
-| Find leaked secrets | [gitleaks](scanners/gitleaks/README.md) · [Secret pattern database](rules/secrets/secrets-patterns-db/SOURCE.md) |
-| Check dependencies and SBOMs | [Grype SARIF wrapper](scanners/grype/README.md) · [osv-scanner](scanners/osv-scanner/README.md) · [Trivy](scanners/trivy/README.md) · [Supply chain policies](policies/supply-chain/README.md) |
-| Secure CI/CD pipelines | [CI/CD policies](policies/cicd/README.md) · [CI integrations](integrations/README.md) |
-| Check Terraform and other IaC | [Terraform policies](policies/terraform/README.md) |
-| Harden containers and Kubernetes | [Container policies](policies/containers/README.md) · [Kyverno and Gatekeeper libraries](policies/kubernetes/README.md) |
-| Audit a cloud account | [Prowler scan wrapper](scanners/prowler/README.md) · [Prowler frameworks](reporting/compliance-mapping/prowler/SOURCE.md) · [Cloud policies](policies/cloud/README.md) |
-| Hunt for malware and malicious code | [YARA rules](rules/yara/README.md) · [GuardDog](manuals/guarddog.md) · [ClamAV](manuals/clamav.md) |
-| Test a running web app or API | [ZAP](scanners/zap/README.md) · [nuclei](scanners/nuclei/README.md) |
-| Verify API access boundaries | [Authorization test matrix](guides/api-authorization.md) |
-| Map work to a standard (MASVS, ASVS, PCI DSS, CIS) | [Compliance mapping](reporting/compliance-mapping/README.md) |
-| Model threats for a feature | [Threat model templates and examples](templates/threat-models/README.md) |
-| Fix or triage a finding | [OWASP Cheat Sheets](guides/owasp-cheatsheets/SOURCE.md) · [Playbooks](playbooks/README.md) · [Severity scale](reporting/severity-and-metadata.md) |
-| Respond to an incident | [Playbooks](playbooks/README.md) · [Incident response skill](skills/detection-response/incident-response/SKILL.md) |
-| Detect threats in running containers | [Falco deployment and triage](rules/falco/README.md) · [Runtime security examples](skills/detection-response/runtime-security/examples/runtime-security/README.md) |
-| Give an AI agent security skills | [Skill catalog](skills/README.md) · [Trail of Bits plugins](skills/trailofbits/README.md) |
-| Learn how to install and run a tool | [Manuals for 95 tools](manuals/README.md), each linked to its GitHub repository |
+| Find secrets | [Gitleaks manual](manuals/gitleaks.md) · [Secret patterns](rules/secrets/secrets-patterns-db/SOURCE.md) |
+| Review source code | [Semgrep rule packs](rules/semgrep/README.md) · [Code review checklist](guides/security-review.md) |
+| Review a mobile app | [Mobile rules](rules/semgrep/mobile/README.md) · [OWASP MASTG](guides/owasp-mastg/SOURCE.md) |
+| Check dependencies and images | [Grype](scanners/grype/README.md) · [Trivy](scanners/trivy/README.md) |
+| Add security checks to CI | [GitHub Actions](integrations/github-actions/README.md) · [GitLab CI](integrations/gitlab-ci/README.md) · [pre-commit](integrations/pre-commit/README.md) |
+| Check infrastructure code | [Terraform / conftest policies](policies/terraform/README.md) · [Trivy IaC config](scanners/trivy/config.yaml) |
+| Harden Kubernetes | [Starter policies](policies/kubernetes/starter/README.md) · [Kyverno and Gatekeeper libraries](policies/kubernetes/README.md) |
+| Audit cloud and SaaS accounts | [Prowler](scanners/prowler/README.md) · [SCuBA](manuals/scuba.md) |
+| Test web apps and APIs | [ZAP manual](manuals/zap.md) · [API authorization tests](guides/api-authorization.md) |
+| Detect malware or runtime threats | [YARA rules](rules/yara/README.md) · [Falco rules](rules/falco/README.md) |
+| Handle findings and incidents | [Response playbooks](playbooks/README.md) · [OWASP Cheat Sheets](guides/owasp-cheatsheets/SOURCE.md) |
+| Test backup recovery | [Restic manual](manuals/restic.md) · [Restore drill](playbooks/restore-drill.md) |
+| Work with security standards | [ASVS, MASVS and Prowler frameworks](reporting/compliance-mapping/README.md) |
+| Model threats | [Templates and examples](templates/threat-models/README.md) |
+| Use security skills with an AI agent | [Skill catalog](skills/README.md) · [Trail of Bits plugins](skills/trailofbits/README.md) |
 
 ## What's inside
 
-**Status:** ✅ original content — documented, with validation scope stated by each component · 📦 imported — upstream content with its license and source recorded · 🗺️ planned — structure and plan only. A manual or imported test suite does not establish deployed coverage; see the [review and validation record](docs/research/smb-operational-gaps.md).
-
-### Scan
-
-| Directory | Contents | Status |
-| :--- | :--- | :--- |
-| [`rules/`](rules/README.md) | All rule sets, by engine: Semgrep ([mobile](rules/semgrep/mobile/README.md) 320, [Python](rules/semgrep/python/README.md) 3, [Trail of Bits](rules/semgrep/trailofbits/SOURCE.md) 120, [elttam](rules/semgrep/elttam/SOURCE.md) 107), [YARA](rules/yara/README.md) (5 sets, about 2,700 files), [secret patterns](rules/README.md), [nuclei templates](rules/nuclei/fuzzing-templates/SOURCE.md), [Falco](rules/falco/README.md) | ✅ · 📦 |
-| [`scanners/`](scanners/README.md) | Grype, Prowler and Trivy wrappers; Trivy fixtures and osquery configuration; other scanner notes and 200+ ZAP community scripts | ✅ · 📦 · 🗺️ |
-
-### Enforce
-
-| Directory | Contents | Status |
-| :--- | :--- | :--- |
-| [`policies/kubernetes/`](policies/kubernetes/README.md) | Original Restricted Pod Security/network/workload starters; Kyverno library with upstream tests; 49 Gatekeeper constraint templates | ✅ · 📦 |
-| [`policies/cicd/`](policies/cicd/README.md) | 26 poutine Rego rules for GitHub Actions, GitLab CI, Azure Pipelines, Tekton | 📦 |
-| [`policies/terraform/`](policies/terraform/README.md) | conftest example policies for Terraform, Kubernetes, Dockerfiles | 📦 |
-| [`policies/containers/`](policies/containers/README.md) | Reference distroless Dockerfiles | 📦 |
-| [`policies/supply-chain/`](policies/supply-chain/README.md) | Sigstore policy-controller examples for signature checks | 📦 |
-| [`policies/cloud/`](policies/cloud/README.md) | Cloud evidence map; AWS, GCP, and Azure collectors planned | ✅ · 🗺️ |
-| [`integrations/`](integrations/README.md) | Starter GitHub/GitLab secrets/SCA/SAST and Trivy IaC/image scans, pre-commit; DefectDojo import planned | ✅ · 🗺️ |
-| [`tools/`](tools/README.md) | [`dso`](tools/dso/README.md) inventory/evidence/exception checker and repository validation | ✅ |
-
-### Know
-
-| Directory | Contents | Status |
-| :--- | :--- | :--- |
-| [`guides/`](guides/README.md) | SMB adoption, logging, API authorization, CI hardening, review and pentest checklists | ✅ |
-| [`guides/owasp-cheatsheets/`](guides/owasp-cheatsheets/SOURCE.md) | All 127 OWASP Cheat Sheets | 📦 |
-| [`guides/owasp-mastg/`](guides/owasp-mastg/SOURCE.md) | OWASP MASTG tests, techniques, knowledge, and best practices | 📦 |
-| [`reporting/`](reporting/README.md) | Finding lifecycle, private record/exception templates and severity conventions; automatic normalization planned | ✅ · 🗺️ |
-| [`reporting/compliance-mapping/`](reporting/compliance-mapping/README.md) | MASVS, ASVS 5.0, and 88 Prowler frameworks including PCI DSS 4.0, CIS, ISO 27001 | 📦 |
-| [`templates/threat-models/`](templates/threat-models/README.md) | OWASP Threat Model Cookbook, Threagile and threatcl examples | 📦 |
-| [`manuals/`](manuals/README.md) | Install, use, and triage manuals for 95 tools, with links to each tool's GitHub repository | ✅ |
-| [`docs/research/`](docs/research/README.md) | Tool evaluations, including the [map of 96 open-source projects](docs/research/open-source-map.md) | ✅ |
-
-### Act
-
-| Directory | Contents | Status |
-| :--- | :--- | :--- |
-| [`skills/`](skills/README.md) | 51 AI agent skills in 10 security domains | ✅ |
-| [`skills/trailofbits/`](skills/trailofbits/README.md) | 23 Claude Code plugins (38 skills): Semgrep rule creation, SARIF analysis, variant analysis, supply-chain risk | 📦 |
-| [`playbooks/`](playbooks/README.md) | Incident, leak, dependency, runtime, vulnerability and restore procedures | ✅ |
-| [`labs/`](labs/README.md) | Reproducible vulnerable-and-fixed exercises | 🗺️ |
+- [`rules/`](rules/README.md) — Semgrep, YARA, secret patterns, nuclei templates and Falco rules.
+- [`scanners/`](scanners/README.md) — scanner configurations, Grype/Prowler/Trivy wrappers and ZAP scripts.
+- [`policies/`](policies/README.md) — Kubernetes, Terraform, CI/CD, container and supply chain policies.
+- [`integrations/`](integrations/README.md) — GitHub Actions, GitLab CI and pre-commit templates.
+- [`baseline/`](baseline/README.md) and [`tools/dso/`](tools/dso/README.md) — company controls, inventory templates and evidence checks.
+- [`manuals/`](manuals/README.md) and [`guides/`](guides/README.md) — tool setup, usage, review checklists and OWASP references.
+- [`playbooks/`](playbooks/README.md) and [`reporting/`](reporting/README.md) — incident procedures, finding records, severity conventions and compliance references.
+- [`templates/`](templates/README.md) — threat model templates and worked examples.
+- [`skills/`](skills/README.md) — instructions for AI coding agents, including imported Trail of Bits plugins.
+- [`docs/research/`](docs/research/README.md) — tool evaluations and implementation notes.
 
 ## How the repository is organized
 
-- **Every directory has a README** that says what belongs there, what is already in it, and its status.
-- **Imported content stays in its own directory** with the upstream license and a `SOURCE.md` naming the project, commit, and any changes. All imports are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-- **Research comes first.** A new scanner, policy pack, or imported rule set starts with a note in [`docs/research/`](docs/research/README.md).
-- **One severity scale** across tools is defined in [reporting/severity-and-metadata.md](reporting/severity-and-metadata.md).
-- **The order of work** is in the [roadmap](ROADMAP.md).
+Imported packs live in separate directories with their upstream license and a `SOURCE.md` recording the source commit and local changes. Collections assembled from several upstreams, the [mobile Semgrep rules](rules/semgrep/mobile/NOTICE.md) and the imported [AI skills](skills/THIRD_PARTY_NOTICES.md), record each source in a notice file instead. The [third-party notices](THIRD_PARTY_NOTICES.md) list the imports.
 
-```text
-devsecopsforall/
-├── baseline/          32 controls, private inventory and assessment templates
-├── rules/             All rule sets: Semgrep, YARA, secret patterns, nuclei, Falco
-├── scanners/          Scanner wrappers, configuration, ZAP scripts
-├── policies/          Policy-as-code: Kubernetes, CI/CD, Terraform, containers, supply chain
-├── integrations/      Starter CI scans, pre-commit; DefectDojo import planned
-├── tools/             Evidence/exception checker and validation
-├── manuals/           How to install, use, and triage 95 tools
-├── guides/            Review checklists, OWASP Cheat Sheets, OWASP MASTG
-├── reporting/         Severity scale and compliance mappings
-├── templates/         Threat model templates and examples
-├── skills/            AI agent skills, including Trail of Bits plugins
-├── playbooks/         Incident, triage and recovery procedures
-├── labs/              Reproducible exercises (planned)
-├── docs/research/     Tool evaluations and the open-source map
-├── ROADMAP.md         What gets built next
-└── THIRD_PARTY_NOTICES.md   Source and license of every import
-```
+Check the component's README for its requirements, status and validation scope. Some directories contain reference material or plans: DefectDojo ingestion, cloud evidence collectors, automatic reporting adapters and [labs](labs/README.md) are still planned. The [roadmap](ROADMAP.md) tracks that work; the [review record](docs/research/smb-operational-gaps.md) describes what has been checked so far.
 
 ## Contributing
 
-A precise rule, a tested policy, a clearer manual, or a fixed link are all welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the README of the directory you are changing, include tests or examples that show the behavior, and record the source and license of anything you import. The [roadmap](ROADMAP.md) lists open work.
+For bugs and questions, open an [issue](https://github.com/1ega/devsecopsforall/issues). To contribute rules, policies, examples or documentation, read [CONTRIBUTING.md](CONTRIBUTING.md). It covers tests, import requirements and where to put changes. The [validation guide](tools/validation/README.md) lists the repository checks.
 
-## Responsible use
+Maintained by [@1ega](https://github.com/1ega).
 
-> [!IMPORTANT]
-> Use these tools only on systems you own or are authorized to assess. Never commit credentials, customer data, or unredacted scan results.
+## Security
 
-Report vulnerabilities in this repository privately, following the [security policy](SECURITY.md).
+Use the tools on systems you own or have permission to assess. Keep credentials and unredacted findings out of public commits and issues. Report vulnerabilities in this repository privately through [SECURITY.md](SECURITY.md).
 
 ## License
 
-Original material is under the [MIT License](LICENSE). Imported content keeps its own license — including GPL, AGPL-3.0, CC-BY-SA-4.0, DRL 1.1, and the Elastic License 2.0 in the directories that carry them; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), the [mobile rule notices](rules/semgrep/mobile/NOTICE.md), and the [skill notices](skills/THIRD_PARTY_NOTICES.md).
-
-<div align="center">
-  Maintained by <a href="https://github.com/1ega">@1ega</a> with contributions from the community.
-</div>
+Original material is under the [MIT License](LICENSE). Imported content retains its upstream license; check the license in the relevant directory and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) before reusing it. Additional notices cover the [mobile rules](rules/semgrep/mobile/NOTICE.md) and [AI skills](skills/THIRD_PARTY_NOTICES.md).
