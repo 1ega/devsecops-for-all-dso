@@ -716,11 +716,11 @@ window.ROADMAP = {
           "install": [
             {
               "label": "pip or Homebrew",
-              "code": "python3 -m pip install semgrep==1.178.0\n# or\nbrew install semgrep"
+              "code": "python3 -m pip install semgrep==1.179.0\n# or\nbrew install semgrep"
             },
             {
               "label": "Container image",
-              "code": "docker pull semgrep/semgrep:1.178.0@sha256:32e459968daabe7ab86968184a29109b9564aa00392401156f9788452b42786b"
+              "code": "docker pull semgrep/semgrep:1.179.0@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b"
             }
           ],
           "run": [
@@ -736,7 +736,7 @@ window.ROADMAP = {
           "ciExamples": [
             {
               "label": "GitLab CI",
-              "code": "semgrep:\n  stage: test\n  image: semgrep/semgrep:1.178.0@sha256:32e459968daabe7ab86968184a29109b9564aa00392401156f9788452b42786b\n  variables:\n    SEMGREP_RULES: rules/semgrep/python/           # path to your rule pack\n  script:\n    - semgrep scan --metrics=off --config \"$SEMGREP_RULES\"\n        --gitlab-sast-output=gl-sast-report.json\n        --sarif-output=semgrep.sarif .\n  artifacts:\n    when: always\n    paths: [semgrep.sarif]\n    reports:\n      sast: gl-sast-report.json\n  rules:\n    - if: $CI_PIPELINE_SOURCE == \"merge_request_event\"\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+              "code": "semgrep:\n  stage: test\n  image: semgrep/semgrep:1.179.0@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b\n  variables:\n    SEMGREP_RULES: rules/semgrep/python/           # path to your rule pack\n  script:\n    - semgrep scan --metrics=off --config \"$SEMGREP_RULES\"\n        --gitlab-sast-output=gl-sast-report.json\n        --sarif-output=semgrep.sarif .\n  artifacts:\n    when: always\n    paths: [semgrep.sarif]\n    reports:\n      sast: gl-sast-report.json\n  rules:\n    - if: $CI_PIPELINE_SOURCE == \"merge_request_event\"\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
             }
           ],
           "notes": [

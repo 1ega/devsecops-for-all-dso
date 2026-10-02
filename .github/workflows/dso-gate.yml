@@ -1,0 +1,117 @@
+---
+# yamllint disable rule:line-length
+# yamllint disable rule:truthy
+name: DSO normalized repository gate
+on:
+  workflow_call:
+    inputs:
+      kit_ref:
+        description: Reviewed full commit SHA of 1ega/devsecopsforall
+        type: string
+        required: true
+      kit_branch:
+        description: Protected branch that must contain kit_ref
+        type: string
+        default: main
+      baseline_branch:
+        description: Protected caller branch that must contain baseline_ref
+        type: string
+        default: main
+      fail_on:
+        description: Severity threshold (info, low, medium, high, critical)
+        type: string
+        default: high
+      baseline_ref:
+        description: Optional trusted full commit SHA in caller repo containing the baseline
+        type: string
+        default: ''
+      baseline_path:
+        description: Baseline file relative to the trusted baseline checkout
+        type: string
+        default: .security/dso-baseline.json
+permissions:
+  contents: read
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Validate immutable references
+        env:
+          KIT_REF: ${{ inputs.kit_ref }}
+          BASELINE_REF: ${{ inputs.baseline_ref }}
+        run: |
+          [[ "$KIT_REF" =~ ^[a-f0-9]{40}$ ]] || { echo "DSO: invalid kit_ref" >&2; exit 2; }
+          [[ -z "$BASELINE_REF" || "$BASELINE_REF" =~ ^[a-f0-9]{40}$ ]] || { echo "DSO: invalid baseline_ref" >&2; exit 2; }
+      - name: Check out caller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          path: source
+          submodules: false
+          lfs: false
+          persist-credentials: false
+      - name: Check out reviewed DSO kit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          repository: 1ega/devsecopsforall
+          ref: ${{ inputs.kit_ref }}
+          path: dso-kit
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require kit ancestry in protected branch
+        env:
+          KIT_REF: ${{ inputs.kit_ref }}
+          KIT_BRANCH: ${{ inputs.kit_branch }}
+        run: |
+          git check-ref-format "refs/heads/$KIT_BRANCH" || exit 2
+          git -C dso-kit merge-base --is-ancestor "$KIT_REF" "refs/remotes/origin/$KIT_BRANCH" || {
+            echo 'DSO: kit_ref is not reachable from the trusted branch' >&2; exit 2;
+          }
+      - name: Scan caller repository
+        env:
+          DSO_PROJECT: ${{ github.repository }}
+        run: |
+          python3 dso-kit/tools/dso/dso.py scan repo "$GITHUB_WORKSPACE/source" \
+            --engine docker --project "$DSO_PROJECT" --timeout 400 \
+            --output "$RUNNER_TEMP/dso/report.json"
+      - name: Check out trusted baseline
+        if: inputs.baseline_ref != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ inputs.baseline_ref }}
+          path: trusted-baseline
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require baseline ancestry in protected branch
+        if: inputs.baseline_ref != ''
+        env:
+          BASELINE_REF: ${{ inputs.baseline_ref }}
+          BASELINE_BRANCH: ${{ inputs.baseline_branch }}
+        run: |
+          git check-ref-format "refs/heads/$BASELINE_BRANCH" || exit 2
+          git -C trusted-baseline merge-base --is-ancestor "$BASELINE_REF" "refs/remotes/origin/$BASELINE_BRANCH" || {
+            echo 'DSO: baseline_ref is not reachable from the trusted branch' >&2; exit 2;
+          }
+      - name: Evaluate gate
+        env:
+          BASELINE_REF: ${{ inputs.baseline_ref }}
+          BASELINE_PATH: ${{ inputs.baseline_path }}
+          FAIL_ON: ${{ inputs.fail_on }}
+        run: |
+          case "$FAIL_ON" in info|low|medium|high|critical) ;; *) echo "DSO: invalid fail_on" >&2; exit 2 ;; esac
+          args=()
+          if [[ -n "$BASELINE_REF" ]]; then
+            baseline="$(realpath -e "trusted-baseline/$BASELINE_PATH")"
+            [[ "$baseline" == "$GITHUB_WORKSPACE/trusted-baseline/"* ]] || exit 2
+            args+=(--baseline "$baseline")
+          fi
+          python3 dso-kit/tools/dso/dso.py gate \
+            --input "$RUNNER_TEMP/dso/report.json" --fail-on "$FAIL_ON" "${args[@]}"
+      - name: Retain normalized report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: dso-normalized-report
+          path: ${{ runner.temp }}/dso/report.json
+          if-no-files-found: warn
+          retention-days: 7

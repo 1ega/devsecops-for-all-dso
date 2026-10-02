@@ -1,0 +1,30 @@
+---
+services:
+  dso:
+    image: dso-mcp:local
+    build:
+      context: ../..
+      dockerfile: mcp/dso/Dockerfile
+    stdin_open: true
+    read_only: true
+    init: true
+    user: ${DSO_UID:-10001}:${DSO_GID:-10001}
+    mem_limit: 3g
+    pids_limit: 256
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=256m
+    volumes:
+      - type: bind
+        source: ${DSO_ROOT:?Use compose.sh with an absolute project directory}
+        target: /workspace
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: volume
+        source: cache
+        target: /cache
+    command: [--root, /workspace, --engine, native]
+volumes:
+  cache:

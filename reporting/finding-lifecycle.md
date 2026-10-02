@@ -5,7 +5,7 @@ operational fields: stable finding/rule/tool/asset identifiers, environment,
 native plus normalized severity where available, confidence, owner, status,
 first detection, due date, evidence, deployed version/digest and remediation
 ticket. Include exposure, data criticality, known exploitation and fix availability.
-The example is a format guide; automatic adapters/deduplication remain unimplemented.
+The example is a lifecycle format guide. [DSO scan adapters](dso-report.md) normalize scanner output and deduplicate within each tool; automatic lifecycle enrichment and external ingestion remain unimplemented.
 
 Suggested starter deadlines below are company policy choices, not regulatory
 deadlines. Adopt them with the service owners and measure overdue findings.

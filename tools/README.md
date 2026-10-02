@@ -4,7 +4,7 @@ Independent utilities with explicit inputs, outputs and validation.
 
 | Tool | Purpose | Status |
 | :--- | :--- | :--- |
-| [dso](dso/README.md) | Private inventory, baseline evidence and exception expiry checks | Published |
+| [dso](dso/README.md) | Repository scans, normalized finding gates, inventory, evidence and exception checks | Published |
 
 ## Suggested layout
 
@@ -31,4 +31,4 @@ The exact layout can match the language and size of the tool. Keep dependencies 
 
 Add a tool to the [root catalog](../README.md#whats-inside) only when its code and guide are available.
 
-Published: [dso](dso/README.md) for private evidence/exception checks and [repository validation](validation/README.md). Scanner orchestration remains planned.
+Published: [dso](dso/README.md) for private evidence/exception checks and [repository validation](validation/README.md). Repository scanner orchestration and a shared [MCP server](../mcp/dso/README.md) are available.

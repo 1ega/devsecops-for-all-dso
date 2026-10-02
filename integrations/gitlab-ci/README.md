@@ -32,3 +32,35 @@ to `false` only for a documented inapplicable check. Test expected findings and
 scanner failures before requiring the job. See [CI hardening](../../guides/cicd-hardening.md).
 
 Optional [infrastructure.yml](infrastructure.yml) adds a Trivy IaC job and an image job when `DSO_IMAGE_DIGEST` is set to a full immutable reference. It uses container jobs, blocks HIGH/CRITICAL and errors, and requires an appropriately isolated runner. Supply private-registry access only in protected trusted jobs.
+
+## Normalized finding gate
+
+Use [dso-gate.yml](dso-gate.yml) for the shared CLI/report/delta gate. The runner
+needs Bash 3.2+, Python 3.10+, git, and a Docker CLI and daemon. With a
+socket-mounted or remote daemon, the client's `TMPDIR` must exist at the same
+absolute path for the daemon; otherwise the scan stops with `mount_visibility`
+instead of scanning an empty directory. Include the file at a reviewed immutable
+revision and set `DSO_KIT_REF` to the same 40-character commit.
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `DSO_KIT_REF` | required | Reviewed kit commit; must be reachable from `DSO_KIT_BRANCH` |
+| `DSO_KIT_URL` | GitHub kit repository | HTTPS URL of the kit repository or an internal mirror |
+| `DSO_KIT_BRANCH` | `main` | Protected kit branch |
+| `DSO_BASELINE_REF` | empty | Optional reviewed caller commit that holds the baseline |
+| `DSO_BASELINE_BRANCH` | `main` | Protected caller branch that must contain that commit |
+| `DSO_BASELINE_PATH` | `.security/dso-baseline.json` | Baseline path in that commit |
+| `DSO_FAIL_ON` | `high` | `info`, `low`, `medium`, `high` or `critical` |
+
+The baseline is read from the selected commit with `git show`, not from the merge
+request worktree; use `CI_PROJECT_PATH` as its project ID. Shallow clones need
+enough history for the ancestry check; raise `GIT_DEPTH` if it fails. Without a
+baseline, findings at or above the threshold and unknown severity block.
+Incomplete scans fail. The normalized report is published to `reports/dso.json`
+(mode 0600, never through a symlink) and retained for seven days, even when the
+gate fails.
+
+Project and pipeline CI/CD variables override the job's defaults, so restrict who
+can set them, and protect the included template ref and baseline variables. The
+existing SARIF template remains available. Test this include in the actual runner
+environment before making it required.

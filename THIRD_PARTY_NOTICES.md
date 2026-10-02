@@ -35,3 +35,5 @@ Skills imported earlier are recorded in [skills/THIRD_PARTY_NOTICES.md](skills/T
 | [`templates/threat-models/threatcl/`](templates/threat-models/threatcl/SOURCE.md) | [threatcl/threatcl](https://github.com/threatcl/threatcl) | `03b7f5e2b726` | MIT |
 
 Copyleft licenses (CC-BY-SA-4.0, AGPL-3.0) apply to the directories that carry them: changes to that content must be shared under the same license.
+
+The optional [DSO image](mcp/dso/README.md) bundles Gitleaks 8.30.1 (built from its upstream source tag with updated Go modules), Semgrep 1.179.0, Trivy 0.75.0 and the official MCP SDK 1.29.0 as installed dependencies, plus Debian packages from a pinned snapshot. They retain their upstream licenses; the image's CycloneDX SBOM at `/opt/dso/sbom.cdx.json` lists the installed components. The Gitleaks MIT license accompanies its rules; the [Trivy Apache-2.0 license](mcp/dso/licenses/TRIVY-LICENSE) is included for the copied executable. Python distributions retain their installed license metadata. See [license source](mcp/dso/licenses/SOURCE.md).

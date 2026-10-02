@@ -8,8 +8,12 @@ import csv
 import json
 import re
 import sys
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import scanning
+import runtime
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = ROOT / "baseline" / "controls.json"
@@ -19,13 +23,7 @@ INVENTORY_FIELDS = {"asset_id", "asset_type", "name", "environment", "owner",
 
 
 def read_json(path: Path) -> dict:
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ValueError(f"Cannot read {path}: {exc}") from exc
-    if not isinstance(data, dict):
-        raise ValueError(f"{path}: expected a JSON object")
-    return data
+    return runtime.read_json(path)
 
 
 def parse_date(value: object, label: str) -> date:
@@ -45,9 +43,9 @@ def assess(input_path: Path, include_extended: bool, output_format: str) -> int:
     if not isinstance(entries, list) or not isinstance(records, dict):
         raise ValueError("Invalid catalog or assessment: controls must be a list or object")
     as_of = parse_date(assessment.get("as_of"), "as_of")
-    if as_of > date.today():
+    if as_of > datetime.now(timezone.utc).date():
         raise ValueError("as_of cannot be in the future")
-    if (date.today() - as_of).days > 7:
+    if (datetime.now(timezone.utc).date() - as_of).days > 7:
         raise ValueError("as_of is older than 7 days; refresh the assessment")
     ids = [entry.get("id") for entry in entries if isinstance(entry, dict)]
     if len(ids) != len(entries) or len(ids) != len(set(ids)):
@@ -114,12 +112,21 @@ def assess(input_path: Path, include_extended: bool, output_format: str) -> int:
 
 def inventory(input_path: Path, output_format: str) -> int:
     try:
-        with input_path.open(newline="", encoding="utf-8") as source:
-            reader = csv.DictReader(source)
+        with input_path.open(newline="", encoding="utf-8-sig") as source:
+            reader = csv.DictReader(source, strict=True)
             if not reader.fieldnames or not INVENTORY_FIELDS.issubset(reader.fieldnames):
                 raise ValueError("Inventory is missing required columns: " +
                                  ", ".join(sorted(INVENTORY_FIELDS - set(reader.fieldnames or []))))
+            if len(reader.fieldnames) != len(set(reader.fieldnames)):
+                raise ValueError("Duplicate CSV headers")
             rows = list(reader)
+            for row in rows:
+                for field in INVENTORY_FIELDS:
+                    if isinstance(row.get(field), str):
+                        row[field] = row[field].strip()
+                for field in ("criticality", "internet_exposed"):
+                    if isinstance(row.get(field), str):
+                        row[field] = row[field].lower()
     except OSError as exc:
         raise ValueError(f"Cannot read {input_path}: {exc}") from exc
 
@@ -164,6 +171,7 @@ def exceptions(input_path: Path, output_format: str) -> int:
         raise ValueError("exceptions must be a list")
     issues = []
     seen = set()
+    scopes = set()
     for number, entry in enumerate(entries, start=1):
         label = f"exception {number}"
         if not isinstance(entry, dict):
@@ -174,15 +182,23 @@ def exceptions(input_path: Path, output_format: str) -> int:
                 issues.append(f"{label}: missing {field}")
         exception_id = entry.get("id")
         if nonempty_text(exception_id):
+            exception_id = exception_id.strip().casefold()
+        if nonempty_text(entry.get("owner")) and nonempty_text(entry.get("approver")) and entry["owner"].strip().casefold() == entry["approver"].strip().casefold():
+            issues.append(f"{label}: owner and approver must differ")
+        if nonempty_text(exception_id):
             if exception_id in seen:
                 issues.append(f"{label}: duplicate id {exception_id}")
             seen.add(exception_id)
+        scope = tuple(str(entry.get(k, "")).strip().casefold() for k in ("tool", "rule_id", "asset_id"))
+        if scope in scopes:
+            issues.append(f"{label}: duplicate exception scope")
+        scopes.add(scope)
         try:
             created = parse_date(entry.get("created_on"), f"{label}.created_on")
             expires = parse_date(entry.get("expires_on"), f"{label}.expires_on")
-            if created > date.today():
+            if created > datetime.now(timezone.utc).date():
                 issues.append(f"{label}: creation date in future")
-            if expires <= date.today():
+            if expires <= datetime.now(timezone.utc).date():
                 issues.append(f"{label}: expired")
             if expires <= created or (expires - created).days > 90:
                 issues.append(f"{label}: expiry must be 1–90 days after creation")
@@ -211,19 +227,55 @@ def main() -> int:
     exception_parser = commands.add_parser("exceptions", help="check exception ownership and expiry")
     exception_parser.add_argument("--input", type=Path, required=True, help="private exception register JSON")
     exception_parser.add_argument("--format", choices=("text", "json"), default="text")
+    doctor_parser = commands.add_parser("doctor", help="check reviewed scanner versions or Docker availability")
+    doctor_parser.add_argument("--engine", choices=("native", "docker"), default="native")
+    scan_parser = commands.add_parser("scan", help="run scanners and emit a normalized report")
+    scan_commands = scan_parser.add_subparsers(dest="scan_type", required=True)
+    repo_parser = scan_commands.add_parser("repo")
+    repo_parser.add_argument("path")
+    repo_parser.add_argument("--tools", nargs="+", choices=sorted(scanning.TOOLS))
+    repo_parser.add_argument("--engine", choices=("native", "docker"), default="native")
+    repo_parser.add_argument("--timeout", type=int, default=300)
+    repo_parser.add_argument("--project", required=True, help="explicit stable project ID")
+    repo_parser.add_argument("--exclude", action="append", default=[], help="reviewed target-relative path exclusion; recorded in coverage")
+    repo_parser.add_argument("--output", type=Path, required=True)
+    gate_parser = commands.add_parser("gate", help="block findings or new/escalated findings against a baseline")
+    gate_parser.add_argument("--input", type=Path, required=True)
+    gate_parser.add_argument("--baseline", type=Path)
+    gate_parser.add_argument("--fail-on", choices=[s for s in scanning.SEVERITIES if s != "unknown"], default="high")
     args = parser.parse_args()
     try:
+        if args.command == "doctor":
+            report = scanning.doctor(args.engine)
+            print(json.dumps(report, indent=2))
+            return 0 if report["ready"] else 2
+        if args.command == "scan":
+            scanning.prepare_output(args.output)
+            report = scanning.scan_repo(args.path, args.tools, args.engine, args.timeout, args.project, exclusions=args.exclude)
+            scanning.write_report(args.output, report)
+            print(json.dumps({"complete": report["complete"], "findings": len(report["findings"]),
+                              "report": str(args.output)}))
+            return 0 if report["complete"] else 2
+        if args.command == "gate":
+            result = scanning.gate(read_json(args.input),
+                                   read_json(args.baseline) if args.baseline else None, args.fail_on)
+            print(json.dumps(result, indent=2))
+            return result["exit_code"]
         if args.command == "assess":
             return assess(args.input, args.all, args.format)
         if args.command == "inventory":
             return inventory(args.input, args.format)
         if args.command == "exceptions":
             return exceptions(args.input, args.format)
-    except ValueError as exc:
+    except runtime.Cancelled:
+        print("dso: operation cancelled", file=sys.stderr)
+        return 130
+    except (ValueError, OSError, csv.Error, RecursionError, KeyError, TypeError) as exc:
         print(f"dso: {exc}", file=sys.stderr)
         return 2
     return 2
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    with runtime.signals():
+        sys.exit(main())

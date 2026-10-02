@@ -17,28 +17,47 @@ DevSecOps for All collects security checks, policies, detection rules, standards
 
 ## Quick start
 
-Clone the repository to use its rules and configurations locally:
+DSO is the kit's scanning platform. It runs pinned Gitleaks, Semgrep and Trivy on a private copy of a repository, merges the results into one report without secret values, and gates it by severity or against a reviewed baseline of accepted findings. The same core runs from the command line, in [GitHub Actions and GitLab CI](integrations/README.md), and as an [MCP server](mcp/dso/README.md) for AI agents.
+
+### Run DSO
+
+Requires Python 3.10+ and Docker:
 
 ```bash
 git clone https://github.com/1ega/devsecopsforall.git
 cd devsecopsforall
+
+report="$(mktemp -d)/report.json"
+python3 tools/dso/dso.py scan repo ../your-project \
+  --engine docker --project team/your-project --output "$report"
+python3 tools/dso/dso.py gate --input "$report" --fail-on high
 ```
 
-Install the scanner you need separately. These examples use [Gitleaks](manuals/gitleaks.md#install) and [Semgrep](manuals/semgrep.md#install):
+Replace `../your-project` with the directory you want to check. `gate` returns `0` when nothing blocks, `1` for findings at or above the threshold and `2` for an incomplete scan. To run without Docker, install the pinned scanners with `bash mcp/dso/install.sh`, then use `mcp/dso/.venv/bin/python` and drop `--engine docker`. See the [DSO CLI](tools/dso/README.md) for baselines, exclusions and exit codes.
+
+### Connect an AI agent over MCP
+
+Install once, then register the server as a stdio server in your MCP client:
 
 ```bash
-# Find secrets in a project's current files
-gitleaks dir --redact=100 \
-  --config rules/secrets/gitleaks-default/gitleaks.toml ../your-project
-
-# Check Python code with the three starter rules
-semgrep scan --metrics=off --error \
-  --config rules/semgrep/python/ ../your-project
+bash mcp/dso/install.sh
 ```
 
-Replace `../your-project` with the directory you want to check. Both examples return exit code `1` when they find a match. Review the findings using the [triage playbook](playbooks/vulnerability-triage.md); for exposed credentials, follow the [leaked secret playbook](playbooks/leaked-secret.md).
+```json
+{
+  "mcpServers": {
+    "dso": {
+      "command": "/absolute/path/to/devsecopsforall/mcp/dso/.venv/bin/python",
+      "args": ["/absolute/path/to/devsecopsforall/mcp/dso/server.py",
+               "--root", "/absolute/path/to/project", "--engine", "native"]
+    }
+  }
+}
+```
 
-For a company-wide rollout, start with the [SMB guide](guides/smb-security.md) and [security baseline](baseline/README.md).
+The agent can scan and gate only directories inside `--root`. A self-contained Docker image that needs no local scanners is described in the [DSO MCP server](mcp/dso/README.md) guide.
+
+Review the findings using the [triage playbook](playbooks/vulnerability-triage.md); for exposed credentials, follow the [leaked secret playbook](playbooks/leaked-secret.md). To run a single scanner directly, see its [manual](manuals/README.md). For a company-wide rollout, start with the [SMB guide](guides/smb-security.md) and [security baseline](baseline/README.md).
 
 ## Find by task
 
@@ -66,6 +85,7 @@ For a company-wide rollout, start with the [SMB guide](guides/smb-security.md) a
 - [`scanners/`](scanners/README.md) — scanner configurations, Grype/Prowler/Trivy wrappers and ZAP scripts.
 - [`policies/`](policies/README.md) — Kubernetes, Terraform, CI/CD, container and supply chain policies.
 - [`integrations/`](integrations/README.md) — GitHub Actions, GitLab CI and pre-commit templates.
+- [`mcp/dso/`](mcp/dso/README.md) — local MCP tools, standalone installer and Docker image for repository scans and finding gates.
 - [`baseline/`](baseline/README.md) and [`tools/dso/`](tools/dso/README.md) — company controls, inventory templates and evidence checks.
 - [`manuals/`](manuals/README.md) and [`guides/`](guides/README.md) — tool setup, usage, review checklists and OWASP references.
 - [`playbooks/`](playbooks/README.md) and [`reporting/`](reporting/README.md) — incident procedures, finding records, severity conventions and compliance references.
@@ -77,7 +97,7 @@ For a company-wide rollout, start with the [SMB guide](guides/smb-security.md) a
 
 Imported packs live in separate directories with their upstream license and a `SOURCE.md` recording the source commit and local changes. Collections assembled from several upstreams, the [mobile Semgrep rules](rules/semgrep/mobile/NOTICE.md) and the imported [AI skills](skills/THIRD_PARTY_NOTICES.md), record each source in a notice file instead. The [third-party notices](THIRD_PARTY_NOTICES.md) list the imports.
 
-Check the component's README for its requirements, status and validation scope. Some directories contain reference material or plans: DefectDojo ingestion, cloud evidence collectors, automatic reporting adapters and [labs](labs/README.md) are still planned. The [roadmap](ROADMAP.md) tracks that work; the [review record](docs/research/smb-operational-gaps.md) describes what has been checked so far.
+Check the component's README for its requirements, status and validation scope. Some directories contain reference material or plans: DefectDojo ingestion, cloud evidence collectors, external finding lifecycle adapters and [labs](labs/README.md) are still planned. The [roadmap](ROADMAP.md) tracks that work; the [review record](docs/research/smb-operational-gaps.md) describes what has been checked so far.
 
 ## Contributing
 

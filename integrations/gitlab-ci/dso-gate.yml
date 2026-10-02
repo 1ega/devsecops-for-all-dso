@@ -1,0 +1,57 @@
+---
+# yamllint disable rule:line-length
+# Bash 3.2+, Python 3.10+, git and Docker CLI/daemon are required.
+# Client and daemon must see TMPDIR at the same absolute path.
+dso:normalized-gate:
+  stage: test
+  timeout: 25m
+  variables:
+    DSO_KIT_URL: https://github.com/1ega/devsecopsforall.git
+    DSO_KIT_BRANCH: main
+    DSO_BASELINE_REF: ''
+    DSO_BASELINE_BRANCH: main
+    DSO_BASELINE_PATH: .security/dso-baseline.json
+    DSO_FAIL_ON: high
+  script:
+    - |
+      set -euo pipefail
+      fail() { printf 'DSO: %s\n' "$1" >&2; exit 2; }
+      [[ "${DSO_KIT_REF:-}" =~ ^[a-f0-9]{40}$ ]] || fail 'Set DSO_KIT_REF to a reviewed full commit SHA'
+      [[ -z "$DSO_BASELINE_REF" || "$DSO_BASELINE_REF" =~ ^[a-f0-9]{40}$ ]] || fail 'Invalid DSO_BASELINE_REF'
+      [[ "$DSO_KIT_URL" == https://* ]] || fail 'DSO_KIT_URL must be an HTTPS repository or mirror'
+      git check-ref-format "refs/heads/$DSO_KIT_BRANCH" || fail 'Invalid trusted kit branch'
+      git check-ref-format "refs/heads/$DSO_BASELINE_BRANCH" || fail 'Invalid trusted baseline branch'
+      case "$DSO_FAIL_ON" in info|low|medium|high|critical) ;; *) fail 'Invalid DSO_FAIL_ON' ;; esac
+      [[ ! -L reports && ( ! -e reports || -d reports ) ]] || fail 'reports must be a real directory'
+      umask 077
+      work="$(mktemp -d)"
+      cleanup() { result=$?; trap - EXIT; rm -rf -- "$work"; exit "$result"; }
+      trap cleanup EXIT
+      git init "$work/kit"
+      git -C "$work/kit" remote add origin "$DSO_KIT_URL"
+      git -C "$work/kit" fetch --filter=blob:none origin "refs/heads/$DSO_KIT_BRANCH:refs/remotes/origin/trusted"
+      git -C "$work/kit" merge-base --is-ancestor "$DSO_KIT_REF" refs/remotes/origin/trusted || fail 'Kit commit is not reachable from the trusted branch'
+      git -C "$work/kit" -c core.hooksPath=/dev/null checkout --detach "$DSO_KIT_REF"
+      scan_rc=0
+      python3 "$work/kit/tools/dso/dso.py" scan repo "$CI_PROJECT_DIR" \
+        --engine docker --project "$CI_PROJECT_PATH" --timeout 400 \
+        --output "$work/report.json" || scan_rc=$?
+      if [[ -f "$work/report.json" ]]; then
+        python3 "$work/kit/tools/dso/publish_report.py" "$work/report.json" "$CI_PROJECT_DIR/reports"
+      fi
+      if [[ "$scan_rc" -ne 0 ]]; then exit "$scan_rc"; fi
+      if [[ -n "$DSO_BASELINE_REF" ]]; then
+        [[ "$DSO_BASELINE_PATH" != /* && "$DSO_BASELINE_PATH" != *..* ]] || fail 'Invalid baseline path'
+        git fetch --filter=blob:none origin "refs/heads/$DSO_BASELINE_BRANCH:refs/remotes/origin/dso-baseline"
+        git merge-base --is-ancestor "$DSO_BASELINE_REF" refs/remotes/origin/dso-baseline || fail 'Baseline commit is not reachable from the trusted branch'
+        git show "$DSO_BASELINE_REF:$DSO_BASELINE_PATH" > "$work/baseline.json"
+        python3 "$work/kit/tools/dso/dso.py" gate --input "$work/report.json" \
+          --fail-on "$DSO_FAIL_ON" --baseline "$work/baseline.json"
+      else
+        python3 "$work/kit/tools/dso/dso.py" gate --input "$work/report.json" --fail-on "$DSO_FAIL_ON"
+      fi
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths:
+      - reports/dso.json
