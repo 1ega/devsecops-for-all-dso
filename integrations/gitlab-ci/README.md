@@ -4,7 +4,7 @@ Copy this into the application, setting the repository path and reviewed commit:
 
 ```yaml
 include:
-  - project: group/devsecopsforall
+  - project: group/devsecops-for-all-dso
     ref: FULL_COMMIT_SHA
     file: /integrations/gitlab-ci/security.yml
 stages: [test]
@@ -15,7 +15,7 @@ Without one, include the file from GitHub at a reviewed commit:
 
 ```yaml
 include:
-  - remote: https://raw.githubusercontent.com/1ega/devsecopsforall/FULL_COMMIT_SHA/integrations/gitlab-ci/security.yml
+  - remote: https://raw.githubusercontent.com/1ega/devsecops-for-all-dso/FULL_COMMIT_SHA/integrations/gitlab-ci/security.yml
 stages: [test]
 ```
 

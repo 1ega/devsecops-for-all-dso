@@ -4,7 +4,7 @@
 **License:** Apache-2.0  
 **Recommended first choice in this topic.**
 
-[GitHub: google/osv-scanner](https://github.com/google/osv-scanner) · [Documentation](https://google.github.io/osv-scanner) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/scanners/osv-scanner)
+[GitHub: google/osv-scanner](https://github.com/google/osv-scanner) · [Documentation](https://google.github.io/osv-scanner) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/scanners/osv-scanner)
 
 ## What it is for
 

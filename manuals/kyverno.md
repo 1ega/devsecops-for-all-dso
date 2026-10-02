@@ -4,7 +4,7 @@
 **License:** Apache-2.0  
 **Recommended first choice in this topic.**
 
-[GitHub: kyverno/kyverno](https://github.com/kyverno/kyverno) · [Documentation](https://kyverno.io/docs/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/policies/kubernetes/kyverno-policies)
+[GitHub: kyverno/kyverno](https://github.com/kyverno/kyverno) · [Documentation](https://kyverno.io/docs/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/policies/kubernetes/kyverno-policies)
 
 ## What it is for
 

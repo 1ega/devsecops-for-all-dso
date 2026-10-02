@@ -5,7 +5,7 @@
 **Notes:** Keyless signing with id_tokens  
 **Recommended first choice in this topic.**
 
-[GitHub: sigstore/cosign](https://github.com/sigstore/cosign) · [Documentation](https://docs.sigstore.dev/cosign/signing/overview/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/policies/supply-chain/sigstore-policy-controller)
+[GitHub: sigstore/cosign](https://github.com/sigstore/cosign) · [Documentation](https://docs.sigstore.dev/cosign/signing/overview/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/policies/supply-chain/sigstore-policy-controller)
 
 ## What it is for
 

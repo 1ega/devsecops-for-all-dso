@@ -6,7 +6,7 @@ dso:normalized-gate:
   stage: test
   timeout: 25m
   variables:
-    DSO_KIT_URL: https://github.com/1ega/devsecopsforall.git
+    DSO_KIT_URL: https://github.com/1ega/devsecops-for-all-dso.git
     DSO_KIT_BRANCH: main
     DSO_BASELINE_REF: ''
     DSO_BASELINE_BRANCH: main

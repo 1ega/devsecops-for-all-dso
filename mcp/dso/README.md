@@ -45,9 +45,9 @@ Example client configuration (replace all absolute paths):
 {
   "mcpServers": {
     "dso": {
-      "command": "/absolute/path/to/devsecopsforall/mcp/dso/.venv/bin/python",
+      "command": "/absolute/path/to/devsecops-for-all-dso/mcp/dso/.venv/bin/python",
       "args": [
-        "/absolute/path/to/devsecopsforall/mcp/dso/server.py",
+        "/absolute/path/to/devsecops-for-all-dso/mcp/dso/server.py",
         "--root", "/absolute/path/to/project",
         "--engine", "native"
       ]

@@ -5,7 +5,7 @@
 **Area:** 4. Check infrastructure code → Infrastructure as code  
 **License:** Apache-2.0
 
-[GitHub: open-policy-agent/conftest](https://github.com/open-policy-agent/conftest) · [Documentation](https://www.conftest.dev/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/policies/terraform/conftest-examples)
+[GitHub: open-policy-agent/conftest](https://github.com/open-policy-agent/conftest) · [Documentation](https://www.conftest.dev/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/policies/terraform/conftest-examples)
 
 ## What it is for
 

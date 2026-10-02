@@ -1,6 +1,6 @@
 {
-  "repoBase": "https://github.com/1ega/devsecopsforall/tree/main/",
-  "manualBase": "https://github.com/1ega/devsecopsforall/blob/main/manuals/",
+  "repoBase": "https://github.com/1ega/devsecops-for-all-dso/tree/main/",
+  "manualBase": "https://github.com/1ega/devsecops-for-all-dso/blob/main/manuals/",
   "scopes": [
     "Code",
     "Pipeline",

@@ -3,7 +3,7 @@
 **Area:** 8. Secure the cloud → Cloud secrets and keys  
 **License:** Azure service
 
-[Documentation](https://learn.microsoft.com/azure/key-vault/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/skills/secrets-management/azure-keyvault)
+[Documentation](https://learn.microsoft.com/azure/key-vault/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/skills/secrets-management/azure-keyvault)
 
 ## What it is for
 

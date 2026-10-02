@@ -4,7 +4,7 @@
 **License:** AWS service (paid)  
 **Recommended first choice in this topic.**
 
-[Documentation](https://docs.aws.amazon.com/secretsmanager/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/skills/secrets-management/aws-secrets-manager)
+[Documentation](https://docs.aws.amazon.com/secretsmanager/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/skills/secrets-management/aws-secrets-manager)
 
 ## What it is for
 

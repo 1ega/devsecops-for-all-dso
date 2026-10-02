@@ -3,7 +3,7 @@
 **Area:** 9. Run the program → People, standards, and maturity  
 **License:** CC-BY-SA-4.0
 
-[GitHub: OWASP/ASVS](https://github.com/OWASP/ASVS) · [Documentation](https://owasp.org/www-project-application-security-verification-standard/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/reporting/compliance-mapping/asvs-5.0)
+[GitHub: OWASP/ASVS](https://github.com/OWASP/ASVS) · [Documentation](https://owasp.org/www-project-application-security-verification-standard/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/reporting/compliance-mapping/asvs-5.0)
 
 ## What it is for
 

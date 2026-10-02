@@ -3,7 +3,7 @@
 **Area:** 1. Protect your code → Malware and malicious code  
 **License:** BSD-3-Clause
 
-[GitHub: VirusTotal/yara-x](https://github.com/VirusTotal/yara-x) · [Documentation](https://virustotal.github.io/yara-x/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/skills/trailofbits/yara-authoring)
+[GitHub: VirusTotal/yara-x](https://github.com/VirusTotal/yara-x) · [Documentation](https://virustotal.github.io/yara-x/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/skills/trailofbits/yara-authoring)
 
 ## What it is for
 

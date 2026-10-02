@@ -5,7 +5,7 @@
 **Notes:** Writes GitLab SAST reports  
 **Recommended first choice in this topic.**
 
-[GitHub: semgrep/semgrep](https://github.com/semgrep/semgrep) · [Documentation](https://semgrep.dev/docs) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/rules/semgrep)
+[GitHub: semgrep/semgrep](https://github.com/semgrep/semgrep) · [Documentation](https://semgrep.dev/docs) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/rules/semgrep)
 
 ## What it is for
 

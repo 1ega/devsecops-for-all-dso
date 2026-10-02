@@ -15,7 +15,7 @@ FROM aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1
 FROM python:3.12-slim@sha256:dddfd7e07f9d15aeeca61529320492139d21cac7f0070c00609243e51e4e0016
 
 LABEL org.opencontainers.image.title="DSO CLI and MCP" \
-      org.opencontainers.image.source="https://github.com/1ega/devsecopsforall"
+      org.opencontainers.image.source="https://github.com/1ega/devsecops-for-all-dso"
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 DSO_CACHE_DIR=/cache
 COPY mcp/dso/debian.sources /etc/apt/sources.list.d/debian.sources
 # Signed, timestamp-pinned Debian indices determine the complete upgrade set.

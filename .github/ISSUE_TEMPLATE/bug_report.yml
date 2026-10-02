@@ -5,7 +5,7 @@ labels: [bug]
 body:
   - type: markdown
     attributes:
-      value: "For vulnerabilities, follow [SECURITY.md](https://github.com/1ega/devsecopsforall/blob/main/SECURITY.md). Do not post secrets or sensitive findings here."
+      value: "For vulnerabilities, follow [SECURITY.md](https://github.com/1ega/devsecops-for-all-dso/blob/main/SECURITY.md). Do not post secrets or sensitive findings here."
   - type: input
     id: tool
     attributes:

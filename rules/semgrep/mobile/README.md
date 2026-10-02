@@ -86,11 +86,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
-          repository: 1ega/devsecopsforall
-          path: .devsecopsforall
+          repository: 1ega/devsecops-for-all-dso
+          path: .devsecops-for-all-dso
       - run: >
           semgrep scan --metrics=off
-          --config .devsecopsforall/rules/semgrep/mobile/rules/
+          --config .devsecops-for-all-dso/rules/semgrep/mobile/rules/
           --sarif -o semgrep.sarif --error .
 ```
 

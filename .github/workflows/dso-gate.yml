@@ -6,7 +6,7 @@ on:
   workflow_call:
     inputs:
       kit_ref:
-        description: Reviewed full commit SHA of 1ega/devsecopsforall
+        description: Reviewed full commit SHA of 1ega/devsecops-for-all-dso
         type: string
         required: true
       kit_branch:
@@ -53,7 +53,7 @@ jobs:
       - name: Check out reviewed DSO kit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          repository: 1ega/devsecopsforall
+          repository: 1ega/devsecops-for-all-dso
           ref: ${{ inputs.kit_ref }}
           path: dso-kit
           fetch-depth: 0

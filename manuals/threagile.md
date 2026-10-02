@@ -3,7 +3,7 @@
 **Area:** 9. Run the program → Threat modeling  
 **License:** MIT
 
-[GitHub: Threagile/threagile](https://github.com/Threagile/threagile) · [Documentation](https://threagile.io) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/templates/threat-models/threagile)
+[GitHub: Threagile/threagile](https://github.com/Threagile/threagile) · [Documentation](https://threagile.io) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/templates/threat-models/threagile)
 
 ## What it is for
 

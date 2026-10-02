@@ -4,7 +4,7 @@
 **License:** Apache-2.0  
 **Recommended first choice in this topic.**
 
-[GitHub: OWASP/threat-dragon](https://github.com/OWASP/threat-dragon) · [Documentation](https://www.threatdragon.com/docs/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/templates/threat-models)
+[GitHub: OWASP/threat-dragon](https://github.com/OWASP/threat-dragon) · [Documentation](https://www.threatdragon.com/docs/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/templates/threat-models)
 
 ## What it is for
 

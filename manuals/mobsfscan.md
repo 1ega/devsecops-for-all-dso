@@ -4,7 +4,7 @@
 **License:** LGPL-3.0  
 **Notes:** Writes GitLab SAST reports
 
-[GitHub: MobSF/mobsfscan](https://github.com/MobSF/mobsfscan) · [Documentation](https://github.com/MobSF/mobsfscan#readme) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/rules/semgrep/mobile)
+[GitHub: MobSF/mobsfscan](https://github.com/MobSF/mobsfscan) · [Documentation](https://github.com/MobSF/mobsfscan#readme) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/rules/semgrep/mobile)
 
 ## What it is for
 

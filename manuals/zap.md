@@ -4,7 +4,7 @@
 **License:** Apache-2.0  
 **Recommended first choice in this topic.**
 
-[GitHub: zaproxy/zaproxy](https://github.com/zaproxy/zaproxy) · [Documentation](https://www.zaproxy.org/docs/docker/baseline-scan/) · [In this repository](https://github.com/1ega/devsecopsforall/tree/main/scanners/zap)
+[GitHub: zaproxy/zaproxy](https://github.com/zaproxy/zaproxy) · [Documentation](https://www.zaproxy.org/docs/docker/baseline-scan/) · [In this repository](https://github.com/1ega/devsecops-for-all-dso/tree/main/scanners/zap)
 
 ## What it is for
 

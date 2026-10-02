@@ -9,7 +9,7 @@
 
 DevSecOps for All collects security checks, policies, detection rules, standards, and manuals in one place, so a team can scan its code, cloud accounts, and clusters, enforce controls, hunt for malware, and know what to do with each finding.
 
-> 🗺️ **[Explore the interactive DevSecOps roadmap →](https://1ega.github.io/devsecopsforall/)**
+> 🗺️ **[Explore the interactive DevSecOps roadmap →](https://1ega.github.io/devsecops-for-all-dso/)**
 >
 > Browse 10 security areas, 29 topics, and 95 tools, with installation steps, usage examples, full manuals, and links to 32 company baseline controls.
 
@@ -24,8 +24,8 @@ DSO is the kit's scanning platform. It runs pinned Gitleaks, Semgrep and Trivy o
 Requires Python 3.10+ and Docker:
 
 ```bash
-git clone https://github.com/1ega/devsecopsforall.git
-cd devsecopsforall
+git clone https://github.com/1ega/devsecops-for-all-dso.git
+cd devsecops-for-all-dso
 
 report="$(mktemp -d)/report.json"
 python3 tools/dso/dso.py scan repo ../your-project \
@@ -47,8 +47,8 @@ bash mcp/dso/install.sh
 {
   "mcpServers": {
     "dso": {
-      "command": "/absolute/path/to/devsecopsforall/mcp/dso/.venv/bin/python",
-      "args": ["/absolute/path/to/devsecopsforall/mcp/dso/server.py",
+      "command": "/absolute/path/to/devsecops-for-all-dso/mcp/dso/.venv/bin/python",
+      "args": ["/absolute/path/to/devsecops-for-all-dso/mcp/dso/server.py",
                "--root", "/absolute/path/to/project", "--engine", "native"]
     }
   }
@@ -101,7 +101,7 @@ Check the component's README for its requirements, status and validation scope. 
 
 ## Contributing
 
-For bugs and questions, open an [issue](https://github.com/1ega/devsecopsforall/issues). To contribute rules, policies, examples or documentation, read [CONTRIBUTING.md](CONTRIBUTING.md). It covers tests, import requirements and where to put changes. The [validation guide](tools/validation/README.md) lists the repository checks.
+For bugs and questions, open an [issue](https://github.com/1ega/devsecops-for-all-dso/issues). To contribute rules, policies, examples or documentation, read [CONTRIBUTING.md](CONTRIBUTING.md). It covers tests, import requirements and where to put changes. The [validation guide](tools/validation/README.md) lists the repository checks.
 
 Maintained by [@1ega](https://github.com/1ega).
 

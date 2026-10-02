@@ -1,6 +1,6 @@
 # Interactive DevSecOps roadmap
 
-[Open the roadmap](https://1ega.github.io/devsecopsforall/).
+[Open the roadmap](https://1ega.github.io/devsecops-for-all-dso/).
 
 The static map covers ten security areas, 29 topics, 95 tools, and all 32 company
 baseline controls. Company ownership, identity, SaaS, devices, recovery, external
