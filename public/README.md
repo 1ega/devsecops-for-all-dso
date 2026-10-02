@@ -4,7 +4,10 @@
 
 The static map covers nine security areas, 20 topics, and 91 tools. Select a
 node to read its details beside the map, search for a tool or topic, and mark
-tools as adopted. Progress and the selected theme are saved in your browser.
+tools as adopted. The site starts in dark mode; you can switch to light mode.
+Progress and the selected theme are saved in your browser. On wide screens,
+the guide panel grows with the viewport and uses larger text. Long commands
+wrap visually; the Copy button preserves the original command.
 
 ## Files
 
