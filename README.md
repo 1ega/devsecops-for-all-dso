@@ -115,13 +115,23 @@ Run tools only against systems you are authorized to assess, and treat every fin
 
 ```text
 devsecopsforall/
-├── scanners/  semgrep-rules/  rules/        scan
-├── policies/  integrations/  tools/         enforce
-├── guides/  reporting/  templates/
-│   manuals/  docs/research/                 know
-├── skills/  playbooks/  detections/  labs/  act
-├── ROADMAP.md  CONTRIBUTING.md  SECURITY.md
-└── THIRD_PARTY_NOTICES.md  LICENSE
+├── scanners/          Configurations and rules for third-party scanners
+├── semgrep-rules/     Semgrep rule packs: mobile, Trail of Bits, elttam
+├── rules/             Python Semgrep starter rules
+├── policies/          Policy-as-code: Kubernetes, CI/CD, Terraform, containers, supply chain
+├── detections/        Detection rules; YARA rule sets in detections/yara/
+├── integrations/      CI templates, pre-commit, DefectDojo import (planned)
+├── tools/             Standalone utilities (planned)
+├── guides/            Review checklists, OWASP Cheat Sheets, OWASP MASTG
+├── manuals/           How to install, use, and triage 91 tools
+├── reporting/         Severity scale and compliance mappings
+├── templates/         Threat model templates and examples
+├── skills/            AI agent skills, including Trail of Bits plugins
+├── playbooks/         Incident and triage procedures (planned)
+├── labs/              Reproducible exercises (planned)
+├── docs/research/     Tool evaluations and the open-source map
+├── ROADMAP.md         What gets built next
+└── THIRD_PARTY_NOTICES.md   Source and license of every import
 ```
 
 ## Contributing
