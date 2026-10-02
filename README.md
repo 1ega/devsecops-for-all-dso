@@ -74,31 +74,35 @@ devsecopsforall/
 ├── guides/          Practical review and planning advice
 ├── tools/           Independent utilities
 ├── detections/      Detection content
-├── integrations/    CI/CD and workflow integrations
+├── integrations/    CI templates, pre-commit, DefectDojo
+├── scanners/        Third-party scanner configurations
 ├── labs/            Reproducible exercises
 ├── playbooks/       Operational response procedures
-├── policies/        Policy-as-code packs
-├── reporting/       Finding formats and reporting tools
+├── policies/        Policy-as-code packs by target
+├── reporting/       Severity conventions, compliance mapping
 ├── templates/       Assessment and decision documents
+├── docs/research/   Tool evaluation notes
+├── ROADMAP.md       What gets built next
 └── .github/         Issue, PR, and workflow templates
 ```
 
 ### Spaces to grow
 
-These directories are **structure only** today. Each README explains what belongs there; no tool or rule is presented as finished before it exists.
+These directories are **structure only** today. Each README explains what belongs there and lists research candidates; no tool or rule is presented as finished before it exists. The [roadmap](ROADMAP.md) sets the order in which they get filled.
 
 | Explore | Explore |
 | :--- | :--- |
-| [Detections](detections/README.md) — Sigma, YARA, Falco, osquery | [Policies](policies/README.md) — infrastructure and delivery controls |
-| [Integrations](integrations/README.md) — CI/CD and developer workflows | [Playbooks](playbooks/README.md) — incident and secrets response |
-| [Labs](labs/README.md) — isolated, reproducible exercises | [Templates](templates/README.md) — findings and decision records |
-| [Reporting](reporting/README.md) — finding formats and presentation | [Tools](tools/README.md) — standalone utilities |
+| [Integrations](integrations/README.md) — GitHub Actions, GitLab CI, pre-commit, DefectDojo | [Policies](policies/README.md) — Terraform, Kubernetes, containers, CI/CD, cloud, supply chain |
+| [Scanners](scanners/README.md) — gitleaks, osv-scanner, Trivy, ZAP, nuclei, MobSF | [Reporting](reporting/README.md) — severity scale, metadata, compliance mapping |
+| [Tools](tools/README.md) — standalone utilities, starting with the `dso` CLI | [Templates](templates/README.md) — threat models, findings, decision records |
+| [Playbooks](playbooks/README.md) — leaked secrets, compromised dependencies, triage | [Detections](detections/README.md) — Sigma, YARA, Falco, osquery |
+| [Labs](labs/README.md) — isolated, reproducible exercises | [Research notes](docs/research/README.md) — tool evaluations behind each addition |
 
 ## Contribute
 
 Good contributions can be a single precise rule, a safer example, clearer documentation, a useful skill, or a complete tool. Choose the relevant directory, include evidence that it works, and explain its limits.
 
-1. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the README in your target directory.
+1. Read [CONTRIBUTING.md](CONTRIBUTING.md), the README in your target directory, and the [roadmap](ROADMAP.md).
 2. Add examples and tests where behavior can be verified; keep credentials and private data out.
 3. Open a pull request with the purpose, verification steps, and any security implications.
 

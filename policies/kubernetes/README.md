@@ -1,0 +1,17 @@
+# Kubernetes
+
+Admission policies that keep unsafe workloads out of a cluster — privileged pods, root users, writable root filesystems, missing resource limits, untrusted registries — and audits of running clusters. New policies start in audit mode and move to enforce once tuned.
+
+Research candidates:
+
+| Tool | Project | Notes |
+| :--- | :--- | :--- |
+| Kyverno | [kyverno/kyverno](https://github.com/kyverno/kyverno) | YAML policies; validate, mutate, verify images |
+| Gatekeeper | [open-policy-agent/gatekeeper](https://github.com/open-policy-agent/gatekeeper) | Rego policies |
+| kube-bench | [aquasecurity/kube-bench](https://github.com/aquasecurity/kube-bench) | CIS Kubernetes Benchmark |
+| Kubescape | [kubescape/kubescape](https://github.com/kubescape/kubescape) | NSA and MITRE frameworks |
+| Polaris | [FairwindsOps/polaris](https://github.com/FairwindsOps/polaris) | Workload best practices |
+
+Related skills: [kyverno](../../skills/kubernetes-containers/kyverno/SKILL.md), [opa](../../skills/kubernetes-containers/opa/SKILL.md), [kubernetes-hardening](../../skills/kubernetes-containers/kubernetes-hardening/SKILL.md).
+
+**Status:** Structure only; no policies are published yet.
