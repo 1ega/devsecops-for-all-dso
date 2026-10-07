@@ -14,7 +14,17 @@ import tempfile
 import threading
 import time
 
+# Fixed bound for JSON from outside (GitHub, registries, manifests): never raised by settings.
 MAX_JSON = 20 * 1024 * 1024
+# Reports, baselines and raw scanner output; dso config raises them for large targets.
+REPORT_LIMIT = MAX_JSON
+MAX_FINDINGS = 50000
+LIMIT_HINT = 'raise max_report_mb in dso config or pass --max-report-mb'
+
+
+def set_limits(report_bytes, findings):
+    global REPORT_LIMIT, MAX_FINDINGS
+    REPORT_LIMIT, MAX_FINDINGS = int(report_bytes), int(findings)
 MAX_FILE = 64 * 1024 * 1024
 MAX_TREE = 2 * 1024 * 1024 * 1024
 EXCLUDED = {'.git', '.venv', 'venv', '__pycache__', 'node_modules'}
@@ -53,7 +63,8 @@ def signals():
             signal.signal(sig, handler)
 
 
-def loads(raw):
+def loads(raw, limit=None):
+    limit = MAX_JSON if limit is None else limit
     def pairs(items):
         result = {}
         for key, value in items:
@@ -66,16 +77,17 @@ def loads(raw):
     try:
         if isinstance(raw, bytes):
             raw = raw.decode('utf-8-sig')
-        if len(raw.encode('utf-8')) > MAX_JSON:
-            raise ValueError('JSON input exceeds 20 MiB')
+        if len(raw.encode('utf-8')) > limit:
+            raise ValueError(f'JSON input exceeds {limit // (1024 * 1024)} MiB; {LIMIT_HINT}')
         return json.loads(raw, object_pairs_hook=pairs, parse_constant=bad_constant)
     except (UnicodeError, RecursionError, json.JSONDecodeError) as exc:
         raise ValueError('Invalid or excessively nested JSON') from exc
 
 
 def read_json(path):
+    """A report, baseline or settings file within the report limit."""
     with Path(path).open('rb') as stream:
-        data = loads(stream.read(MAX_JSON + 1))
+        data = loads(stream.read(REPORT_LIMIT + 1), REPORT_LIMIT)
     if not isinstance(data, dict):
         raise ValueError('Expected a JSON object')
     return data
@@ -92,9 +104,11 @@ def text(value, label, maximum=1024, empty=False):
 def snapshot(target, destination, cancel=None, exclusions=()):
     """Never ask scanners to decide what unreadable files or target ignores mean."""
     target = target.resolve(strict=True)
-    if not target.is_dir() or target == Path(target.anchor):
-        raise ScanError('target', 'Target must be a non-root directory')
-    if destination.resolve().is_relative_to(target):
+    # A single file is scanned as a tree that holds only that file.
+    single = target.is_file()
+    if not single and (not target.is_dir() or target == Path(target.anchor)):
+        raise ScanError('target', 'Target must be a regular file or a non-root directory')
+    if not single and destination.resolve().is_relative_to(target):
         raise ScanError('target', 'Temporary workspace must be outside the scan target')
     excluded = set(exclusions)
     for value in excluded:
@@ -104,12 +118,12 @@ def snapshot(target, destination, cancel=None, exclusions=()):
     destination.mkdir(mode=0o700)
     count = size = 0
     manifest = hashlib.sha256()
-    def walk(directory, relative):
+    def walk(directory, relative, only=None):
         nonlocal count, size
         check_cancel(cancel)
         try:
             with os.scandir(directory) as entries:
-                entries = sorted(entries, key=lambda e: e.name)
+                entries = sorted((e for e in entries if only is None or e.name == only), key=lambda e: e.name)
             for entry in entries:
                 check_cancel(cancel)
                 rel = (relative / entry.name).as_posix()
@@ -117,12 +131,13 @@ def snapshot(target, destination, cancel=None, exclusions=()):
                     text(rel, 'source path', 4096)
                 except ValueError:
                     raise ScanError('unsupported_path', 'A source path is too long or contains control characters; rename it or exclude a parent directory') from None
-                if entry.name in EXCLUDED or rel in excluded:
+                # A file asked for by name is scanned even if a directory of that name would be skipped.
+                if only is None and (entry.name in EXCLUDED or rel in excluded):
                     continue
                 info = entry.stat(follow_symlinks=False)
                 if stat.S_ISLNK(info.st_mode):
                     raise ScanError('symlink', f'Symlink is not scanned: {rel}; exclude it explicitly')
-                if entry.name in IGNORE_FILES:
+                if only is None and entry.name in IGNORE_FILES:
                     # Ignore content is not used, but unreadable inputs still fail.
                     with open(entry.path, 'rb') as stream:
                         stream.read(1)
@@ -161,7 +176,10 @@ def snapshot(target, destination, cancel=None, exclusions=()):
                     raise ScanError('special_file', f'Non-regular input is not scanned: {rel}')
         except (PermissionError, OSError) as exc:
             raise ScanError('unreadable_input', 'Source cannot be fully read; check file and directory permissions') from exc
-    walk(target, Path())
+    if single:
+        walk(target.parent, Path(), target.name)
+    else:
+        walk(target, Path())
     # An empty project-level file suppresses Semgrep's built-in ignores.
     (destination / '.semgrepignore').write_text('')
     return {'files': count, 'bytes': size, 'sha256': manifest.hexdigest()}
@@ -176,18 +194,34 @@ def check_python(source):
             raise ScanError('unsupported_python', 'Python syntax is unsupported; review and explicitly exclude templates/legacy Python') from None
 
 
-def run_process(args, cwd, timeout, cancel=None, network_env=True):
-    environment = {k: v for k, v in os.environ.items()
-                   if not k.startswith(('SEMGREP_', 'TRIVY_', 'GITLEAKS_', 'GIT_'))}
-    environment['PATH'] = os.pathsep.join([str(Path(sys.executable).parent), environment.get('PATH', '')])
-    if sys.platform == 'darwin' and 'SSL_CERT_FILE' not in environment and Path('/etc/ssl/cert.pem').is_file():
-        environment['SSL_CERT_FILE'] = '/etc/ssl/cert.pem'
-    with tempfile.TemporaryDirectory(prefix='dso-state-') as state, tempfile.TemporaryFile() as output, tempfile.TemporaryFile() as errors:
-        # Scanner-owned temporary files must not outlive an interrupted run.
-        environment.update(TMPDIR=state, SEMGREP_SETTINGS_FILE=str(Path(state) / 'settings.yml'),
-                           SEMGREP_LOG_FILE=str(Path(state) / 'semgrep.log'),
-                           SEMGREP_ENABLE_VERSION_CHECK='0', SEMGREP_SEND_METRICS='off')
-        process = subprocess.Popen(args, cwd=cwd, env=environment, stdout=output, stderr=errors, start_new_session=True)
+CLEARED = ('SEMGREP_', 'TRIVY_', 'GITLEAKS_', 'GIT_')
+
+
+def environment(state, extra=None, clear=()):
+    """The caller's environment without tool and git overrides; proxies and certificates remain."""
+    env = {k: v for k, v in os.environ.items() if not k.startswith(CLEARED + tuple(clear))}
+    env['PATH'] = os.pathsep.join([str(Path(sys.executable).parent), env.get('PATH', '')])
+    if sys.platform == 'darwin' and 'SSL_CERT_FILE' not in env and Path('/etc/ssl/cert.pem').is_file():
+        env['SSL_CERT_FILE'] = '/etc/ssl/cert.pem'
+    # Scanner-owned temporary files must not outlive an interrupted run.
+    env.update(TMPDIR=state, SEMGREP_SETTINGS_FILE=str(Path(state) / 'settings.yml'),
+               SEMGREP_LOG_FILE=str(Path(state) / 'semgrep.log'),
+               SEMGREP_ENABLE_VERSION_CHECK='0', SEMGREP_SEND_METRICS='off')
+    env.update(extra or {})
+    return env
+
+
+def run_process(args, cwd, timeout, cancel=None, extra_env=None, output_path=None, clear=(), errors_on=()):
+    """Run without a shell; stdout goes to output_path when given, otherwise its first 64 KiB are returned.
+
+    clear drops more environment prefixes; errors_on lists stderr markers of a scanner that reports
+    errors (such as unreadable files) but still exits successfully."""
+    check_cancel(cancel)
+    with tempfile.TemporaryDirectory(prefix='dso-state-') as state, \
+            (open(output_path, 'wb') if output_path else tempfile.TemporaryFile()) as output, \
+            tempfile.TemporaryFile() as errors:
+        process = subprocess.Popen(args, cwd=cwd, env=environment(state, extra_env, clear), stdout=output, stderr=errors,
+                                   stdin=subprocess.DEVNULL, start_new_session=True)
         try:
             deadline = time.monotonic() + timeout
             while process.poll() is None:
@@ -195,21 +229,34 @@ def run_process(args, cwd, timeout, cancel=None, network_env=True):
                 if time.monotonic() >= deadline:
                     raise ScanError('timeout', 'Scanner exceeded its timeout')
                 time.sleep(0.05)
-            output.seek(0)
+            check_cancel(cancel)
             errors.seek(0)
-            diagnostic = errors.read(256 * 1024).lower()
-            if b'permission denied' in diagnostic or b'operation not permitted' in diagnostic:
-                raise ScanError('permissions', 'Scanner could not access required data')
+            # Examine the entire log with bounded memory, including markers split across chunks.
             # A bare "429" also appears in ordinary counts such as "429 files".
-            if b'too many requests' in diagnostic or b'toomanyrequests' in diagnostic:
-                raise ScanError('rate_limit', 'Upstream service rate-limited the scanner')
-            if b'no space left' in diagnostic:
-                raise ScanError('disk_full', 'Scanner cache/output has insufficient space')
+            markers = [(b'permission denied', 'permissions', 'Scanner could not access required data'),
+                       (b'operation not permitted', 'permissions', 'Scanner could not access required data'),
+                       (b'too many requests', 'rate_limit', 'Upstream service rate-limited the scanner'),
+                       (b'toomanyrequests', 'rate_limit', 'Upstream service rate-limited the scanner'),
+                       (b'no space left', 'disk_full', 'Scanner cache/output has insufficient space')]
+            markers += [(marker.lower(), 'scanner_error', 'Scanner reported errors, so its coverage would be incomplete')
+                        for marker in errors_on]
+            overlap = max(len(marker) for marker, _, _ in markers) - 1
+            tail = b''
+            while chunk := errors.read(65536):
+                check_cancel(cancel)
+                diagnostic = tail + chunk.lower()
+                for marker, code, message in markers:
+                    if marker in diagnostic:
+                        raise ScanError(code, message)
+                tail = diagnostic[-overlap:]
+            if output_path:
+                return process.returncode, ''
+            output.seek(0)
             return process.returncode, output.read(65536).decode('utf-8', errors='replace')
         finally:
             # Also kill grandchildren that outlived their immediate parent.
             try:
                 os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
+            except (ProcessLookupError, PermissionError):
+                pass  # already exited; macOS reports an unreaped group as EPERM
             process.wait()

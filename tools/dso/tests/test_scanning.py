@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'tools/dso'))
+os.environ['DSO_CONFIG'] = os.path.join(tempfile.gettempdir(), 'dso-tests-no-config.json')
 import manifest  # noqa: E402
 import reports  # noqa: E402
 import runtime  # noqa: E402
@@ -192,13 +193,37 @@ class GateTests(unittest.TestCase):
         self.assertEqual((result['exit_code'], len(result['blocking'])), (2, 1))
         self.assertEqual(core.gate(report(), bad)['exit_code'], 2)
 
-    def test_project_mismatch_rejected_but_coverage_change_is_reported(self):
+    def test_project_mismatch_and_narrowed_coverage_cannot_pass(self):
         result = core.gate(report(), report(project='other'))
         self.assertEqual((result['exit_code'], result['mismatch']), (2, ['project']))
-        baseline = report([self.f])
-        baseline['coverage']['policy_digest'] = 'c' * 64
-        result = core.gate(report([self.f]), baseline)
-        self.assertEqual((result['exit_code'], result['coverage_changes']), (0, ['coverage.policy_digest']))
+        old = report([dependency()], plugins=['gitleaks', 'trivy'])
+        result = core.gate(report(plugins=['gitleaks']), old)
+        self.assertEqual((result['exit_code'], result['status'], result['mismatch'], result['resolved']),
+                         (2, 'incomparable', ['coverage.plugins'], []))
+        excluded = report([self.f])
+        excluded['coverage']['exclusions'] = ['vendor']
+        self.assertEqual(core.gate(excluded, report([self.f]))['mismatch'], ['coverage.exclusions'])
+        # audit runs more Semgrep rules than ci-blocking; going back drops rule directories.
+        audit = report([self.f], plugins=['gitleaks', 'semgrep'])
+        audit['coverage']['profile'] = 'audit'
+        narrower = report([self.f], plugins=['gitleaks', 'semgrep'])
+        self.assertEqual(core.gate(narrower, audit)['mismatch'], ['coverage.profile'])
+        widened = core.gate(audit, narrower)
+        self.assertEqual((widened['exit_code'], widened['mismatch'], widened['coverage_changes']), (0, [], ['coverage.profile']))
+
+    def test_updates_and_wider_coverage_stay_comparable(self):
+        baseline = report([self.f], plugins=['gitleaks'])
+        baseline['coverage']['exclusions'] = ['vendor']
+        current = report([self.f, dependency()], plugins=['gitleaks', 'trivy'])
+        current['coverage'].update(policy_digest='c' * 64, engine='docker')
+        current['coverage']['versions']['gitleaks'] = '9.0.0'
+        result = core.gate(current, baseline)
+        self.assertEqual((result['exit_code'], result['status'], result['mismatch'], result['new_or_escalated']),
+                         (1, 'blocked', [], 1))
+        self.assertEqual(sorted(result['coverage_changes']),
+                         ['coverage.engine', 'coverage.exclusions', 'coverage.plugins', 'coverage.policy_digest',
+                          'coverage.versions'])
+        self.assertEqual(core.gate(report([self.f], plugins=['gitleaks']), baseline)['exit_code'], 0)
 
     def test_v2_report_rejected_with_guidance(self):
         legacy = report([self.f])
@@ -286,7 +311,8 @@ class RunnerTests(unittest.TestCase):
         work = next(Path(a.split(',')[1][4:]) for a in args if a.endswith(',dst=/work'))
         image = next(a for a in args if '@sha256:' in a)
         tool = next(n for n, spec in manifest.plugins().items() if spec['image'] == image)
-        (work / 'result.json').write_text(json.dumps(self.EMPTY[tool]))
+        output = next(a for a in args if a.startswith('/work/results/') and a.endswith('result.json'))
+        (work / output[len('/work/'):]).write_text(json.dumps(self.EMPTY[tool]))
         return 0, ''
 
     def test_all_scanners_complete_and_no_shell(self):
@@ -306,7 +332,8 @@ class RunnerTests(unittest.TestCase):
             self.assertIn('--no-git-ignore', semgrep_args)
 
     def test_docker_isolation_follows_the_manifest(self):
-        with tempfile.TemporaryDirectory() as folder, \
+        with tempfile.TemporaryDirectory() as folder, tempfile.TemporaryDirectory() as cache, \
+             patch.dict(os.environ, {'DSO_CACHE_DIR': cache}), \
              patch.object(core.shutil, 'which', side_effect=lambda n, **kw: '/tools/' + n), \
              patch.object(core, 'run_process', side_effect=self.fake_docker) as run:
             Path(folder, 'app.py').write_text('print(1)\n')
@@ -314,9 +341,12 @@ class RunnerTests(unittest.TestCase):
             self.assertTrue(result['complete'], result['runs'])
             scans = [c.args[0] for c in run.call_args_list if c.args[0][1] == 'run' and '--entrypoint' not in c.args[0]]
             self.assertEqual(len(scans), 3)
+            self.assertFalse(list(Path(cache).glob('.dso-sentinel-*')))
             for args in scans:
                 image = next(a for a in args if '@sha256:' in a)
                 plugin, spec = next((n, s) for n, s in manifest.plugins().items() if s['image'] == image)
+                # Only scanners with a vulnerability database may write the shared cache.
+                self.assertEqual(f'type=bind,src={Path(cache).resolve()},dst=/cache' in args, bool(spec['database']), plugin)
                 self.assertTrue({'--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges'} <= set(args))
                 self.assertEqual('--network' in args, not spec['network'], plugin)
                 position = args.index(image)

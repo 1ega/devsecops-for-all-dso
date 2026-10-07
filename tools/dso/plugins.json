@@ -1,15 +1,20 @@
 {
   "schema_version": 1,
-  "reviewed_on": "2026-10-02",
+  "reviewed_on": "2026-10-07",
   "note": "Single source of DSO scanner pins, plugin metadata and profiles. tools/validation/check_repo.py checks every other copy of these pins against this file.",
+  "probe_image": "library/busybox:1.37.0@sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e",
   "plugins": {
     "gitleaks": {
       "adapter": "gitleaks",
       "tool": "gitleaks",
+      "executable": "gitleaks",
       "version": "8.30.1",
-      "version_args": ["version"],
+      "version_args": [
+        "version"
+      ],
       "image": "ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f",
       "image_command": [],
+      "image_entrypoint": null,
       "install": {
         "binaries": {
           "darwin/arm64": {
@@ -30,29 +35,53 @@
           }
         }
       },
-      "targets": ["repo"],
+      "targets": [
+        "repo"
+      ],
       "category": "secret",
       "network": false,
       "credentials": false,
-      "exit_codes": {"clean": 0, "findings": 10},
-      "severity": {"fixed": "high"},
-      "cwe": ["CWE-798"],
+      "database": null,
+      "exit_codes": {
+        "clean": 0,
+        "findings": 10
+      },
+      "severity": {
+        "fixed": "high"
+      },
+      "cwe": [
+        "CWE-798"
+      ],
       "manual": "manuals/gitleaks.md",
       "playbook": "playbooks/leaked-secret.md"
     },
     "semgrep": {
       "adapter": "semgrep",
       "tool": "semgrep",
+      "executable": "semgrep",
       "version": "1.179.0",
-      "version_args": ["--version"],
+      "version_args": [
+        "--version"
+      ],
       "image": "semgrep/semgrep:1.179.0@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b",
-      "image_command": ["semgrep"],
-      "install": {"pip": "semgrep"},
-      "targets": ["repo"],
+      "image_command": [
+        "semgrep"
+      ],
+      "image_entrypoint": null,
+      "install": {
+        "pip": "semgrep"
+      },
+      "targets": [
+        "repo"
+      ],
       "category": "sast",
       "network": false,
       "credentials": false,
-      "exit_codes": {"clean": 0, "findings": 0},
+      "database": null,
+      "exit_codes": {
+        "clean": 0,
+        "findings": 0
+      },
       "severity": {
         "map": {
           "CRITICAL": "critical",
@@ -71,10 +100,14 @@
     "trivy": {
       "adapter": "trivy",
       "tool": "trivy",
+      "executable": "trivy",
       "version": "0.75.0",
-      "version_args": ["--version"],
+      "version_args": [
+        "--version"
+      ],
       "image": "aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa",
       "image_command": [],
+      "image_entrypoint": null,
       "install": {
         "binaries": {
           "darwin/arm64": {
@@ -95,11 +128,23 @@
           }
         }
       },
-      "targets": ["repo"],
+      "targets": [
+        "repo"
+      ],
       "category": "sca",
       "network": true,
       "credentials": false,
-      "exit_codes": {"clean": 0, "findings": 0},
+      "database": {
+        "name": "Trivy vulnerability DB",
+        "path": "db/trivy.db",
+        "download_mb": 125,
+        "disk_mb": 1440,
+        "note": "Scanning .jar files also downloads the Trivy Java DB: about 980 MB."
+      },
+      "exit_codes": {
+        "clean": 0,
+        "findings": 0
+      },
       "severity": {
         "map": {
           "CRITICAL": "critical",
@@ -112,6 +157,462 @@
       "cwe": [],
       "manual": "manuals/trivy-fs.md",
       "playbook": "playbooks/vulnerability-triage.md"
+    },
+    "trufflehog": {
+      "adapter": "trufflehog",
+      "tool": "trufflehog",
+      "executable": "trufflehog",
+      "version": "3.97.9",
+      "version_args": [
+        "--version"
+      ],
+      "image": "trufflesecurity/trufflehog:3.97.9@sha256:52e67fef4d054ecff5c2ce4b4ae376626d1ef54aa0898b53cac19c25e92e14db",
+      "image_command": [],
+      "image_entrypoint": "/usr/bin/trufflehog",
+      "install": {
+        "binaries": {
+          "darwin/arm64": {
+            "url": "https://github.com/trufflesecurity/trufflehog/releases/download/v3.97.9/trufflehog_3.97.9_darwin_arm64.tar.gz",
+            "sha256": "3d25c178fe1a2563687b22547adcaebcf08cc8a607315c6741fe396c597951f7"
+          },
+          "darwin/amd64": {
+            "url": "https://github.com/trufflesecurity/trufflehog/releases/download/v3.97.9/trufflehog_3.97.9_darwin_amd64.tar.gz",
+            "sha256": "4451ba8d17106da0d0a2f1952d3b1c2d20a6e5c97c21ccd1f8fc04ecf2ff77d9"
+          },
+          "linux/arm64": {
+            "url": "https://github.com/trufflesecurity/trufflehog/releases/download/v3.97.9/trufflehog_3.97.9_linux_arm64.tar.gz",
+            "sha256": "372c568695d49e53517075b5f74d1ee9a19053f13661d689c7928ee1fc27d705"
+          },
+          "linux/amd64": {
+            "url": "https://github.com/trufflesecurity/trufflehog/releases/download/v3.97.9/trufflehog_3.97.9_linux_amd64.tar.gz",
+            "sha256": "40377e6572495412fb9ba0bc21c9401f73b72f1d2afd11b9931bc4a5ed622866"
+          }
+        }
+      },
+      "targets": [
+        "repo"
+      ],
+      "category": "secret",
+      "network": false,
+      "credentials": false,
+      "database": null,
+      "exit_codes": {
+        "clean": 0,
+        "findings": 183
+      },
+      "severity": {
+        "fixed": "high"
+      },
+      "cwe": [
+        "CWE-798"
+      ],
+      "manual": "manuals/trufflehog.md",
+      "playbook": "playbooks/leaked-secret.md"
+    },
+    "yara": {
+      "adapter": "yara",
+      "tool": "yara-x",
+      "executable": "yr",
+      "version": "1.21.0",
+      "version_args": [
+        "--version"
+      ],
+      "image": null,
+      "image_command": [],
+      "image_entrypoint": null,
+      "install": {
+        "binaries": {
+          "darwin/arm64": {
+            "url": "https://github.com/VirusTotal/yara-x/releases/download/v1.21.0/yara-x-v1.21.0-aarch64-apple-darwin.tar.gz",
+            "sha256": "03ba0bc33552b324e9efd77852875779cc63f6c18d6e7b53665cb91aad67451a"
+          },
+          "darwin/amd64": {
+            "url": "https://github.com/VirusTotal/yara-x/releases/download/v1.21.0/yara-x-v1.21.0-x86_64-apple-darwin.tar.gz",
+            "sha256": "7ff345762e3d0b01ab6344b893145c396d4102896a3a19efaab7f68b9e07eeb8"
+          },
+          "linux/arm64": {
+            "url": "https://github.com/VirusTotal/yara-x/releases/download/v1.21.0/yara-x-v1.21.0-aarch64-unknown-linux-gnu.tar.gz",
+            "sha256": "8d56947d82c7959a65fd4a7327d339d326649f6208c01c9f7fe7fd249e61c66a"
+          },
+          "linux/amd64": {
+            "url": "https://github.com/VirusTotal/yara-x/releases/download/v1.21.0/yara-x-v1.21.0-x86_64-unknown-linux-gnu.tar.gz",
+            "sha256": "01585181e8979e36ac10ab123fcf8921cf8ba879bf942916413e091e18d64852"
+          }
+        }
+      },
+      "targets": [
+        "repo"
+      ],
+      "category": "malware",
+      "network": false,
+      "credentials": false,
+      "database": null,
+      "exit_codes": {
+        "clean": 0,
+        "findings": 0
+      },
+      "severity": {
+        "fixed": "high"
+      },
+      "cwe": [
+        "CWE-506"
+      ],
+      "manual": "manuals/yara-x.md",
+      "playbook": "playbooks/incident-response.md"
+    },
+    "grype": {
+      "adapter": "grype",
+      "tool": "grype",
+      "executable": "grype",
+      "version": "0.120.0",
+      "version_args": [
+        "version"
+      ],
+      "image": "anchore/grype:v0.120.0@sha256:5c88961f4130e830542d441c7ed6c78baa28e799163abac53d2be4923fb5ab7d",
+      "image_command": [],
+      "image_entrypoint": null,
+      "install": {
+        "binaries": {
+          "darwin/arm64": {
+            "url": "https://github.com/anchore/grype/releases/download/v0.120.0/grype_0.120.0_darwin_arm64.tar.gz",
+            "sha256": "d27d39ba25ba2d2a1d1568219ff159310d2cb54f3cdd5293e5820c5c784f7f11"
+          },
+          "darwin/amd64": {
+            "url": "https://github.com/anchore/grype/releases/download/v0.120.0/grype_0.120.0_darwin_amd64.tar.gz",
+            "sha256": "e77ed0159ba2c291a7319c2c345cbae79bcd93dee901f77d29472ce1908e5ed0"
+          },
+          "linux/arm64": {
+            "url": "https://github.com/anchore/grype/releases/download/v0.120.0/grype_0.120.0_linux_arm64.tar.gz",
+            "sha256": "bc0e52b1a0de37e2ff021c4924d689dce7dcff2e7d74b39aea16c0453e69be18"
+          },
+          "linux/amd64": {
+            "url": "https://github.com/anchore/grype/releases/download/v0.120.0/grype_0.120.0_linux_amd64.tar.gz",
+            "sha256": "a5a1218dce63acdac152a6b3b5bb366e7267e36f4069848cf455543b3fa5700e"
+          }
+        }
+      },
+      "targets": [
+        "repo"
+      ],
+      "category": "sca",
+      "network": true,
+      "credentials": false,
+      "database": {
+        "name": "Grype vulnerability DB",
+        "path": "grype/6/vulnerability.db",
+        "download_mb": 190,
+        "disk_mb": 3200,
+        "note": null
+      },
+      "exit_codes": {
+        "clean": 0,
+        "findings": 0
+      },
+      "severity": {
+        "map": {
+          "Critical": "critical",
+          "High": "high",
+          "Medium": "medium",
+          "Low": "low",
+          "Negligible": "info",
+          "Unknown": "unknown"
+        }
+      },
+      "cwe": [],
+      "manual": "manuals/grype.md",
+      "playbook": "playbooks/vulnerability-triage.md"
+    },
+    "osv-scanner": {
+      "adapter": "osv_scanner",
+      "tool": "osv-scanner",
+      "executable": "osv-scanner",
+      "version": "2.6.0",
+      "version_args": [
+        "--version"
+      ],
+      "image": "ghcr.io/google/osv-scanner:v2.6.0@sha256:afd838850ac1a0fcc15ff4a041dc9ba11123c3f0d2666217a5f0fcf9222b55fa",
+      "image_command": [],
+      "image_entrypoint": null,
+      "install": {
+        "binaries": {
+          "darwin/arm64": {
+            "url": "https://github.com/google/osv-scanner/releases/download/v2.6.0/osv-scanner_darwin_arm64",
+            "sha256": "98c460dcd37de25819babd757d04542045b6243113e209edcd4d89fedb0256b4"
+          },
+          "darwin/amd64": {
+            "url": "https://github.com/google/osv-scanner/releases/download/v2.6.0/osv-scanner_darwin_amd64",
+            "sha256": "60c5296637e977b28eeda5c7f13573e447659a632922737f94d11fa7e30ad6ca"
+          },
+          "linux/arm64": {
+            "url": "https://github.com/google/osv-scanner/releases/download/v2.6.0/osv-scanner_linux_arm64",
+            "sha256": "2c71403eb443d05891c4f268c3ad771cf4f16e5443463fd7851ef8f454d3c7e4"
+          },
+          "linux/amd64": {
+            "url": "https://github.com/google/osv-scanner/releases/download/v2.6.0/osv-scanner_linux_amd64",
+            "sha256": "ca69b3d3cd08f889a49dc0a383122f71cc528b83803671df5fd874d97485b108"
+          }
+        }
+      },
+      "targets": [
+        "repo"
+      ],
+      "category": "sca",
+      "network": true,
+      "credentials": false,
+      "database": {
+        "name": "OSV databases",
+        "path": "osv-scanner",
+        "download_mb": 250,
+        "disk_mb": 250,
+        "note": "One archive per ecosystem found, such as npm (about 220 MB) or PyPI (about 40 MB)."
+      },
+      "exit_codes": {
+        "clean": 0,
+        "findings": 1
+      },
+      "severity": {
+        "map": {
+          "CRITICAL": "critical",
+          "HIGH": "high",
+          "MODERATE": "medium",
+          "MEDIUM": "medium",
+          "LOW": "low"
+        }
+      },
+      "cwe": [],
+      "manual": "manuals/osv-scanner.md",
+      "playbook": "playbooks/vulnerability-triage.md"
+    },
+    "trivy-config": {
+      "adapter": "trivy_config",
+      "tool": "trivy",
+      "executable": "trivy",
+      "version": "0.75.0",
+      "version_args": [
+        "--version"
+      ],
+      "image": "aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa",
+      "image_command": [],
+      "image_entrypoint": null,
+      "install": {
+        "binaries": {
+          "darwin/arm64": {
+            "url": "https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_macOS-ARM64.tar.gz",
+            "sha256": "4a77108cccf8e55c8d6823e1e759939a622277e66cd0daa3c1fc621ed69e4568"
+          },
+          "darwin/amd64": {
+            "url": "https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_macOS-64bit.tar.gz",
+            "sha256": "291edaa9778acbe4693d067b5ad60ee11570e5ac68296e85595417528ca641e4"
+          },
+          "linux/arm64": {
+            "url": "https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_Linux-ARM64.tar.gz",
+            "sha256": "a1ee9f6ffb7d112b64ff726a2a0717c21175c1114361391f4a132956751a13b3"
+          },
+          "linux/amd64": {
+            "url": "https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_Linux-64bit.tar.gz",
+            "sha256": "c6e65abddb348e25f10549df887045629cf28cc72453cd1c63acb717316b3f3f"
+          }
+        }
+      },
+      "targets": [
+        "repo"
+      ],
+      "category": "iac",
+      "network": false,
+      "credentials": false,
+      "database": null,
+      "exit_codes": {
+        "clean": 0,
+        "findings": 0
+      },
+      "severity": {
+        "map": {
+          "CRITICAL": "critical",
+          "HIGH": "high",
+          "MEDIUM": "medium",
+          "LOW": "low",
+          "UNKNOWN": "unknown"
+        }
+      },
+      "cwe": [],
+      "manual": "manuals/trivy-config.md",
+      "playbook": null
+    },
+    "poutine": {
+      "adapter": "poutine",
+      "tool": "poutine",
+      "executable": "poutine",
+      "version": "1.1.6",
+      "version_args": [
+        "version"
+      ],
+      "image": "ghcr.io/boostsecurityio/poutine:1.1.6@sha256:722a8e0999b583c1540fe2974e691032b2d9d21b9256a17965132b6bfd0081b0",
+      "image_command": [],
+      "image_entrypoint": null,
+      "install": {
+        "binaries": {
+          "darwin/arm64": {
+            "url": "https://github.com/boostsecurityio/poutine/releases/download/v1.1.6/poutine_Darwin_arm64.tar.gz",
+            "sha256": "9384f02eeefb4d0778fc61ee4c675e15898b9b01c9cf821dc854d702c4e8a6b2"
+          },
+          "darwin/amd64": {
+            "url": "https://github.com/boostsecurityio/poutine/releases/download/v1.1.6/poutine_Darwin_x86_64.tar.gz",
+            "sha256": "27c9b86bd12db19e27c05c22a42dc44492dd00ed2ab7287900b28cd2effb94d3"
+          },
+          "linux/arm64": {
+            "url": "https://github.com/boostsecurityio/poutine/releases/download/v1.1.6/poutine_Linux_arm64.tar.gz",
+            "sha256": "460c90300c6329106b551c150682d12e457365f6436a6cbbd08fe79eb9a98131"
+          },
+          "linux/amd64": {
+            "url": "https://github.com/boostsecurityio/poutine/releases/download/v1.1.6/poutine_Linux_x86_64.tar.gz",
+            "sha256": "abde716599a65608b023a69ed9316e5f083a7bca48612151c2720835883757ea"
+          }
+        }
+      },
+      "targets": [
+        "repo"
+      ],
+      "category": "cicd",
+      "network": false,
+      "credentials": false,
+      "database": null,
+      "exit_codes": {
+        "clean": 0,
+        "findings": 10
+      },
+      "severity": {
+        "map": {
+          "error": "high",
+          "warning": "medium",
+          "note": "low"
+        }
+      },
+      "cwe": [],
+      "manual": "manuals/poutine.md",
+      "playbook": null
+    },
+    "trivy-image": {
+      "adapter": "trivy_image",
+      "tool": "trivy",
+      "executable": "trivy",
+      "version": "0.75.0",
+      "version_args": [
+        "--version"
+      ],
+      "image": "aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa",
+      "image_command": [],
+      "image_entrypoint": null,
+      "install": {
+        "binaries": {
+          "darwin/arm64": {
+            "url": "https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_macOS-ARM64.tar.gz",
+            "sha256": "4a77108cccf8e55c8d6823e1e759939a622277e66cd0daa3c1fc621ed69e4568"
+          },
+          "darwin/amd64": {
+            "url": "https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_macOS-64bit.tar.gz",
+            "sha256": "291edaa9778acbe4693d067b5ad60ee11570e5ac68296e85595417528ca641e4"
+          },
+          "linux/arm64": {
+            "url": "https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_Linux-ARM64.tar.gz",
+            "sha256": "a1ee9f6ffb7d112b64ff726a2a0717c21175c1114361391f4a132956751a13b3"
+          },
+          "linux/amd64": {
+            "url": "https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_Linux-64bit.tar.gz",
+            "sha256": "c6e65abddb348e25f10549df887045629cf28cc72453cd1c63acb717316b3f3f"
+          }
+        }
+      },
+      "targets": [
+        "image"
+      ],
+      "category": "sca",
+      "network": true,
+      "credentials": false,
+      "database": {
+        "name": "Trivy vulnerability DB",
+        "path": "db/trivy.db",
+        "download_mb": 125,
+        "disk_mb": 1440,
+        "note": "Scanning .jar files also downloads the Trivy Java DB: about 980 MB."
+      },
+      "exit_codes": {
+        "clean": 0,
+        "findings": 0
+      },
+      "severity": {
+        "map": {
+          "CRITICAL": "critical",
+          "HIGH": "high",
+          "MEDIUM": "medium",
+          "LOW": "low",
+          "UNKNOWN": "unknown"
+        }
+      },
+      "cwe": [],
+      "manual": "manuals/trivy-image.md",
+      "playbook": "playbooks/vulnerability-triage.md"
+    },
+    "grype-image": {
+      "adapter": "grype_image",
+      "tool": "grype",
+      "executable": "grype",
+      "version": "0.120.0",
+      "version_args": [
+        "version"
+      ],
+      "image": "anchore/grype:v0.120.0@sha256:5c88961f4130e830542d441c7ed6c78baa28e799163abac53d2be4923fb5ab7d",
+      "image_command": [],
+      "image_entrypoint": null,
+      "install": {
+        "binaries": {
+          "darwin/arm64": {
+            "url": "https://github.com/anchore/grype/releases/download/v0.120.0/grype_0.120.0_darwin_arm64.tar.gz",
+            "sha256": "d27d39ba25ba2d2a1d1568219ff159310d2cb54f3cdd5293e5820c5c784f7f11"
+          },
+          "darwin/amd64": {
+            "url": "https://github.com/anchore/grype/releases/download/v0.120.0/grype_0.120.0_darwin_amd64.tar.gz",
+            "sha256": "e77ed0159ba2c291a7319c2c345cbae79bcd93dee901f77d29472ce1908e5ed0"
+          },
+          "linux/arm64": {
+            "url": "https://github.com/anchore/grype/releases/download/v0.120.0/grype_0.120.0_linux_arm64.tar.gz",
+            "sha256": "bc0e52b1a0de37e2ff021c4924d689dce7dcff2e7d74b39aea16c0453e69be18"
+          },
+          "linux/amd64": {
+            "url": "https://github.com/anchore/grype/releases/download/v0.120.0/grype_0.120.0_linux_amd64.tar.gz",
+            "sha256": "a5a1218dce63acdac152a6b3b5bb366e7267e36f4069848cf455543b3fa5700e"
+          }
+        }
+      },
+      "targets": [
+        "image"
+      ],
+      "category": "sca",
+      "network": true,
+      "credentials": false,
+      "database": {
+        "name": "Grype vulnerability DB",
+        "path": "grype/6/vulnerability.db",
+        "download_mb": 190,
+        "disk_mb": 3200,
+        "note": null
+      },
+      "exit_codes": {
+        "clean": 0,
+        "findings": 0
+      },
+      "severity": {
+        "map": {
+          "Critical": "critical",
+          "High": "high",
+          "Medium": "medium",
+          "Low": "low",
+          "Negligible": "info",
+          "Unknown": "unknown"
+        }
+      },
+      "cwe": [],
+      "manual": "manuals/grype.md",
+      "playbook": "playbooks/vulnerability-triage.md"
     }
   },
   "profiles": {
@@ -119,9 +620,63 @@
       "target": "repo",
       "description": "Blocking CI checks: secrets in the snapshot, the starter Python Semgrep rules and offline dependency vulnerabilities.",
       "plugins": {
-        "gitleaks": {"config": "rules/secrets/gitleaks-default/gitleaks.toml"},
-        "semgrep": {"rules": ["rules/semgrep/python"]},
+        "gitleaks": {
+          "config": "rules/secrets/gitleaks-default/gitleaks.toml"
+        },
+        "semgrep": {
+          "rules": [
+            "rules/semgrep/python"
+          ]
+        },
         "trivy": {}
+      }
+    },
+    "audit": {
+      "target": "repo",
+      "description": "Every repository plugin: two secret scanners, Semgrep with the Python, Trail of Bits, elttam (without Java, which Semgrep 1.179 cannot parse) and mobile rules, three dependency scanners, IaC, CI/CD and YARA malware rules.",
+      "plugins": {
+        "gitleaks": {
+          "config": "rules/secrets/gitleaks-default/gitleaks.toml"
+        },
+        "trufflehog": {},
+        "semgrep": {
+          "rules": [
+            "rules/semgrep/python",
+            "rules/semgrep/trailofbits",
+            "rules/semgrep/elttam/rules/generic",
+            "rules/semgrep/elttam/rules/go",
+            "rules/semgrep/elttam/rules/php",
+            "rules/semgrep/elttam/rules/yaml",
+            "rules/semgrep/elttam/rules-audit/c",
+            "rules/semgrep/elttam/rules-audit/csharp",
+            "rules/semgrep/elttam/rules-audit/go",
+            "rules/semgrep/elttam/rules-audit/javascript",
+            "rules/semgrep/elttam/rules-audit/kotlin",
+            "rules/semgrep/elttam/rules-audit/python",
+            "rules/semgrep/mobile/rules"
+          ]
+        },
+        "trivy": {},
+        "grype": {},
+        "osv-scanner": {},
+        "trivy-config": {},
+        "poutine": {},
+        "yara": {
+          "rules": [
+            "rules/yara/bartblaze",
+            "rules/yara/elastic",
+            "rules/yara/reversinglabs",
+            "rules/yara/signature-base"
+          ]
+        }
+      }
+    },
+    "image": {
+      "target": "image",
+      "description": "A container image pinned by digest, pulled anonymously from its registry: OS and language package vulnerabilities from Trivy and Grype.",
+      "plugins": {
+        "trivy-image": {},
+        "grype-image": {}
       }
     }
   }

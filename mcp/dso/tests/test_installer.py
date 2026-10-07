@@ -2,6 +2,8 @@ import hashlib
 import importlib.util
 import io
 from pathlib import Path
+import subprocess
+import sys
 import tarfile
 import tempfile
 import unittest
@@ -31,6 +33,17 @@ class InstallerTests(unittest.TestCase):
             self.assertEqual((root / 'gitleaks').stat().st_mode & 0o777, 0o755)
             self.assertEqual(sorted(p.name for p in root.iterdir()), ['archive.tgz', 'gitleaks'])
 
+    def test_plain_binary_asset_is_checksummed(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            download = root / 'download'
+            download.write_bytes(b'binary')
+            with self.assertRaises(ValueError):
+                installer.install_binary(download, '0' * 64, 'osv-scanner', root)
+            installer.install_binary(download, hashlib.sha256(b'binary').hexdigest(), 'osv-scanner', root)
+            self.assertEqual(((root / 'osv-scanner').read_bytes(), (root / 'osv-scanner').stat().st_mode & 0o777),
+                             (b'binary', 0o755))
+
     def test_symlink_binary_is_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             archive = Path(folder) / 'archive.tgz'
@@ -43,9 +56,21 @@ class InstallerTests(unittest.TestCase):
                 installer.install_archive(archive, hashlib.sha256(archive.read_bytes()).hexdigest(),
                                           'trivy', Path(folder))
 
+    def test_launcher_runs_the_cli_with_quoted_paths(self):
+        with tempfile.TemporaryDirectory(prefix="dso bin's ; ") as folder:
+            folder = Path(folder)
+            python = folder / 'python'
+            python.symlink_to(sys.executable)
+            launcher = installer.write_launcher(folder, python)
+            self.assertEqual(launcher.stat().st_mode & 0o777, 0o755)
+            result = subprocess.run([str(launcher), 'scan', 'repo', '--help'], capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn('--profile', result.stdout)
+            self.assertEqual(sorted(p.name for p in folder.iterdir()), ['dso', 'python'])
+
     def test_all_platforms_have_reviewed_pins(self):
         binaries = {spec['tool'] for spec in installer.manifest.plugins().values() if 'binaries' in spec['install']}
-        self.assertEqual(binaries, {'gitleaks', 'trivy'})
+        self.assertTrue({'gitleaks', 'trivy', 'trufflehog', 'yara-x', 'grype', 'osv-scanner', 'poutine'} <= binaries)
         for platform in installer.manifest.PLATFORMS:
             assets = installer.assets(platform)
             self.assertEqual(set(assets), binaries, platform)

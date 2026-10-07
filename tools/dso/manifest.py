@@ -11,16 +11,17 @@ from runtime import read_json, text
 ROOT = Path(__file__).resolve().parents[2]
 PATH = Path(__file__).with_name('plugins.json')
 SEVERITIES = {'info': 0, 'low': 1, 'medium': 2, 'high': 3, 'critical': 4, 'unknown': -1}
-CATEGORIES = ('secret', 'sast', 'sca', 'iac', 'malware', 'dast', 'cloud', 'runtime')
+CATEGORIES = ('secret', 'sast', 'sca', 'iac', 'cicd', 'malware', 'dast', 'cloud', 'runtime')
 TARGET_TYPES = ('repo', 'image', 'sbom', 'artifact', 'url', 'cloud', 'cluster', 'host')
 PLATFORMS = ('darwin/amd64', 'darwin/arm64', 'linux/amd64', 'linux/arm64')
 # Plugins only reference kit content that stays usable without DSO.
 KIT_DIRS = ('rules', 'policies', 'scanners')
-PLUGIN_FIELDS = {'adapter', 'tool', 'version', 'version_args', 'image', 'image_command', 'install',
-                 'targets', 'category', 'network', 'credentials', 'exit_codes', 'severity', 'cwe',
-                 'manual', 'playbook'}
+PLUGIN_FIELDS = {'adapter', 'tool', 'executable', 'version', 'version_args', 'image', 'image_command',
+                 'image_entrypoint', 'install', 'targets', 'category', 'network', 'credentials', 'database',
+                 'exit_codes', 'severity', 'cwe', 'manual', 'playbook'}
 # Plugins sharing one tool must also share its pins.
-TOOL_FIELDS = ('version', 'version_args', 'image', 'image_command', 'install')
+TOOL_FIELDS = ('executable', 'version', 'version_args', 'image', 'install')
+IMAGE = re.compile(r'[a-z0-9][a-z0-9./_-]*:([A-Za-z0-9_.-]+)@sha256:[a-f0-9]{64}')
 NAME = re.compile(r'[a-z][a-z0-9-]{0,39}')
 CWE = re.compile(r'CWE-[1-9][0-9]{0,4}')
 
@@ -55,13 +56,19 @@ def validate_plugin(name, spec):
     check(isinstance(spec['adapter'], str) and re.fullmatch(r'[a-z][a-z0-9_]{0,39}', spec['adapter']) and
           Path(__file__).with_name('plugins').joinpath(spec['adapter'] + '.py').is_file(), f'{where}: unknown adapter')
     check(isinstance(spec['tool'], str) and NAME.fullmatch(spec['tool']), f'{where}: invalid tool')
+    check(isinstance(spec['executable'], str) and NAME.fullmatch(spec['executable']), f'{where}: invalid executable')
     version = spec['version']
     check(isinstance(version, str) and re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', version), f'{where}: version must be X.Y.Z')
     check(strings(spec['version_args'], 1, 3, r'-{0,2}[a-z][a-z-]*'), f'{where}: invalid version_args')
-    image = re.fullmatch(r'[a-z0-9][a-z0-9./_-]*:([A-Za-z0-9_.-]+)@sha256:[a-f0-9]{64}', spec['image']) \
-        if isinstance(spec['image'], str) else None
-    check(image and image[1] in (version, 'v' + version), f'{where}: image must be pinned by version tag and digest')
+    if spec['image'] is None:
+        # No reviewed upstream image: the plugin runs only with the native engine.
+        check(spec['image_command'] == [] and spec['image_entrypoint'] is None, f'{where}: no image, so no image command')
+    else:
+        image = IMAGE.fullmatch(spec['image']) if isinstance(spec['image'], str) else None
+        check(image and image[1] in (version, 'v' + version), f'{where}: image must be pinned by version tag and digest')
     check(strings(spec['image_command'], 0, 3), f'{where}: invalid image_command')
+    check(spec['image_entrypoint'] is None or isinstance(spec['image_entrypoint'], str) and
+          re.fullmatch(r'/[A-Za-z0-9._/-]+', spec['image_entrypoint']), f'{where}: invalid image_entrypoint')
     install = spec['install']
     check(isinstance(install, dict) and len(install) == 1 and set(install) <= {'binaries', 'pip'}, f'{where}: invalid install')
     if 'pip' in install:
@@ -77,6 +84,15 @@ def validate_plugin(name, spec):
     check(strings(spec['targets'], 1, len(TARGET_TYPES)) and set(spec['targets']) <= set(TARGET_TYPES), f'{where}: invalid targets')
     check(spec['category'] in CATEGORIES, f'{where}: invalid category')
     check(type(spec['network']) is bool and type(spec['credentials']) is bool, f'{where}: network and credentials are booleans')
+    database = spec['database']
+    # A vulnerability database the scanner downloads into the DSO cache; sizes are reviewed approximations.
+    check(database is None or isinstance(database, dict) and set(database) == {'name', 'path', 'download_mb', 'disk_mb', 'note'} and
+          isinstance(database['name'], str) and 0 < len(database['name']) <= 80 and
+          isinstance(database['path'], str) and re.fullmatch(r'[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*', database['path']) and
+          '..' not in database['path'].split('/') and
+          all(type(database[k]) is int and 0 < database[k] <= 100000 for k in ('download_mb', 'disk_mb')) and
+          (database['note'] is None or isinstance(database['note'], str) and len(database['note']) <= 200),
+          f'{where}: invalid database')
     codes = spec['exit_codes']
     check(isinstance(codes, dict) and set(codes) == {'clean', 'findings'} and
           all(type(c) is int and 0 <= c <= 255 for c in codes.values()), f'{where}: invalid exit_codes')
@@ -118,10 +134,12 @@ def validate_profile(name, profile, plugins):
 
 
 def validate(data):
-    check(isinstance(data, dict) and set(data) == {'schema_version', 'reviewed_on', 'note', 'plugins', 'profiles'} and
+    check(isinstance(data, dict) and set(data) == {'schema_version', 'reviewed_on', 'note', 'probe_image', 'plugins', 'profiles'} and
           type(data['schema_version']) is int and data['schema_version'] == 1, 'unsupported format')
     text(data['reviewed_on'], 'reviewed_on', 10)
     text(data['note'], 'note', 500)
+    # A small image with a shell proves the Docker daemon sees the private snapshot.
+    check(isinstance(data['probe_image'], str) and IMAGE.fullmatch(data['probe_image']), 'probe_image must be pinned by digest')
     plugins, profiles = data['plugins'], data['profiles']
     check(isinstance(plugins, dict) and plugins and isinstance(profiles, dict) and profiles, 'plugins and profiles are required')
     tools = {}
@@ -137,6 +155,10 @@ def validate(data):
 @functools.cache
 def load():
     return validate(read_json(PATH))
+
+
+def probe_image():
+    return load()['probe_image']
 
 
 def plugins():

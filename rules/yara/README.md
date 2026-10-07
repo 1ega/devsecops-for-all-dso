@@ -23,6 +23,15 @@ yr scan --recursive rl:rules/yara/reversinglabs/yara bb:rules/yara/bartblaze/rul
 
 The `name:` prefix puts each set in its own namespace. Add `--relaxed-re-syntax` for `yara-rules-community`, which has a few regular expressions that only classic YARA accepts.
 
+The four sets that compile cleanly together, with the `signature-base` external variables defined as empty strings (see below):
+
+```sh
+yr scan --recursive --disable-warnings \
+  --define filename='""' --define filepath='""' --define extension='""' --define filetype='""' --define owner='""' \
+  sb:rules/yara/signature-base rl:rules/yara/reversinglabs bb:rules/yara/bartblaze el:rules/yara/elastic \
+  path/to/target
+```
+
 With classic [YARA](https://github.com/VirusTotal/yara), pass one or more rule files; `-r` scans a target directory recursively:
 
 ```sh

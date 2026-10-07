@@ -17,19 +17,37 @@ mcp/dso/.venv/bin/python mcp/dso/server.py \
 
 The installer installs the hash-locked MCP/Semgrep packages
 (`requirements-standalone.lock`) plus the SHA256-verified Gitleaks/Trivy binaries
-pinned in [plugins.json](../../tools/dso/plugins.json) for Linux or macOS, amd64/arm64. It installs into `mcp/dso/.venv` by default; pass
-another directory as its first argument and set `PYTHON=python3.12` to choose the
-interpreter. No sudo or global package changes. Both CLI and server find scanner
-binaries next to their Python interpreter, so activation is optional:
+pinned in [plugins.json](../../tools/dso/plugins.json) for Linux or macOS,
+amd64/arm64, and a `dso` command. It installs into `mcp/dso/.venv` by default;
+pass another directory as its first argument and set `PYTHON=python3.12` to choose
+the interpreter. No sudo or global package changes. Both CLI and server find
+scanner binaries next to their Python interpreter, so activation is optional.
+
+`dso` runs this checkout's CLI with that environment's Python and scanners. Link
+only it onto your `PATH`, so the environment's `python`, `trivy` and others do not
+shadow your own:
 
 ```bash
-mcp/dso/.venv/bin/python tools/dso/dso.py doctor
-mcp/dso/.venv/bin/python tools/dso/dso.py scan repo /absolute/path/to/project \
+ln -s "$PWD/mcp/dso/.venv/bin/dso" ~/.local/bin/dso
+dso doctor
+dso scan repo /absolute/path/to/project \
   --project team/application --output "$(mktemp -d)/dso-report.json"
 ```
 
+The launcher stores absolute paths; run the installer again after moving the
+checkout or the environment.
+
+The environment with all scanners takes about 850 MB. Their vulnerability databases come on
+top: the first `audit` scan downloads about 565 MB and keeps about 4.9 GB in
+`~/.cache/dso`; `ci-blocking` needs only the 1.4 GB Trivy DB. See
+[DSO quick start](../../tools/dso/README.md#quick-start).
+
 For an MCP-only install using external Docker instead, create a venv, run
 `pip install --require-hashes -r mcp/dso/requirements.lock`, then use `--engine docker`.
+
+The server reads the report limits (`max_report_mb`, `max_findings`) from the
+same [settings](../../tools/dso/README.md#settings) as the CLI; `--engine`,
+`--timeout` and `--exclude` are its own options.
 
 The process waits for MCP messages on stdin; this is not an interactive terminal
 or HTTP server. Options: `--root` (required: an existing directory other than
@@ -74,8 +92,11 @@ docker run --rm -i --init --read-only --cap-drop ALL \
   dso-mcp:local
 ```
 
-The image includes Python, MCP, Gitleaks, Semgrep and Trivy and an SBOM at
-`/opt/dso/sbom.cdx.json`. Scanners execute inside this container using the
+The image includes Python, MCP, Gitleaks, Semgrep and Trivy (the `ci-blocking`
+profile), the complete rule packs with their license files, and an SBOM at
+`/opt/dso/sbom.cdx.json`. The build checks that the packaged CLI can load its manifest.
+The full `audit` and `image` profiles need additional scanner binaries; use the
+host installation from `install.sh` for those profiles. Scanners execute inside this container using the
 `native` engine; **no Docker socket mount or privileged container is needed**.
 Python packages are hash-locked, Debian packages are upgraded from a
 timestamp-pinned snapshot, setuid bits are removed and pip is not shipped.
@@ -151,8 +172,8 @@ volume to uninstall the container option. Nothing is pushed to a registry.
 | `dso_doctor` | None | Native versions and paths, or Docker daemon version and local pinned-image availability |
 | `dso_scan_repo` | `path`, `project`, optional `profile` (default `ci-blocking`) and `plugins` | `report_id`, `target`, `complete`, `runs`, `coverage`, `input` and the first 50 findings |
 | `dso_read_report` | `path` | Imports a saved v3 report (at most 20 MiB) as `report_id` for inspection or as a baseline |
-| `dso_get_findings` | `report_id`, optional `offset`, `limit` (1–100) | One page of findings |
-| `dso_gate` | `report_id` from `dso_scan_repo`, optional `baseline_id`, `fail_on` (default `high`), `offset`, `limit` | `exit_code`: 0 pass, 1 blocking, 2 incomplete or incomparable; paged `blocking`, `resolved` and `fix_changed` with totals |
+| `dso_get_findings` | `report_id`, optional `view` (`findings`, or `issues` to merge the same problem across tools), `offset`, `limit` (1–100) | One page of findings, or of issues under the `issues` key |
+| `dso_gate` | `report_id` from `dso_scan_repo`, optional `baseline_id`, `fail_on` (default `high`), `exceptions_path` (a register inside the root; see `dso exceptions`), `offset`, `limit` | `exit_code`: 0 pass, 1 blocking, 2 incomplete or incomparable; paged `blocking`, `blocking_issues`, `resolved` and `fix_changed` with totals; `gaps`, the plugins that had nothing to check; `exceptions`, what the register waived |
 
 Typical interaction: scan the allowed project; inspect `complete` and `runs`;
 gate the returned `report_id`; optionally import a trusted baseline with

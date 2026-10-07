@@ -83,6 +83,10 @@ class ProtocolTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual((imported['origin'], imported['total']), ('import', 0))
                     result, _ = await self.call(session, 'dso_get_findings', {'report_id': imported['report_id']})
                     self.assertFalse(result.isError)
+                    result, grouped = await self.call(session, 'dso_get_findings',
+                                                      {'report_id': imported['report_id'], 'view': 'issues'})
+                    self.assertFalse(result.isError)
+                    self.assertEqual((grouped['view'], grouped['issues'], grouped['total']), ('issues', [], 0))
                     # Imported reports can be baselines, never the gated current scan.
                     result, _ = await self.call(session, 'dso_gate', {'report_id': imported['report_id']})
                     self.assertTrue(result.isError)

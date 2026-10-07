@@ -15,6 +15,12 @@ def policy_files(options, root):
 def prepare(ctx):
     (ctx.config_host / 'empty.yaml').write_text('{}\n')
     (ctx.config_host / 'empty.ignore').write_text('')
+    (ctx.config_host / 'docker').mkdir(mode=0o700)
+
+
+def environment(ctx):
+    # The database is public; an empty Docker config keeps registry credential helpers out of it.
+    return {'DOCKER_CONFIG': ctx.config + '/docker'}
 
 
 def command(ctx):

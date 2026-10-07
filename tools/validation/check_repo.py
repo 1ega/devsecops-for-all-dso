@@ -157,9 +157,10 @@ def pin_patterns(plugins):
     patterns = []
     for tool, spec in tools.items():
         version = spec["version"]
-        repository, reference = spec["image"].split(":", 1)
-        patterns.append((r"(?<![\w.-])" + re.escape(repository) + r":([\w.-]+(?:@sha256:[a-f0-9]{64})?)",
-                         reference, f"{tool} image"))
+        if spec["image"]:
+            repository, reference = spec["image"].split(":", 1)
+            patterns.append((r"(?<![\w.-])" + re.escape(repository) + r":([\w.-]+(?:@sha256:[a-f0-9]{64})?)",
+                             reference, f"{tool} image"))
         patterns.append((re.escape(tool) + r"/v[0-9]+/version\.Version=v([0-9][\w.-]*)", version, f"{tool} build version"))
         if "pip" in spec["install"]:
             patterns.append((r"(?<![\w-])" + re.escape(spec["install"]["pip"]) + r"==([0-9][\w.]*)", version, f"{tool} package"))
@@ -193,6 +194,11 @@ def dso_errors(root, imported):
                 elif "@" in expected and "@" not in match[1] and label.endswith("image"):
                     line = content.count("\n", 0, match.start()) + 1
                     errors.append(f"{relative}:{line}: {label} must be pinned by digest ({expected})")
+    # The standalone image copies DSO modules one by one; a module missing there fails at import time.
+    dockerfile = (root / "mcp" / "dso" / "Dockerfile").read_text()
+    for module in sorted(path.name for path in (root / "tools" / "dso").glob("*.py")):
+        if f"tools/dso/{module}" not in dockerfile:
+            errors.append(f"mcp/dso/Dockerfile: tools/dso/{module} is not copied into the image")
     binaries = {spec["tool"]: spec["install"].get("binaries", {}) for spec in plugins.values()}
     for name, asset in json.loads((root / "tools" / "versions.json").read_text())["binary_assets"].items():
         pin = binaries.get(name, {}).get(asset.get("platform"))
@@ -219,10 +225,14 @@ def package_errors(root, imported):
         path = root / value
         directory = path if path.is_dir() else path.parent
         top = root.joinpath(*Path(value).parts[:2])
-        readme = next((d / "README.md" for d in [directory, *directory.parents]
-                       if d.is_relative_to(top) and (d / "README.md").is_file()), None)
-        blocks = re.findall(r"```(?:bash|sh|shell|console)[ \t]*\n(.*?)```", readme.read_text(), re.S) if readme else []
-        if not any(value in block for block in blocks):
+        # The path itself or a directory containing it, named in a shell block of a README on the way up.
+        covering = {Path(value), *(p for p in Path(value).parents if (root / p).is_relative_to(top))}
+        readmes = [d / "README.md" for d in [directory, *directory.parents]
+                   if d.is_relative_to(top) and (d / "README.md").is_file()]
+        tokens = {Path(word.rsplit(":", 1)[-1].rstrip("/")) for readme in readmes
+                  for block in re.findall(r"```(?:bash|sh|shell|console)[ \t]*\n(.*?)```", readme.read_text(), re.S)
+                  for word in block.split()}
+        if not covering & tokens:
             errors.append(f"{value}: used by a DSO profile, but no README up to {top.relative_to(root)} "
                           "shows a shell command that uses it without DSO")
     return errors
