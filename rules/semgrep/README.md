@@ -9,15 +9,15 @@ Keep substantial rule collections in one directory per pack, with their own usag
 | [trailofbits](trailofbits/SOURCE.md) | Go, Python, JavaScript, JVM, Rust, Ruby, HCL, and more from Trail of Bits — 124 rules, AGPL-3.0 |
 | [profiles](profiles/README.md) | Planned rule selections: `ci-blocking`, `pr-diff`, `audit` |
 
-Known issue: on Semgrep 1.175.0 and 1.179.0, 12 Java rules in `elttam/` fail to parse (for example `jax-rs.path-class` and `rest-RequestMapping`), and `semgrep --validate` also reports `rules/generic/jsp-likely-xss.yaml`, which is a test file next to its rule. Leave out `elttam/rules/java/` and `elttam/rules-audit/java/` until they are fixed; `trailofbits/` validates cleanly (120 rules).
+Known issue: on Semgrep 1.175.0 and 1.179.0, 12 Java rules in `elttam/` fail to parse (for example `jax-rs.path-class` and `rest-RequestMapping`). In 1.179.0, `elttam/rules/generic/jsp-likely-xss.yaml` can also crash a scan while evaluating its join rule. DSO omits that one rule from `audit`; the imported file remains available for future versions. Leave out `elttam/rules/java/` and `elttam/rules-audit/java/` until they are fixed; `trailofbits/` validates cleanly (120 rules).
 
 Run an imported pack the same way as the mobile one, from the repository root:
 
 ```bash
 semgrep scan --metrics=off --config rules/semgrep/trailofbits/ path/to/project
-# elttam without the Java rules that do not parse
+# elttam without the incompatible Java rules and JSP join rule
 semgrep scan --metrics=off \
-  --config rules/semgrep/elttam/rules/generic/ --config rules/semgrep/elttam/rules/go/ \
+  --config rules/semgrep/elttam/rules/go/ \
   --config rules/semgrep/elttam/rules/php/ --config rules/semgrep/elttam/rules/yaml/ \
   --config rules/semgrep/elttam/rules-audit/c/ --config rules/semgrep/elttam/rules-audit/csharp/ \
   --config rules/semgrep/elttam/rules-audit/go/ --config rules/semgrep/elttam/rules-audit/javascript/ \

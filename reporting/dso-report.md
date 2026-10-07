@@ -26,7 +26,7 @@ findings as the old one.
 | `coverage.default_exclusions` | Directory names never copied: `.git`, `.venv`, `venv`, `__pycache__`, `node_modules`; empty for images |
 | `input` | Snapshot evidence: `files`, `bytes` and a SHA256 manifest of relative paths and contents; for a fetched repository also `origin` with its `url` (`https://github.com/OWNER/REPO`) and exact `commit`; and `inventory`, what the snapshot contained (below). An image scan records only `reference`, the image pinned by digest |
 | `complete` | Boolean: every selected plugin completed |
-| `runs` | One entry per plugin: `plugin`, `status`, `finding_count`, `exit_code`, plus `error_code`/`error` when it failed |
+| `runs` | One entry per plugin: `plugin`, `status`, `finding_count`, `exit_code`; errors add `error_code`/`error`. A partial Semgrep run adds target-relative `incomplete_files`, keeps its findings and makes the scan incomplete |
 | `findings` | Normalized, deduplicated findings sorted by ID |
 
 Every finding has `id`, `plugin`, `category`, `rule_id`, `path`, `line`,
@@ -133,8 +133,11 @@ not authenticity: reports and baselines must come from trusted execution and
 storage. Database updates can legitimately add findings for unchanged
 dependencies. Source line moves create new IDs.
 
-Scanner reports and saved DSO JSON are bounded at 20 MiB; a scan may contain at
-most 50,000 normalized findings. Exceeding a scanner limit marks that plugin
+Scanner reports and saved DSO JSON default to a 20 MiB limit, configurable with
+`--max-report-mb`, `DSO_MAX_REPORT_MB` or `max_report_mb` in DSO config; a scan
+may contain at most 50,000 normalized findings by default, configurable with
+`--max-findings`, `DSO_MAX_FINDINGS` or `max_findings`. Use the same raised limits
+to read or gate a large report. Exceeding a scanner limit marks that plugin
 incomplete with `error_code: report_limit`. Exceeding the saved JSON limit fails
 the write without replacing an existing report. Split the target or select
 fewer plugins instead of treating a truncated report as a complete scan.

@@ -109,11 +109,12 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual((secret()['category'], secret()['cwe']), ('secret', ['CWE-798']))
 
     def test_incomplete_and_malformed_reports_rejected(self):
-        for plugin, data in [('gitleaks', {}), ('semgrep', {'results': [], 'errors': [{}]}),
-                             ('semgrep', {'results': []}), ('trivy', {}),
+        for plugin, data in [('gitleaks', {}), ('semgrep', {'results': []}), ('trivy', {}),
                              ('gitleaks', [{'RuleID': 'r', 'File': '/src/a', 'StartLine': 1, 'Secret': ''}])]:
             with self.subTest(plugin=plugin), self.assertRaises((ValueError, KeyError)):
                 core.normalize(plugin, data, '/src')
+        with self.assertRaises((ValueError, KeyError)):
+            manifest.adapter('semgrep').partial_paths({'errors': [{}]}, '/src')
         for value in ('../escape', '/other/app.py', '.'):
             with self.assertRaises(ValueError):
                 reports.relative_path(value, Path('/project'))

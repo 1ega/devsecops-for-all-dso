@@ -263,7 +263,7 @@ def validate_report(report):
             inventory.check(evidence['inventory'], evidence['files'], relative_path)
         if not isinstance(report['runs'], list) or sorted(r['plugin'] for r in report['runs']) != names:
             raise ValueError('Missing or duplicate scanner run')
-        if any(r['status'] not in ('complete', 'error') for r in report['runs']):
+        if any(r['status'] not in ('complete', 'partial', 'error') for r in report['runs']):
             raise ValueError('Invalid run status')
         if report['complete'] != all(r['status'] == 'complete' for r in report['runs']):
             raise ValueError('Inconsistent scan completion')
@@ -287,7 +287,9 @@ def validate_report(report):
             raise ValueError('Findings must be sorted')
         for run in report['runs']:
             required = {'plugin', 'status', 'finding_count', 'exit_code'}
-            expected_fields = required if run['status'] == 'complete' else required | {'error_code', 'error'}
+            expected_fields = (required if run['status'] == 'complete' else
+                               required | {'incomplete_files'} if run['status'] == 'partial' else
+                               required | {'error_code', 'error'})
             if set(run) != expected_fields:
                 raise ValueError('Unexpected scanner run fields')
             if type(run['finding_count']) is not int or run['finding_count'] != sum(f['plugin'] == run['plugin'] for f in report['findings']):
@@ -295,10 +297,17 @@ def validate_report(report):
             code = run['exit_code']
             if code is not None and (type(code) is not int or not -255 <= code <= 255):
                 raise ValueError('Invalid scanner exit code')
-            if run['status'] == 'complete':
+            if run['status'] in ('complete', 'partial'):
                 codes = manifest.plugin(run['plugin'])['exit_codes']
-                if code != (codes['findings'] if run['finding_count'] else codes['clean']):
+                expected_code = codes['findings'] if run['finding_count'] else codes['clean']
+                if code != expected_code and not (run['status'] == 'partial' and run['plugin'] == 'semgrep' and code == 3):
                     raise ValueError('Completed run contradicts scanner exit code')
+                if run['status'] == 'partial':
+                    paths = run['incomplete_files']
+                    if run['plugin'] != 'semgrep' or image or not isinstance(paths, list) or not paths:
+                        raise ValueError('Invalid partial scanner run')
+                    if paths != sorted(set(paths)) or any(relative_path(p, Path('/unused')) != p for p in paths):
+                        raise ValueError('Invalid skipped file paths')
             else:
                 text(run['error_code'], 'error code', 64)
                 text(run['error'], 'error description', 512)
@@ -313,16 +322,13 @@ GAP_REASONS = {'no_dependency_files': 'no lockfile in the snapshot, so dependenc
                'unlocked_manifests': 'manifests without a lockfile beside them are skipped by the dependency scanners',
                'no_iac_files': 'no Dockerfile, Terraform, Kubernetes, Helm, Compose or CloudFormation file in the snapshot',
                'no_ci_files': 'no GitHub Actions, GitLab CI, Azure Pipelines or Tekton file in the snapshot',
-               'no_source_files': 'no source file in a language DSO recognizes'}
+               'no_source_files': 'no source file in a language DSO recognizes',
+               'semgrep_incomplete_files': 'Semgrep skipped or did not fully analyze these files'}
 
 
 def gaps(report):
-    """Selected plugins that had nothing to check, from the snapshot inventory: a zero-finding
-    run then means "nothing to look at", not "clean". Empty for images and for reports without
-    an inventory."""
+    """Coverage gaps from the snapshot inventory and files a partial scanner skipped."""
     stock = report['input'].get('inventory')
-    if stock is None:
-        return []
     by_category = {}
     for name in report['coverage']['plugins']:
         by_category.setdefault(manifest.plugin(name)['category'], []).append(name)
@@ -332,16 +338,21 @@ def gaps(report):
         if category in by_category:
             found.append({'plugins': by_category[category], 'reason': reason, 'detail': GAP_REASONS[reason],
                           'paths': sorted(paths)})
-    if not stock['dependency_files']:
-        gap('sca', 'no_dependency_files')
-    if stock['unlocked']:
-        gap('sca', 'unlocked_manifests', [p for paths in stock['unlocked'].values() for p in paths])
-    if not stock['iac_files']:
-        gap('iac', 'no_iac_files')
-    if not stock['ci_files']:
-        gap('cicd', 'no_ci_files')
-    if not stock['languages']:
-        gap('sast', 'no_source_files')
+    if stock is not None:
+        if not stock['dependency_files']:
+            gap('sca', 'no_dependency_files')
+        if stock['unlocked']:
+            gap('sca', 'unlocked_manifests', [p for paths in stock['unlocked'].values() for p in paths])
+        if not stock['iac_files']:
+            gap('iac', 'no_iac_files')
+        if not stock['ci_files']:
+            gap('cicd', 'no_ci_files')
+        if not stock['languages']:
+            gap('sast', 'no_source_files')
+    for run in report['runs']:
+        if run['status'] == 'partial' and run['plugin'] == 'semgrep':
+            found.append({'plugins': ['semgrep'], 'reason': 'semgrep_incomplete_files',
+                          'detail': GAP_REASONS['semgrep_incomplete_files'], 'paths': run['incomplete_files']})
     return found
 
 

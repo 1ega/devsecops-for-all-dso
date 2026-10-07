@@ -633,7 +633,7 @@
     },
     "audit": {
       "target": "repo",
-      "description": "Every repository plugin: two secret scanners, Semgrep with the Python, Trail of Bits, elttam (without Java, which Semgrep 1.179 cannot parse) and mobile rules, three dependency scanners, IaC, CI/CD and YARA malware rules.",
+      "description": "Every repository plugin: two secret scanners, Semgrep with the Python, Trail of Bits, compatible elttam and mobile rules, three dependency scanners, IaC, CI/CD and YARA malware rules.",
       "plugins": {
         "gitleaks": {
           "config": "rules/secrets/gitleaks-default/gitleaks.toml"
@@ -643,7 +643,6 @@
           "rules": [
             "rules/semgrep/python",
             "rules/semgrep/trailofbits",
-            "rules/semgrep/elttam/rules/generic",
             "rules/semgrep/elttam/rules/go",
             "rules/semgrep/elttam/rules/php",
             "rules/semgrep/elttam/rules/yaml",

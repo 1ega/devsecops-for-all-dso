@@ -82,9 +82,11 @@ class AdapterTests(unittest.TestCase):
         only(core.normalize('osv-scanner', data, '/src'), rule_id='GHSA-x84v-xcm2-53pg')
 
     def test_trivy_config_reports_failures_only(self):
-        data = {'SchemaVersion': 2, 'ArtifactName': '/src', 'Results': [{'Target': 'Dockerfile', 'Misconfigurations': [
-            {'ID': 'DS-0002', 'Severity': 'HIGH', 'Status': 'FAIL', 'CauseMetadata': {'StartLine': 3}, 'Message': 'private'},
-            {'ID': 'DS-0001', 'Severity': 'MEDIUM', 'Status': 'PASS'}]}]}
+        data = {'version': '2.1.0', 'runs': [{'tool': {'driver': {'rules': [
+            {'id': 'DS-0002', 'properties': {'tags': ['misconfiguration', 'HIGH']}}]}},
+            'results': [{'ruleId': 'DS-0002', 'level': 'error', 'locations': [
+                {'physicalLocation': {'artifactLocation': {'uri': 'Dockerfile', 'uriBaseId': 'ROOTPATH'},
+                                      'region': {'startLine': 3}}}]}]}]}
         only(core.normalize('trivy-config', data, '/src'), rule_id='DS-0002', path='Dockerfile', line=3,
              severity='high', category='iac')
 

@@ -15,7 +15,7 @@ import manifest
 import reports
 import runtime
 import scanning
-from plugins import osv_scanner
+from plugins import osv_scanner, semgrep
 
 
 class SeverityTests(unittest.TestCase):
@@ -85,6 +85,72 @@ class ProbeTests(unittest.TestCase):
 
 
 class FailureTests(unittest.TestCase):
+    def test_semgrep_target_errors_keep_findings_and_name_incomplete_files(self):
+        def process(args, cwd, *a, **kw):
+            if args[1:] == ['--version']:
+                return 0, manifest.plugin('semgrep')['version']
+            source = Path(args[-1])
+            output = Path(args[args.index('--output') + 1])
+            output.write_text(json.dumps({'errors': [{'path': str(source / 'broken.js'), 'type': 'Timeout'}],
+                                          'results': [{'check_id': 'synthetic-unsafe', 'path': str(source / 'app.py'),
+                                                       'start': {'line': 1}, 'extra': {'severity': 'ERROR', 'metadata': {}}}]}))
+            return 3, ''
+
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory)
+            (target / 'app.py').write_text('print("modern")\n')
+            (target / 'broken.js').write_text('const x = 1;\n')
+            with patch.object(scanning, 'executable_path', return_value='/tools/semgrep'), \
+                 patch.object(scanning, 'run_process', side_effect=process):
+                report = scanning.scan_repo(target, ['semgrep'], project='fixture')
+        self.assertFalse(report['complete'])
+        self.assertEqual(report['runs'][0]['status'], 'partial')
+        self.assertEqual((report['runs'][0]['exit_code'], report['runs'][0]['incomplete_files']), (3, ['broken.js']))
+        self.assertEqual((report['runs'][0]['finding_count'], len(report['findings'])), (1, 1))
+        self.assertEqual(scanning.gate(report)['exit_code'], 2)
+        reports.validate_report(report)
+
+    def test_audit_omits_semgrep_join_rule_that_crashes_at_scan_time(self):
+        options = manifest.profile('audit')['plugins']['semgrep']
+        rules = {p.relative_to(manifest.ROOT).as_posix() for p in semgrep.policy_files(options, manifest.ROOT)}
+        self.assertNotIn('rules/semgrep/elttam/rules/generic/jsp-likely-xss.yaml', rules)
+        self.assertTrue(any(p.startswith('rules/semgrep/elttam/rules/go/') for p in rules))
+
+    def test_legacy_python_keeps_other_semgrep_findings_and_marks_coverage(self):
+        def process(args, cwd, *a, **kw):
+            if args[1:] == ['--version']:
+                return 0, manifest.plugin('semgrep')['version']
+            source = Path(args[-1])
+            self.assertTrue((source / 'app.py').is_file())
+            self.assertFalse((source / 'legacy.py').exists())
+            output = Path(args[args.index('--output') + 1])
+            output.write_text(json.dumps({'errors': [], 'results': [{
+                'check_id': 'synthetic-unsafe', 'path': str(source / 'app.py'),
+                'start': {'line': 1}, 'extra': {'severity': 'ERROR', 'metadata': {}}
+            }]}))
+            return 0, ''
+
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory)
+            (target / 'app.py').write_text('print("modern")\n')
+            (target / 'legacy.py').write_text('print "legacy"\n')
+            with patch.object(scanning, 'executable_path', return_value='/tools/semgrep'), \
+                 patch.object(scanning, 'run_process', side_effect=process):
+                report = scanning.scan_repo(target, ['semgrep'], project='fixture')
+            self.assertTrue((target / 'legacy.py').is_file())
+        self.assertFalse(report['complete'])
+        self.assertEqual(report['runs'][0]['status'], 'partial')
+        self.assertEqual(report['runs'][0]['incomplete_files'], ['legacy.py'])
+        self.assertEqual((report['runs'][0]['finding_count'], len(report['findings'])), (1, 1))
+        self.assertEqual(scanning.gate(report)['exit_code'], 2)
+        self.assertIn('semgrep_incomplete_files', [g['reason'] for g in scanning.gaps(report)])
+        reports.validate_report(report)
+        for skipped in ([], ['../outside.py'], ['app.py', 'app.py']):
+            broken = json.loads(json.dumps(report))
+            broken['runs'][0]['incomplete_files'] = skipped
+            with self.subTest(skipped=skipped), self.assertRaises(ValueError):
+                reports.validate_report(broken)
+
     def test_scanner_size_and_finding_limits_produce_an_incomplete_report(self):
         def process(args, *a, **kw):
             if args[1:] in (['--version'], ['version']):
