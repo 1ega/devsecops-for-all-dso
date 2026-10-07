@@ -17,27 +17,34 @@ DevSecOps for All collects security checks, policies, detection rules, standards
 
 ## Quick start
 
-DSO is the kit's scanning platform. It runs pinned Gitleaks, Semgrep and Trivy on a private copy of a repository, merges the results into one report without secret values, and gates it by severity or against a reviewed baseline of accepted findings. The same core runs from the command line, in [GitHub Actions and GitLab CI](integrations/README.md), and as an [MCP server](mcp/dso/README.md) for AI agents.
+![DSO interactive scan](assets/dso-menu.gif)
+
+![DSO findings](assets/dso-findings.gif)
+
+DSO scans a local project, public GitHub repository or organization, or container image. It runs pinned scanners, uses a private snapshot for source code, saves a normalized report without secret values, and checks findings against a severity threshold or an approved baseline. Use it from the CLI, [CI](integrations/README.md), or an [MCP client](mcp/dso/README.md).
 
 ### Run DSO
 
-Requires Python 3.10+ and Docker:
+Requires Python 3.10+ and Docker. The CLI starts pinned scanner containers; no scanner installation is needed:
 
 ```bash
 git clone https://github.com/1ega/devsecops-for-all-dso.git
 cd devsecops-for-all-dso
 
+python3 tools/dso/dso.py  # interactive menu
+
 report="$(mktemp -d)/report.json"
-python3 tools/dso/dso.py scan repo ../your-project \
-  --engine docker --project team/your-project --output "$report"
+python3 tools/dso/dso.py scan ../your-project --engine docker --output "$report"
 python3 tools/dso/dso.py gate --input "$report" --fail-on high
 ```
 
-Replace `../your-project` with the directory you want to check. `gate` returns `0` when nothing blocks, `1` for findings at or above the threshold and `2` for an incomplete scan. To run without Docker, install the pinned scanners with `bash mcp/dso/install.sh`, then use `mcp/dso/.venv/bin/python` and drop `--engine docker`. See the [DSO CLI](tools/dso/README.md) for baselines, exclusions and exit codes.
+Replace `../your-project` with your project path; `scan` also accepts a GitHub URL or image. The default `ci-blocking` profile runs Gitleaks, Semgrep and Trivy. `gate` returns `0` for a pass, `1` for blocking findings and `2` for an incomplete scan. See the [DSO CLI](tools/dso/README.md) for the fuller `audit` profile, baselines and exclusions. YARA in `audit` currently requires native mode.
+
+**Local database space:** Trivy's vulnerability database uses about **1.4 GB** on disk even with `ci-blocking`. The full `audit` profile adds Grype and OSV databases, reaching about **4.9 GB**; scanning JAR files may add about **1 GB**. The first full scan downloads about **565 MB** of compressed databases. DSO reuses them from `~/.cache/dso` (or `DSO_CACHE_DIR`) and refreshes them periodically. Select only Gitleaks and Semgrep with `--plugins gitleaks semgrep` to avoid vulnerability databases, which also skips dependency vulnerability checks. Run `python3 tools/dso/dso.py doctor --engine docker --profile audit` to see which databases are present.
 
 ### Connect an AI agent over MCP
 
-Install once, then register the server as a stdio server in your MCP client:
+For local scanners, install once and register the stdio server in your MCP client:
 
 ```bash
 bash mcp/dso/install.sh
@@ -55,7 +62,32 @@ bash mcp/dso/install.sh
 }
 ```
 
-The agent can scan and gate only directories inside `--root`. A self-contained Docker image that needs no local scanners is described in the [DSO MCP server](mcp/dso/README.md) guide.
+Set `--root` to the directory the agent may scan; it cannot scan outside that directory. This installation includes the native scanners and uses the same local database cache.
+
+For **MCP in Docker**, build the self-contained image and use this client configuration (replace the absolute path and UID:GID with your own):
+
+```bash
+docker build -f mcp/dso/Dockerfile -t dso-mcp:local .
+```
+
+```json
+{
+  "mcpServers": {
+    "dso": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "--init", "--read-only",
+               "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
+               "--user", "YOUR_UID:YOUR_GID",
+               "--tmpfs", "/tmp:rw,nosuid,nodev,size=2g,mode=1777",
+               "--mount", "type=bind,src=/absolute/path/to/project,dst=/workspace,readonly",
+               "--mount", "type=volume,src=dso-cache,dst=/cache",
+               "dso-mcp:local"]
+    }
+  }
+}
+```
+
+Use `-i` for MCP stdio. The volume keeps the Trivy database between runs. This image includes the `ci-blocking` scanners; the full `audit` and `image` profiles need the [host installation](mcp/dso/README.md#standalone-installation). More Docker options are in the [MCP server guide](mcp/dso/README.md#self-contained-docker-installation).
 
 Review the findings using the [triage playbook](playbooks/vulnerability-triage.md); for exposed credentials, follow the [leaked secret playbook](playbooks/leaked-secret.md). To run a single scanner directly, see its [manual](manuals/README.md). For a company-wide rollout, start with the [SMB guide](guides/smb-security.md) and [security baseline](baseline/README.md).
 
