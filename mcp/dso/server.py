@@ -3,7 +3,6 @@
 from __future__ import annotations
 import argparse
 from collections import OrderedDict
-from functools import partial
 import json
 import os
 from pathlib import Path
@@ -14,6 +13,9 @@ import uuid
 from contextlib import asynccontextmanager
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'tools/dso'))
+import config
+import manifest
+import register
 import scanning
 import runtime
 import anyio
@@ -73,7 +75,7 @@ async def worker(function, *args, cancellable=False, **kwargs):
 
 def create_server(root, engine='docker', timeout=300, exclusions=()):
     root = validate_root(root)
-    server = Server('dso', version='0.2.0', instructions=WARNING)
+    server = Server('dso', version=scanning.VERSION, instructions=WARNING)
     reports = OrderedDict()
     limiter = anyio.CapacityLimiter(1)
     string = {'type': 'string', 'minLength': 1, 'maxLength': 200}
@@ -83,15 +85,17 @@ def create_server(root, engine='docker', timeout=300, exclusions=()):
     declarations = [
         ('dso_doctor', 'Inspect actual native versions or local Docker image availability. ' + WARNING, schema({})),
         ('dso_scan_repo', 'Scan an isolated snapshot within the allowed root. Returns a server-owned report_id and first page. ' + WARNING,
-         schema({'path': path_schema, 'project': string, 'tools': {'type': 'array', 'minItems': 1, 'uniqueItems': True,
-                                                              'items': {'enum': sorted(scanning.TOOLS)}}}, ['path', 'project'])),
-        ('dso_read_report', 'Import a saved v2 report as a baseline or for inspection (not as a current scan). ' + WARNING,
+         schema({'path': path_schema, 'project': string,
+                 'profile': {'enum': sorted(manifest.profiles()), 'default': scanning.DEFAULT_PROFILE},
+                 'plugins': {'type': 'array', 'minItems': 1, 'uniqueItems': True,
+                             'items': {'enum': sorted(manifest.plugins())}}}, ['path', 'project'])),
+        ('dso_read_report', 'Import a saved v3 report as a baseline or for inspection (not as a current scan). ' + WARNING,
          schema({'path': path_schema}, ['path'])),
-        ('dso_get_findings', 'Page through a stored report. ' + WARNING,
-         schema({'report_id': string, **page_schema}, ['report_id'])),
+        ('dso_get_findings', 'Page through a stored report: every finding, or the issues they describe once tools are merged. ' + WARNING,
+         schema({'report_id': string, 'view': {'enum': ['findings', 'issues'], 'default': 'findings'}, **page_schema}, ['report_id'])),
         ('dso_gate', 'Gate a report produced by this server; arbitrary agent-supplied reports are rejected. ' + WARNING,
          schema({'report_id': string, 'baseline_id': string, 'fail_on': {'enum': ['info', 'low', 'medium', 'high', 'critical'], 'default': 'high'},
-                 **page_schema}, ['report_id'])),
+                 'exceptions_path': path_schema, **page_schema}, ['report_id'])),
     ]
     tools = [types.Tool(name=name, description=description, inputSchema=inputs,
                         outputSchema={'type': 'object'}, annotations=types.ToolAnnotations(
@@ -100,7 +104,7 @@ def create_server(root, engine='docker', timeout=300, exclusions=()):
 
     def store(report, origin):
         encoded = json.dumps(report, allow_nan=False, separators=(',', ':'))
-        if len(encoded.encode()) > runtime.MAX_JSON:
+        if len(encoded.encode()) > runtime.REPORT_LIMIT:
             raise ValueError('Report exceeds the server storage limit; select fewer scanners')
         while reports and (len(reports) >= 8 or sum(r[2] for r in reports.values()) + len(encoded) > 40 * 1024 * 1024):
             reports.popitem(last=False)
@@ -113,13 +117,14 @@ def create_server(root, engine='docker', timeout=300, exclusions=()):
             raise ValueError('Unknown or expired report ID; scan or import again')
         return reports[key]
 
-    def page(key, offset=0, limit=50):
+    def page(key, offset=0, limit=50, view='findings'):
         report, origin, _ = get(key)
-        return {'report_id': key, 'origin': origin, 'project': report['project'],
+        items = report['findings'] if view == 'findings' else scanning.issues(report['findings'], report['target']['type'] == 'image')
+        return {'report_id': key, 'origin': origin, 'project': report['project'], 'target': report['target'],
                 'complete': report['complete'], 'runs': report['runs'], 'coverage': report['coverage'],
-                'input': report['input'], 'total': len(report['findings']), 'offset': offset,
-                'findings': report['findings'][offset:offset + limit],
-                'next_offset': offset + limit if offset + limit < len(report['findings']) else None,
+                'input': report['input'], 'view': view, 'total': len(items), 'offset': offset,
+                view: items[offset:offset + limit],
+                'next_offset': offset + limit if offset + limit < len(items) else None,
                 'data_warning': WARNING}
 
     @server.list_tools()
@@ -135,8 +140,9 @@ def create_server(root, engine='docker', timeout=300, exclusions=()):
             elif name == 'dso_scan_repo':
                 target = contained_path(args['path'], root, True)
                 async with limiter:
-                    report = await worker(scanning.scan_repo, target, args.get('tools'), engine, timeout,
-                                          args['project'], exclusions=exclusions, cancellable=True)
+                    report = await worker(scanning.scan_repo, target, args.get('plugins'), engine, timeout,
+                                          args['project'], exclusions=exclusions,
+                                          profile=args.get('profile', scanning.DEFAULT_PROFILE), cancellable=True)
                 scanning.validate_report(report)
                 result = page(store(report, 'scan'))
             elif name == 'dso_read_report':
@@ -145,15 +151,17 @@ def create_server(root, engine='docker', timeout=300, exclusions=()):
                 scanning.validate_report(report)
                 result = page(store(report, 'import'))
             elif name == 'dso_get_findings':
-                result = page(args['report_id'], args.get('offset', 0), args.get('limit', 50))
+                result = page(args['report_id'], args.get('offset', 0), args.get('limit', 50), args.get('view', 'findings'))
             elif name == 'dso_gate':
                 report, origin, _ = get(args['report_id'])
                 if origin != 'scan':
                     raise ValueError('Current report must be produced by dso_scan_repo in this server session')
                 baseline = get(args['baseline_id'])[0] if 'baseline_id' in args else None
-                result = scanning.gate(report, baseline, args.get('fail_on', 'high'))
+                # A register inside the root, validated like the CLI's; a broken one rejects the request.
+                exceptions = register.load(contained_path(args['exceptions_path'], root)) if 'exceptions_path' in args else None
+                result = scanning.gate(report, baseline, args.get('fail_on', 'high'), exceptions)
                 offset, limit = args.get('offset', 0), args.get('limit', 50)
-                for field in ('blocking', 'resolved', 'fix_changed'):
+                for field in ('blocking', 'blocking_issues', 'resolved', 'fix_changed'):
                     values = result[field]
                     result[field + '_total'] = len(values)
                     result[field] = values[offset:offset + limit]
@@ -232,6 +240,7 @@ def main():
     if not 1 <= args.timeout <= 1800:
         parser.error('--timeout must be between 1 and 1800 seconds')
     try:
+        config.apply(config.load()[0])
         server = create_server(args.root, args.engine, args.timeout, args.exclude)
     except ValueError as exc:
         parser.error(str(exc))

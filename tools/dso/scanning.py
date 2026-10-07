@@ -1,42 +1,32 @@
-"""Repository scanning and conservative delta gates; standard library only."""
+"""Repository scanning through manifest plugins; standard library only."""
 from __future__ import annotations
 
 import hashlib
+from contextlib import ExitStack
 import json
 import os
 from pathlib import Path
 import re
 import shutil
-import signal
-import subprocess
 import sys
 import tempfile
 from datetime import datetime, timezone
-from runtime import (ScanError, Cancelled, run_process, snapshot, check_python, check_cancel,
-                     read_json, loads, text, EXCLUDED)
 
-PROFILE = "repo-v2:snapshot,python3-starter,offline-dependencies"
+import config
+import inventory
+import manifest
+from reports import (IMAGE_REFERENCE, SCHEMA_VERSION, SEVERITIES, deduplicate, digest, gaps, gate, issues,  # noqa: F401
+                     check_shape, selected_plugins, validate_report, waive)
+import runtime
+from runtime import ScanError, Cancelled, run_process, snapshot, check_cancel, loads, text, EXCLUDED
 
-ROOT = Path(__file__).resolve().parents[2]
-TOOLS = {
-    'gitleaks': ('8.30.1', 'ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f'),
-    'semgrep': ('1.179.0', 'semgrep/semgrep:1.179.0@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b'),
-    'trivy': ('0.75.0', 'aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa'),
-}
-SEVERITIES = {'info': 0, 'low': 1, 'medium': 2, 'high': 3, 'critical': 4, 'unknown': -1}
-
-
-def digest(value):
-    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
-
-
-def selected_tools(names):
-    names = list(TOOLS) if names is None else names
-    if not isinstance(names, list) or not names or any(not isinstance(n, str) or n not in TOOLS for n in names):
-        raise ValueError('Select one or more of: ' + ', '.join(TOOLS))
-    if len(names) != len(set(names)):
-        raise ValueError('Duplicate scanner selection')
-    return sorted(names)
+ROOT = manifest.ROOT
+VERSION = '0.3.0'
+DEFAULT_PROFILE = 'ci-blocking'
+DEFAULT_IMAGE_PROFILE = 'image'
+CORE = [Path(__file__).with_name(n) for n in ('scanning.py', 'runtime.py', 'reports.py', 'manifest.py', 'inventory.py',
+                                              'register.py', 'plugins.json')]
+VERSION_NUMBER = re.compile(r'(?<![0-9])[0-9]+\.[0-9]+\.[0-9]+(?![0-9])')
 
 
 def executable_path(name):
@@ -44,7 +34,13 @@ def executable_path(name):
     return shutil.which(name, path=search)
 
 
-def doctor(engine='native', cancel=None):
+def detected_version(executable, spec, cwd, timeout, cancel=None):
+    rc, out = run_process([executable, *spec['version_args']], cwd, timeout, cancel)
+    match = VERSION_NUMBER.search(out)
+    return match.group() if rc == 0 and match else None
+
+
+def doctor(engine='native', cancel=None, profile=DEFAULT_PROFILE):
     if engine not in ('native', 'docker'):
         raise ValueError('engine must be native or docker')
     results = []
@@ -58,399 +54,377 @@ def doctor(engine='native', cancel=None):
             if rc:
                 raise ScanError('daemon', 'Docker daemon unavailable')
             daemon = daemon.strip()
+        except Cancelled:
+            raise
         except (OSError, ValueError):
             return {'engine': engine, 'ready': False, 'daemon_version': None, 'tools': [],
                     'error': 'Docker daemon unavailable; check installation and context'}
-    for name, (expected, image) in TOOLS.items():
+    tools = {}
+    for name in sorted(manifest.profile(profile)['plugins']):
+        spec = manifest.plugin(name)
+        tools.setdefault(spec['tool'], (spec, []))[1].append(name)
+    for tool, (spec, plugins) in sorted(tools.items()):
         check_cancel(cancel)
-        executable = executable_path(name) if engine == 'native' else docker
-        record = {'tool': name, 'ready': False, 'expected_version': expected,
-                  'detected_version': None, 'executable': executable, 'image': image if engine == 'docker' else None}
+        executable = executable_path(spec['executable']) if engine == 'native' else docker
+        record = {'tool': tool, 'plugins': plugins, 'ready': False, 'expected_version': spec['version'],
+                  'detected_version': None, 'executable': executable, 'image': spec['image'] if engine == 'docker' else None}
         try:
             if not executable:
                 raise ScanError('missing_executable', 'Scanner executable unavailable')
-            if engine == 'docker':
+            if engine == 'docker' and spec['image'] is None:
+                record['error'] = 'No reviewed image; this plugin runs only with --engine native'
+            elif engine == 'docker':
                 # No implicit pulls in doctor. Report actual local image readiness.
-                rc, out = run_process([docker, 'image', 'inspect', image, '--format', '{{.Id}}'], tempfile.gettempdir(), 15, cancel)
+                rc, out = run_process([docker, 'image', 'inspect', spec['image'], '--format', '{{.Id}}'], tempfile.gettempdir(), 15, cancel)
                 record['ready'] = rc == 0 and out.strip().startswith('sha256:')
                 record['error'] = None if record['ready'] else 'Pinned image missing locally; scan may pull it'
             else:
-                rc, out = run_process([executable, 'version' if name == 'gitleaks' else '--version'], tempfile.gettempdir(), 15, cancel)
-                match = re.search(r'(?<![0-9])[0-9]+\.[0-9]+\.[0-9]+(?![0-9])', out)
-                record['detected_version'] = match.group() if match else None
-                record['ready'] = rc == 0 and record['detected_version'] == expected
+                record['detected_version'] = detected_version(executable, spec, tempfile.gettempdir(), 15, cancel)
+                record['ready'] = record['detected_version'] == spec['version']
                 record['error'] = None if record['ready'] else 'Expected scanner version was not detected'
         except Cancelled:
             raise
         except (OSError, ValueError):
             record['error'] = 'Scanner unavailable or version check failed'
         results.append(record)
-    return {'engine': engine, 'ready': all(r['ready'] for r in results),
-            'daemon_version': daemon, 'tools': results}
+    root = cache_root()
+    return {'engine': engine, 'profile': profile, 'ready': all(r['ready'] for r in results),
+            'daemon_version': daemon, 'tools': results, 'cache': str(root) if root else None,
+            'databases': database_status(manifest.profile(profile)['plugins'], engine)}
 
 
-def relative_path(value, target):
-    text(value, 'finding path', 4096)
-    path = Path(value)
-    if path.is_absolute():
-        try:
-            path = path.relative_to(target)
-        except ValueError:
-            raise ValueError('Finding path outside scan target') from None
-    if '..' in path.parts or path.as_posix() in ('.', ''):
-        raise ValueError('Finding path escapes scan target')
-    return path.as_posix()
-
-
-def finding(tool, rule, path, severity, line=0, package='', version='', fixed='', fingerprint=''):
-    text(rule, 'rule', 512)
-    text(path, 'path', 4096)
-    if type(line) is not int or line < 0:
-        raise ValueError('Invalid finding line')
-    for value in (package, version, fixed):
-        text(value, 'package metadata', 2048, empty=True)
-    if fingerprint and not re.fullmatch('[a-f0-9]{64}', fingerprint):
-        raise ValueError('Invalid finding fingerprint')
-    severity = str(severity).lower()
-    if severity not in SEVERITIES:
-        severity = 'unknown'
-    record = {'tool': tool, 'rule_id': rule, 'path': path, 'line': line,
-              'package': package, 'installed_version': version, 'fixed_version': fixed,
-              'severity': severity, 'fingerprint': fingerprint}
-    record['id'] = digest([tool, rule, path, line, package, version, fingerprint])
-    return record
-
-
-def normalize(tool, data, target):
+def normalize(plugin, data, source):
     """Allowlist fields; never copy scanner snippets, messages, matches or secrets."""
-    records = []
-    if tool == 'gitleaks':
-        if not isinstance(data, list):
-            raise ValueError('Gitleaks report must be an array')
-        for item in data:
-            # Multi-line secrets (PEM keys) are valid; only the domain-separated hash is kept.
-            secret = item['Secret']
-            if not isinstance(secret, str) or not secret or len(secret) > 1024 * 1024:
-                raise ValueError('Invalid secret match')
-            fingerprint = hashlib.sha256(b'dso-secret-v2\0' + item['RuleID'].encode() + b'\0' + secret.encode()).hexdigest()
-            records.append(finding(tool, item['RuleID'], relative_path(item['File'], target),
-                                   'high', item['StartLine'], fingerprint=fingerprint))
-    elif tool == 'semgrep':
-        if not isinstance(data, dict) or not isinstance(data.get('results'), list) or not isinstance(data.get('errors'), list):
-            raise ValueError('Invalid Semgrep report')
-        if data['errors']:
-            raise ValueError('Semgrep reported incomplete analysis')
-        for item in data['results']:
-            severity = {'ERROR': 'high', 'WARNING': 'medium', 'INFO': 'info',
-                        'CRITICAL': 'critical', 'HIGH': 'high', 'MEDIUM': 'medium', 'LOW': 'low'}.get(item['extra']['severity'], 'unknown')
-            records.append(finding(tool, item['check_id'], relative_path(item['path'], target),
-                                   severity, item['start']['line']))
-    elif tool == 'trivy':
-        if not isinstance(data, dict) or data.get('SchemaVersion') != 2 or not isinstance((data.get('Results') or []), list) or not data.get('ArtifactName'):
-            raise ValueError('Invalid Trivy report')
-        for result in (data.get('Results') or []):
-            path = relative_path(result['Target'], target)
-            for item in result.get('Vulnerabilities') or []:
-                records.append(finding(tool, item['VulnerabilityID'], path, item.get('Severity', 'unknown'),
-                                       package=item['PkgName'], version=item.get('InstalledVersion') or '',
-                                       fixed=item.get('FixedVersion') or ''))
-    else:
-        raise ValueError('Unsupported scanner')
-    unique = {}
+    records = manifest.adapter(plugin).parse(data, plugin, Path(source))
     for record in records:
-        previous = unique.get(record['id'])
-        if previous is None or record['severity'] == 'unknown' or SEVERITIES[record['severity']] > SEVERITIES[previous['severity']]:
-            unique[record['id']] = record
-    return sorted(unique.values(), key=lambda r: r['id'])
+        check_shape(record)
+    return deduplicate(records)
 
 
-def rule_files():
-    return sorted(p for p in (ROOT / 'rules/semgrep/python').rglob('*')
-                  if p.suffix in ('.yaml', '.yml') and not p.name.endswith(('.test.yaml', '.test.yml')))
+def policy_digest(profile, names):
+    selection = manifest.profile(profile)['plugins']
+    paths = set(CORE)
+    for name in names:
+        adapter = manifest.adapter(name)
+        paths.add(Path(adapter.__file__))
+        paths.update(adapter.policy_files(selection[name], ROOT))
+    return digest([profile] + [(str(p.relative_to(ROOT)), hashlib.sha256(p.read_bytes()).hexdigest()) for p in sorted(paths)])
 
 
-def policy_digest():
-    paths = [ROOT / 'rules/secrets/gitleaks-default/gitleaks.toml',
-             ROOT / 'tools/dso/scanning.py', ROOT / 'tools/dso/runtime.py', *rule_files()]
-    return digest([(str(p.relative_to(ROOT)), hashlib.sha256(p.read_bytes()).hexdigest()) for p in paths])
+def cache_root():
+    """Where vulnerability databases persist: DSO_CACHE_DIR, else this user's private cache; None if neither is usable."""
+    shared = config.load()[0]['cache_dir']
+    if shared:
+        path = Path(shared).resolve()
+        if not path.is_dir() or not os.access(path, os.W_OK | os.X_OK):
+            return None
+        try:
+            with tempfile.TemporaryFile(dir=path):
+                pass
+            return path
+        except OSError:
+            return None
+    default = Path(os.environ.get('XDG_CACHE_HOME') or Path.home() / '.cache') / 'dso'
+    try:
+        default.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if default.is_symlink() or default.stat().st_uid != os.getuid() or default.stat().st_mode & 0o077:
+            raise PermissionError()
+        with tempfile.TemporaryFile(dir=default):
+            pass
+        return default
+    except OSError:
+        return None
 
 
-def trivy_cache(work):
-    """Reuse DSO_CACHE_DIR when this UID can write it (e.g. image volume); otherwise a private cache."""
-    shared = os.environ.get('DSO_CACHE_DIR')
-    if shared and Path(shared).is_dir() and os.access(shared, os.W_OK | os.X_OK):
-        return shared
-    return str(work / 'cache')
+def cache_dir(work):
+    """Vulnerability databases are large, so native scans reuse the cache; otherwise the run directory."""
+    root = cache_root()
+    return str(root) if root else str(work / 'cache')
 
 
-def scan_repo(path, tools=None, engine='native', timeout=300, project=None, cancel=None, exclusions=()):
-    names = selected_tools(tools)
+def disk_usage(path):
+    if path.is_file():
+        return path.stat().st_size
+    return sum(p.stat().st_size for p in path.rglob('*') if p.is_file() and not p.is_symlink())
+
+
+def database_status(names, engine='native'):
+    """Each vulnerability database the plugins need: reviewed sizes, and whether it is already cached."""
+    root = cache_root()
+    status = {}
+    for name in names:
+        database = manifest.plugin(name)['database']
+        if database and database['path'] not in status:
+            path = root / database['path'] if root else None
+            present = bool(path and path.exists())
+            status[database['path']] = dict(database, present=present, bytes=disk_usage(path) if present else 0,
+                                            updated=datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat()
+                                            if present else None)
+    return list(status.values())
+
+
+class Context:
+    """What an adapter may use: trusted options and the paths its scanner sees."""
+
+    def __init__(self, plugin, options, engine, work, source, persistent_cache=None):
+        self.plugin, self.spec, self.options, self.root = plugin, manifest.plugin(plugin), options, ROOT
+        # A snapshot directory for repositories; the pinned reference itself for images.
+        self.source_host = source if isinstance(source, Path) else None
+        self.config_host = work / 'config' / plugin
+        self.config_host.mkdir(mode=0o700)
+        inside = engine == 'docker'
+        self.source = ('/src' if inside else str(source)) if self.source_host else source
+        self.config = f'/work/config/{plugin}' if inside else str(self.config_host)
+        # A fresh directory per plugin: Docker Desktop's shared mounts can keep a stale entry for a
+        # file another container wrote and the host deleted, which makes creating it fail (ENOENT).
+        self.result_host = work / 'results' / plugin / 'result.json'
+        self.result_host.parent.mkdir(mode=0o700)
+        self.output = f'/work/results/{plugin}/result.json' if inside else str(self.result_host)
+        self.cache = ('/cache' if persistent_cache else '/work/cache') if inside else str(persistent_cache or work / 'cache')
+
+
+def tool_prefixes():
+    """Environment prefixes of every manifest tool, so the caller's settings cannot change a scan."""
+    return tuple(sorted({spec['tool'].upper().replace('-', '_') + '_' for spec in manifest.plugins().values()}))
+
+
+def container(docker, name, source, work, network, cache=None):
+    """docker run options shared by every plugin: read-only, unprivileged, only the snapshot and work mounted."""
+    for mount in (source, work, cache):
+        if mount is not None and ',' in str(mount):
+            raise ScanError('mount', 'Docker mount path contains a comma; choose a different TMPDIR')
+    prefix = [docker, 'run', '--rm', '--name', name, '--read-only',
+              '--cap-drop=ALL', '--security-opt=no-new-privileges', '--pids-limit', '256',
+              '--memory', '3g', '--user', f'{os.getuid()}:{os.getgid()}',
+              # Some scanner images ship /tmp as root-only; explicitly allow the caller's UID.
+              '--tmpfs', '/tmp:rw,nosuid,nodev,size=256m,mode=1777', '-e', 'HOME=/tmp']
+    if source is not None:
+        prefix += ['--mount', f'type=bind,src={source},dst=/src,readonly']
+    prefix += ['--mount', f'type=bind,src={work},dst=/work', '-w', '/work']
+    if cache is not None:
+        prefix += ['--mount', f'type=bind,src={cache},dst=/cache']
+    if not network:
+        return prefix + ['--network', 'none']
+    for key in ('HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'http_proxy', 'https_proxy', 'no_proxy'):
+        if key in os.environ:
+            prefix += ['-e', key]
+    ca = os.environ.get('SSL_CERT_FILE')
+    if ca:
+        shutil.copyfile(Path(ca).resolve(strict=True), work / 'ca.pem')
+        prefix += ['-e', 'SSL_CERT_FILE=/work/ca.pem']
+    return prefix
+
+
+def probe(docker, source, work, timeout, cancel=None, cache=None):
+    """Check mount visibility without overwriting source files or leaving probe files for scanners."""
+    token = os.urandom(24).hex()
+    name = 'dso-' + os.urandom(12).hex()
+    try:
+        with ExitStack() as temporary:
+            checks, arguments = [], [token]
+            for directory, mount in ((work, '/work'), (source, '/src'), (cache, '/cache')):
+                if directory is None:
+                    continue
+                sentinel = temporary.enter_context(tempfile.NamedTemporaryFile(
+                    mode='w', prefix='.dso-probe-', dir=directory))
+                sentinel.write(token)
+                sentinel.flush()
+                arguments.append(Path(sentinel.name).name)
+                checks.append(f'test "$(cat "{mount}/${len(arguments)}")" = "$1"')
+            args = container(docker, name, source, work, False, cache) + [
+                '--entrypoint', '/bin/sh', manifest.probe_image(), '-c', ' && '.join(checks), 'sh', *arguments]
+            code, _ = run_process(args, work, timeout, cancel)
+    except Cancelled:
+        raise
+    except ScanError as exc:
+        return exc
+    except OSError:
+        return ScanError('mount_visibility', 'Docker probe could not access the snapshot, cache or executable')
+    finally:
+        try:
+            run_process([docker, 'rm', '-f', name], work, 15)
+        except (OSError, ValueError):
+            pass
+    if code:
+        return ScanError('mount_visibility', 'Docker cannot read the snapshot or cache; daemon and client need shared mount paths')
+    return None
+
+
+def run_plugins(report, names, selection, engine, work, source, timeout, cancel, notify):
+    """Run each plugin the same way: prepare, version check, sandbox, timeout, parse and validate."""
+    (work / 'config').mkdir(mode=0o700)
+    (work / 'results').mkdir(mode=0o700)
+    # Only plugins with a vulnerability database get the shared cache: scanners that parse the
+    # target's files must not be able to rewrite the databases later scans trust.
+    persistent_cache = cache_root()
+    caches = {n: persistent_cache if manifest.plugin(n)['database'] else None for n in names}
+    contexts = {}
+    for name in names:
+        # Trusted kit configuration only; a broken kit raises instead of scanning less.
+        contexts[name] = Context(name, selection['plugins'][name], engine, work, source, caches[name])
+        manifest.adapter(name).prepare(contexts[name])
+    docker = executable_path('docker') if engine == 'docker' else None
+    probe_error = probe(docker, source if isinstance(source, Path) else None, work, timeout, cancel,
+                        persistent_cache if any(caches.values()) else None) if docker else None
+    for name in names:
+        check_cancel(cancel)
+        ctx, adapter, spec = contexts[name], manifest.adapter(name), manifest.plugin(name)
+        run = {'plugin': name, 'status': 'error', 'finding_count': 0, 'exit_code': None}
+        notify('start', name)
+        container_name = 'dso-' + os.urandom(12).hex()
+        try:
+            executable = executable_path(spec['executable']) if engine == 'native' else docker
+            if not executable:
+                raise ScanError('missing_executable', 'Scanner executable unavailable')
+            if engine == 'docker' and spec['image'] is None:
+                raise ScanError('no_image', 'No reviewed image for this plugin; scan with --engine native')
+            if probe_error:
+                raise probe_error
+            if hasattr(adapter, 'preflight'):
+                adapter.preflight(ctx)
+            if engine == 'native' and detected_version(executable, spec, work, min(timeout, 15), cancel) != spec['version']:
+                raise ScanError('version', 'Scanner version differs from reviewed version ' + spec['version'])
+            extra = adapter.environment(ctx) if hasattr(adapter, 'environment') else {}
+            args = [executable, *adapter.command(ctx)]
+            if engine == 'docker':
+                prefix = container(docker, container_name, source if isinstance(source, Path) else None, work,
+                                   spec['network'], caches[name])
+                for key, value in extra.items():
+                    prefix += ['-e', f'{key}={value}']
+                if spec['image_entrypoint']:
+                    prefix += ['--entrypoint', spec['image_entrypoint']]
+                args = prefix + [spec['image'], *spec['image_command'], *adapter.command(ctx)]
+            result = ctx.result_host
+            code, _ = run_process(args, work, timeout, cancel, extra_env=extra if engine == 'native' else None,
+                                  output_path=result if getattr(adapter, 'OUTPUT', 'file') == 'stdout' else None,
+                                  clear=tool_prefixes(), errors_on=getattr(adapter, 'ERRORS', ()))
+            run['exit_code'] = code
+            codes = spec['exit_codes']
+            if code not in (codes['clean'], codes['findings']):
+                raise ScanError('execution', 'Scanner failed; exit code is recorded separately')
+            try:
+                with result.open('rb') as stream:
+                    raw = stream.read(runtime.REPORT_LIMIT + 1)
+                if len(raw) > runtime.REPORT_LIMIT:
+                    raise ScanError('report_limit', f'Scanner output exceeds {runtime.REPORT_LIMIT >> 20} MiB; {runtime.LIMIT_HINT}')
+                data = ([loads(line) for line in raw.splitlines() if line.strip()]
+                        if getattr(adapter, 'FORMAT', 'json') == 'jsonl' else loads(raw, runtime.REPORT_LIMIT))
+                records = normalize(name, data, ctx.source)
+                if len(report['findings']) + len(records) > runtime.MAX_FINDINGS:
+                    raise ScanError('report_limit', f'Scan exceeds {runtime.MAX_FINDINGS} findings; raise max_findings in dso config or pass --max-findings')
+            except ScanError:
+                raise
+            except (OSError, ValueError, KeyError, IndexError, TypeError, AttributeError):
+                raise ScanError('report', 'Scanner report is missing, invalid or incomplete') from None
+            if codes['findings'] != codes['clean'] and bool(records) != (code == codes['findings']):
+                raise ScanError('report', 'Scanner exit status disagrees with its report')
+            report['findings'].extend(records)
+            run.update(status='complete', finding_count=len(records))
+        except Cancelled:
+            raise
+        except ScanError as exc:
+            run.update(error_code=exc.code, error=str(exc))
+            report['complete'] = False
+        except (OSError, ValueError, KeyError, TypeError, AttributeError):
+            run.update(error_code='execution', error='Scanner could not execute with the reviewed configuration')
+            report['complete'] = False
+        finally:
+            if engine == 'docker' and docker:
+                try:
+                    run_process([docker, 'rm', '-f', container_name], work, 15)
+                except (OSError, ValueError):
+                    pass
+        report['runs'].append(run)
+        notify('done', name, run)
+
+
+def scan_repo(path, tools=None, engine='native', timeout=300, project=None, cancel=None, exclusions=(),
+              profile=DEFAULT_PROFILE, progress=None, origin=None):
+    """progress(event, step, detail) is called with 'start' and 'done' for the snapshot and each plugin.
+    origin records where a fetched tree came from: {'url': ..., 'commit': ...}."""
+    def notify(event, step, detail=None):
+        if progress is not None:
+            progress(event, step, detail)
+    selection = manifest.profile(profile)
+    if selection['target'] != 'repo':
+        raise ValueError('Profile does not scan repositories')
+    names = selected_plugins(tools, profile)
     text(str(path), 'target', 4096)
     text(project, 'project', 200)
     if engine not in ('native', 'docker') or type(timeout) is not int or not 1 <= timeout <= 1800:
         raise ValueError('Invalid engine or timeout (1–1800 seconds per scanner)')
     target = Path(path).resolve(strict=True)
-    report = {'schema_version': 2, 'project': project,
+    report = {'schema_version': SCHEMA_VERSION, 'project': project, 'target': {'type': 'repo'},
               'created_at': datetime.now(timezone.utc).isoformat(),
-              'coverage': {'tools': names, 'policy_digest': policy_digest(), 'profile': PROFILE,
-                           'engine': engine, 'versions': {n: TOOLS[n][0] for n in names},
+              'coverage': {'profile': profile, 'plugins': names,
+                           'versions': {n: manifest.plugin(n)['version'] for n in names},
+                           'engine': engine, 'policy_digest': policy_digest(profile, names),
                            'exclusions': sorted(set(exclusions)), 'default_exclusions': sorted(EXCLUDED)},
-              'input': {'files': 0, 'bytes': 0, 'sha256': '0' * 64},
+              'input': {'files': 0, 'bytes': 0, 'sha256': '0' * 64, **({'origin': dict(origin)} if origin else {})},
               'complete': True, 'runs': [], 'findings': []}
     with tempfile.TemporaryDirectory(prefix='dso-') as directory:
         work = Path(directory)
         source_path = work / 'source'
+        notify('start', 'snapshot')
         try:
             report['input'] = snapshot(target, source_path, cancel, exclusions)
+            if origin is not None:
+                report['input']['origin'] = dict(origin)
+            report['input']['inventory'] = inventory.collect(source_path)
         except ScanError as exc:
             report['complete'] = False
-            report['runs'] = [{'tool': n, 'status': 'error', 'finding_count': 0, 'exit_code': None,
+            report['runs'] = [{'plugin': n, 'status': 'error', 'finding_count': 0, 'exit_code': None,
                                'error_code': exc.code, 'error': str(exc)} for n in names]
+            notify('done', 'snapshot', {'status': 'error', 'error_code': exc.code, 'error': str(exc)})
             return report
-        # Only trusted rule files are exposed to the scanners, never the whole kit.
-        config_path = work / 'config'
-        config_path.mkdir(mode=0o700)
-        rules = rule_files()
-        if not rules:
-            raise ValueError('No trusted Semgrep rules found')
-        for i, rule in enumerate(rules):
-            shutil.copyfile(rule, config_path / f'rule-{i}.yaml')
-        config_text = (ROOT / 'rules/secrets/gitleaks-default/gitleaks.toml').read_text()
-        # Remove the upstream broad path allowlist entry, without editing its import.
-        config_text = config_text.replace("    \"\"\"gitleaks\\.toml\"\"\",\n".replace('"', "'"), '')
-        (config_path / 'gitleaks.toml').write_text(config_text)
-        (work / 'empty.yaml').write_text('{}\n')
-        (work / 'empty.ignore').write_text('')
-        token = os.urandom(24).hex()
-        (source_path / '.dso-sentinel').write_text(token)
-        (work / 'sentinel').write_text(token)
-        docker = executable_path('docker') if engine == 'docker' else None
-        for name in names:
-            check_cancel(cancel)
-            run = {'tool': name, 'status': 'error', 'finding_count': 0, 'exit_code': None}
-            container_name = 'dso-' + os.urandom(12).hex()
-            try:
-                executable = executable_path(name) if engine == 'native' else docker
-                if not executable:
-                    raise ScanError('missing_executable', 'Scanner executable unavailable')
-                if name == 'semgrep':
-                    check_python(source_path)
-                source = str(source_path) if engine == 'native' else '/src'
-                config = str(work) if engine == 'native' else '/work'
-                output = config + '/result.json'
-                if engine == 'native':
-                    rc, version = run_process([executable, 'version' if name == 'gitleaks' else '--version'], work, min(timeout, 15), cancel)
-                    match = re.search(r'(?<![0-9])[0-9]+\.[0-9]+\.[0-9]+(?![0-9])', version)
-                    if rc or not match or match.group() != TOOLS[name][0]:
-                        raise ScanError('version', 'Scanner version differs from reviewed version ' + TOOLS[name][0])
-                commands = {
-                    'gitleaks': ['dir', '--no-banner', '--redact=0', '--exit-code', '10',
-                                 '--config', config + '/config/gitleaks.toml',
-                                 '--ignore-gitleaks-allow', '--gitleaks-ignore-path', config + '/empty.ignore',
-                                 '--report-format', 'json', '--report-path', output, source],
-                    'semgrep': ['scan', '--metrics=off', '--disable-version-check', '--strict',
-                                '--disable-nosem', '--no-rewrite-rule-ids', '--no-git-ignore',
-                                '--max-target-bytes', '0', '--json', '--output', output,
-                                *[v for i in range(len(rules)) for v in ('--config', config + f'/config/rule-{i}.yaml')], source],
-                    'trivy': ['fs', '--config', config + '/empty.yaml', '--scanners', 'vuln',
-                              '--offline-scan', '--cache-dir', trivy_cache(work) if engine == 'native' else '/work/cache',
-                              '--ignorefile', config + '/empty.ignore', '--format', 'json',
-                              '--exit-code', '0', '--output', output, source],
-                }
-                args = [executable, *commands[name]]
-                if engine == 'docker':
-                    for mount in (source_path, work):
-                        if ',' in str(mount):
-                            raise ScanError('mount', 'Docker mount path contains a comma; choose a different TMPDIR')
-                    prefix = [docker, 'run', '--rm', '--name', container_name, '--read-only',
-                              '--cap-drop=ALL', '--security-opt=no-new-privileges', '--pids-limit', '256',
-                              '--memory', '3g', '--user', f'{os.getuid()}:{os.getgid()}',
-                              '--tmpfs', '/tmp:rw,nosuid,nodev,size=256m', '-e', 'HOME=/tmp',
-                              '--mount', f'type=bind,src={source_path},dst=/src,readonly',
-                              '--mount', f'type=bind,src={work},dst=/work', '-w', '/work']
-                    if name != 'trivy':
-                        prefix += ['--network', 'none']
-                    else:
-                        for key in ('HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'http_proxy', 'https_proxy', 'no_proxy'):
-                            if key in os.environ:
-                                prefix += ['-e', key]
-                        ca = os.environ.get('SSL_CERT_FILE')
-                        if ca:
-                            ca_path = Path(ca).resolve(strict=True)
-                            shutil.copyfile(ca_path, work / 'ca.pem')
-                            prefix += ['-e', 'SSL_CERT_FILE=/work/ca.pem']
-                    probe = ['--entrypoint', '/bin/sh', TOOLS[name][1], '-c',
-                             'test "$(cat /work/sentinel)" = "$1" && test "$(cat /src/.dso-sentinel)" = "$1"', 'sh', token]
-                    rc, _ = run_process(prefix + probe, work, timeout, cancel)
-                    if rc:
-                        raise ScanError('mount_visibility', 'Docker cannot read the private snapshot; daemon and client need identical shared TMPDIR paths')
-                    args = prefix + [TOOLS[name][1], *(['semgrep'] if name == 'semgrep' else []), *commands[name]]
-                (work / 'result.json').unlink(missing_ok=True)
-                code, _ = run_process(args, work, timeout, cancel)
-                run['exit_code'] = code
-                if code not in ({0, 10} if name == 'gitleaks' else {0}):
-                    raise ScanError('execution', 'Scanner failed; exit code is recorded separately')
-                try:
-                    with (work / 'result.json').open('rb') as stream:
-                        data = loads(stream.read(20 * 1024 * 1024 + 1))
-                    records = normalize(name, data, Path(source))
-                except (OSError, ValueError, KeyError, TypeError, AttributeError):
-                    raise ScanError('report', 'Scanner report is missing, invalid or incomplete') from None
-                if name == 'gitleaks' and bool(records) != (code == 10):
-                    raise ScanError('report', 'Gitleaks exit status disagrees with report')
-                report['findings'].extend(records)
-                run.update(status='complete', finding_count=len(records))
-            except Cancelled:
-                raise
-            except ScanError as exc:
-                run.update(error_code=exc.code, error=str(exc))
-                report['complete'] = False
-            except (OSError, ValueError, KeyError, TypeError, AttributeError):
-                run.update(error_code='execution', error='Scanner could not execute with the reviewed configuration')
-                report['complete'] = False
-            finally:
-                if engine == 'docker' and docker:
-                    try:
-                        run_process([docker, 'rm', '-f', container_name], work, 15)
-                    except (OSError, ValueError):
-                        pass
-            report['runs'].append(run)
+        notify('done', 'snapshot', dict(report['input'], status='complete'))
+        run_plugins(report, names, selection, engine, work, source_path, timeout, cancel, notify)
     report['findings'].sort(key=lambda f: f['id'])
     return report
 
 
-def validate_report(report):
-    """Validate a bounded v2 snapshot. Structural validity is not authenticity."""
-    try:
-        if not isinstance(report, dict) or set(report) != {'schema_version', 'project', 'created_at', 'coverage', 'input', 'complete', 'runs', 'findings'}:
-            raise ValueError('Unexpected report fields; a v2 report is required')
-        if type(report['schema_version']) is not int or report['schema_version'] != 2 or type(report['complete']) is not bool:
-            raise ValueError('Unsupported report')
-        text(report['project'], 'project', 200)
-        stamp = text(report['created_at'], 'timestamp', 40)
-        if not re.fullmatch(r'\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,6})?(?:Z|\+00:00)', stamp):
-            raise ValueError('created_at must be a UTC timestamp')
-        try:
-            created = datetime.fromisoformat(stamp.replace('Z', '+00:00'))
-        except ValueError:
-            raise ValueError('Invalid UTC timestamp') from None
-        if created > datetime.now(timezone.utc):
-            raise ValueError('Report timestamp is in the future')
-        coverage = report['coverage']
-        if not isinstance(coverage, dict) or set(coverage) != {'tools', 'policy_digest', 'profile', 'engine', 'versions', 'exclusions', 'default_exclusions'}:
-            raise ValueError('Unexpected coverage fields')
-        if not isinstance(coverage['tools'], list):
-            raise ValueError('coverage.tools must be a list')
-        names = selected_tools(coverage['tools'])
-        if names != coverage['tools']:
-            raise ValueError('coverage.tools must be sorted')
-        if not isinstance(coverage['policy_digest'], str) or not re.fullmatch('[a-f0-9]{64}', coverage['policy_digest']) or coverage['policy_digest'] == '0' * 64:
-            raise ValueError('Invalid policy digest')
-        if coverage['profile'] != PROFILE or coverage['engine'] not in ('native', 'docker'):
-            raise ValueError('Unrecognized coverage profile or engine')
-        if not isinstance(coverage['versions'], dict) or set(coverage['versions']) != set(names):
-            raise ValueError('Invalid versions')
-        if not all(isinstance(v, str) and re.fullmatch(r'\d+\.\d+\.\d+', v) for v in coverage['versions'].values()):
-            raise ValueError('Invalid scanner versions')
-        if coverage['default_exclusions'] != sorted(EXCLUDED):
-            raise ValueError('Unrecognized default exclusions')
-        if not isinstance(coverage['exclusions'], list) or len(coverage['exclusions']) > 100:
-            raise ValueError('Invalid exclusions')
-        for value in coverage['exclusions']:
-            if relative_path(value, Path('/unused')) != value or Path(value).is_absolute():
-                raise ValueError('Invalid exclusion')
-        if coverage['exclusions'] != sorted(set(coverage['exclusions'])):
-            raise ValueError('Exclusions must be sorted and unique')
-        evidence = report['input']
-        if not isinstance(evidence, dict) or set(evidence) != {'files', 'bytes', 'sha256'}:
-            raise ValueError('Invalid snapshot evidence')
-        if any(type(evidence[k]) is not int or evidence[k] < 0 for k in ('files', 'bytes')):
-            raise ValueError('Invalid snapshot counts')
-        if not isinstance(evidence['sha256'], str) or not re.fullmatch('[a-f0-9]{64}', evidence['sha256']):
-            raise ValueError('Invalid snapshot digest')
-        if report['complete'] and evidence['sha256'] == '0' * 64:
-            raise ValueError('Complete scan has no snapshot evidence')
-        if not isinstance(report['runs'], list) or sorted(r['tool'] for r in report['runs']) != names:
-            raise ValueError('Missing or duplicate scanner run')
-        if any(r['status'] not in ('complete', 'error') for r in report['runs']):
-            raise ValueError('Invalid run status')
-        if report['complete'] != all(r['status'] == 'complete' for r in report['runs']):
-            raise ValueError('Inconsistent scan completion')
-        if not isinstance(report['findings'], list) or len(report['findings']) > 50000:
-            raise ValueError('Invalid or excessive findings')
-        seen = set()
-        for f in report['findings']:
-            if f['tool'] not in names or f['severity'] not in SEVERITIES:
-                raise ValueError('Invalid finding tool or severity')
-            if Path(f['path']).is_absolute():
-                raise ValueError('Absolute finding path')
-            expected = finding(f['tool'], f['rule_id'], relative_path(f['path'], Path('/unused')),
-                               f['severity'], f['line'], f['package'], f['installed_version'], f['fixed_version'], f['fingerprint'])
-            if f != expected or f['id'] in seen:
-                raise ValueError('Invalid or duplicate finding')
-            if f['tool'] == 'gitleaks':
-                if f['severity'] != 'high' or not f['fingerprint'] or f['line'] < 1 or any(f[k] for k in ('package', 'installed_version', 'fixed_version')):
-                    raise ValueError('Invalid secret finding')
-            elif f['fingerprint']:
-                raise ValueError('Unexpected secret fingerprint')
-            if f['tool'] == 'semgrep' and (f['line'] < 1 or any(f[k] for k in ('package', 'installed_version', 'fixed_version'))):
-                raise ValueError('Invalid SAST finding')
-            if f['tool'] == 'trivy' and (f['line'] != 0 or not f['package']):
-                raise ValueError('Invalid dependency finding')
-            seen.add(f['id'])
-        if [f['id'] for f in report['findings']] != sorted(seen):
-            raise ValueError('Findings must be sorted')
-        for run in report['runs']:
-            required = {'tool', 'status', 'finding_count', 'exit_code'}
-            expected_fields = required if run['status'] == 'complete' else required | {'error_code', 'error'}
-            if set(run) != expected_fields:
-                raise ValueError('Unexpected scanner run fields')
-            if type(run['finding_count']) is not int or run['finding_count'] != sum(f['tool'] == run['tool'] for f in report['findings']):
-                raise ValueError('Inconsistent finding count')
-            code = run['exit_code']
-            if code is not None and (type(code) is not int or not -255 <= code <= 255):
-                raise ValueError('Invalid scanner exit code')
-            if run['status'] == 'complete':
-                expected_code = 10 if run['tool'] == 'gitleaks' and run['finding_count'] else 0
-                if code != expected_code:
-                    raise ValueError('Completed run contradicts scanner exit code')
-            else:
-                text(run['error_code'], 'error code', 64)
-                text(run['error'], 'error description', 512)
-                if run['finding_count']:
-                    raise ValueError('Incomplete scanner cannot contribute normalized findings')
-    except (KeyError, TypeError, AttributeError, RecursionError) as exc:
-        raise ValueError('Malformed DSO report') from exc
+def scan_image(reference, tools=None, engine='native', timeout=300, project=None, cancel=None,
+               profile=DEFAULT_IMAGE_PROFILE, progress=None):
+    """Scan a container image pinned by digest; scanners pull it from its registry without credentials."""
+    def notify(event, step, detail=None):
+        if progress is not None:
+            progress(event, step, detail)
+    selection = manifest.profile(profile)
+    if selection['target'] != 'image':
+        raise ValueError('Profile does not scan container images')
+    names = selected_plugins(tools, profile)
+    if not isinstance(reference, str) or not IMAGE_REFERENCE.fullmatch(reference):
+        raise ValueError('Give an image pinned by digest, such as registry/name:tag@sha256:<64 hex>')
+    text(project, 'project', 200)
+    if engine not in ('native', 'docker') or type(timeout) is not int or not 1 <= timeout <= 1800:
+        raise ValueError('Invalid engine or timeout (1–1800 seconds per scanner)')
+    report = {'schema_version': SCHEMA_VERSION, 'project': project, 'target': {'type': 'image'},
+              'created_at': datetime.now(timezone.utc).isoformat(),
+              'coverage': {'profile': profile, 'plugins': names,
+                           'versions': {n: manifest.plugin(n)['version'] for n in names},
+                           'engine': engine, 'policy_digest': policy_digest(profile, names),
+                           'exclusions': [], 'default_exclusions': []},
+              'input': {'reference': reference}, 'complete': True, 'runs': [], 'findings': []}
+    with tempfile.TemporaryDirectory(prefix='dso-') as directory:
+        run_plugins(report, names, selection, engine, Path(directory), reference, timeout, cancel, notify)
+    report['findings'].sort(key=lambda f: f['id'])
     return report
 
 
-def gate(report, baseline=None, fail_on='high'):
-    if fail_on not in SEVERITIES or fail_on == 'unknown':
-        raise ValueError('Invalid severity threshold')
-    validate_report(report)
-    if baseline is not None:
-        validate_report(baseline)
-    mismatch, changes = [], []
-    if baseline is not None:
-        if report['project'] != baseline['project']:
-            mismatch.append('project')
-        # A baseline only accepts exact finding IDs, so a kit/policy/tool change can
-        # only turn accepted findings into new ones. Report it instead of failing every MR.
-        changes = ['coverage.' + k for k in report['coverage'] if report['coverage'][k] != baseline['coverage'][k]]
-    comparable = baseline is not None and not mismatch and baseline['complete']
-    previous = {f['id']: f for f in baseline['findings']} if comparable else {}
-    current = {f['id']: f for f in report['findings']}
-    new = [f for f in report['findings'] if f['id'] not in previous or f['severity'] == 'unknown' or
-           previous[f['id']]['severity'] == 'unknown' or SEVERITIES[f['severity']] > SEVERITIES[previous[f['id']]['severity']]]
-    blocking = [f for f in new if f['severity'] == 'unknown' or SEVERITIES[f['severity']] >= SEVERITIES[fail_on]]
-    incomplete = not report['complete'] or (baseline is not None and not baseline['complete']) or bool(mismatch)
-    return {'exit_code': 2 if incomplete else (1 if blocking else 0),
-            'status': 'incomparable' if mismatch else ('incomplete' if incomplete else ('blocked' if blocking else 'passed')),
-            'mismatch': mismatch, 'coverage_changes': changes,
-            'new_or_escalated': len(new), 'existing': len(report['findings']) - len(new),
-            'blocking': blocking,
-            'resolved': [i for i in previous if i not in current] if report['complete'] else [],
-            'fix_changed': [f['id'] for f in report['findings'] if f['id'] in previous and f['fixed_version'] != previous[f['id']]['fixed_version']]}
+def preferred_profile(target):
+    """The most thorough profile for a target whose scanners are all installed; the default otherwise."""
+    candidates = sorted(((len(spec['plugins']), name) for name, spec in manifest.profiles().items() if spec['target'] == target),
+                        reverse=True)
+    for _, name in candidates:
+        if all(executable_path(manifest.plugin(plugin)['executable']) for plugin in manifest.profile(name)['plugins']):
+            return name
+    return DEFAULT_IMAGE_PROFILE if target == 'image' else DEFAULT_PROFILE
+
+
+def image_project(reference):
+    """The image name without tag or digest: findings of rebuilt images stay comparable."""
+    name = reference.split('@', 1)[0]
+    return name.rsplit(':', 1)[0] if ':' in name.rsplit('/', 1)[-1] else name
 
 
 def prepare_output(path):
@@ -463,14 +437,20 @@ def prepare_output(path):
 
 
 def write_report(path, report):
-    """Atomic private output; replacement does not follow an existing symlink."""
+    """Atomic private output that can be read back within DSO's JSON limit."""
     path = Path(path)
     prepare_output(path)
     descriptor, temporary = tempfile.mkstemp(prefix='.dso-', dir=path.parent)
     try:
-        with os.fdopen(descriptor, 'w') as stream:
-            json.dump(report, stream, indent=2)
-            stream.write('\n')
+        with os.fdopen(descriptor, 'wb') as stream:
+            size = 1  # final newline counts toward the input limit too
+            for chunk in json.JSONEncoder(indent=2, allow_nan=False).iterencode(report):
+                encoded = chunk.encode('utf-8')
+                size += len(encoded)
+                if size > runtime.REPORT_LIMIT:
+                    raise ScanError('report_limit', f'DSO report exceeds {runtime.REPORT_LIMIT >> 20} MiB; {runtime.LIMIT_HINT}')
+                stream.write(encoded)
+            stream.write(b'\n')
         os.replace(temporary, path)
     finally:
         if os.path.exists(temporary):
