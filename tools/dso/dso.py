@@ -421,7 +421,10 @@ def scan_repositories(args, owner, repositories, plugins, output_dir, view):
                          gate=result["status"], blocking=len(result["blocking_issues"]))
             failed = [r for r in report["runs"] if r["status"] != "complete"]
             if failed:
-                entry.update(error_code=failed[0]["error_code"], error=f"{failed[0]['plugin']}: {failed[0]['error']}")
+                first = failed[0]
+                entry.update(error_code=first.get("error_code", "partial_coverage"),
+                             error=(f"{first['plugin']}: {len(first['incomplete_files'])} files incompletely analyzed"
+                                    if first['status'] == 'partial' else f"{first['plugin']}: {first['error']}"))
         except runtime.Cancelled:
             raise
         except runtime.ScanError as exc:

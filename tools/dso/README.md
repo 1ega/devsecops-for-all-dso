@@ -76,6 +76,26 @@ registries stay bounded at 20 MiB whatever the settings say. A large monorepo
 with the `audit` profile is the usual reason to raise them: three dependency
 scanners report the same vulnerability under different IDs.
 
+The default 20 MiB `max_report_mb` applies to each scanner's output (including
+Trivy config) and the saved DSO report; `max_findings` defaults to 50,000. For a
+larger scan, pass the same raised limits to both `scan` and `gate`, or set
+`DSO_MAX_REPORT_MB` and `DSO_MAX_FINDINGS` for both commands:
+
+```bash
+report="$(mktemp -d)/report.json"
+dso scan repo . --project team/app --engine docker --output "$report" \
+  --max-report-mb 256 --max-findings 200000
+dso gate --input "$report" --max-report-mb 256 --max-findings 200000
+```
+
+If a snapshot contains Python files that cannot be parsed by modern Python (for
+example Python 2 scripts), Semgrep scans the other files from a filtered private
+copy. Semgrep can also report a timeout or parse error for a particular file.
+In either case, its run is marked `partial` with the exact `incomplete_files`;
+its findings from other files are kept, but the report is incomplete and the
+gate returns `2` until those files are reviewed or explicitly excluded. Other
+plugins still see the original snapshot.
+
 ## Scan a project
 
 Run from this kit checkout; the target is the application directory:
@@ -273,7 +293,7 @@ audits rather than blocking merge requests:
 | --- | --- | --- |
 | Gitleaks, Trivy | secret, sca | As in `ci-blocking` |
 | TruffleHog | secret | Every detector over the snapshot with `--no-ignore-tag`; no verification, because that sends each secret to its provider. Severity high |
-| Semgrep | sast | Python starter, Trail of Bits (AGPL-3.0), elttam without its Java rules (12 do not parse in Semgrep 1.179.0) and the mobile rules |
+| Semgrep | sast | Python starter, Trail of Bits (AGPL-3.0), elttam without its 12 incompatible Java rules and one crashing JSP join rule in Semgrep 1.179.0, and the mobile rules |
 | Grype | sca | The snapshot directory with an explicit configuration; database download needs the network |
 | OSV-Scanner | sca | Lockfiles checked against downloaded OSV databases with `--no-resolve`: dependency names are never sent. An explicit empty config overrides `osv-scanner.toml` in the target. Call analysis is never enabled, because it runs builds |
 | Trivy config | iac | Dockerfile, Terraform, Kubernetes, Helm and other IaC with the checks embedded in the pinned version. Trivy still honours inline `trivy:ignore` comments in the target |

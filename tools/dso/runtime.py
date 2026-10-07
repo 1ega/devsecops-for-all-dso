@@ -11,6 +11,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import warnings
 import threading
 import time
 
@@ -186,12 +187,16 @@ def snapshot(target, destination, cancel=None, exclusions=()):
 
 
 def check_python(source):
-    """Make unsupported Python syntax visible rather than a zero-result pass."""
+    """Return Python files this interpreter cannot parse; never hide them from the report."""
+    unsupported = []
     for path in source.rglob('*.py'):
         try:
-            ast.parse(path.read_bytes())
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', SyntaxWarning)
+                ast.parse(path.read_bytes())
         except (SyntaxError, ValueError, RecursionError):
-            raise ScanError('unsupported_python', 'Python syntax is unsupported; review and explicitly exclude templates/legacy Python') from None
+            unsupported.append(path.relative_to(source).as_posix())
+    return sorted(unsupported)
 
 
 CLEARED = ('SEMGREP_', 'TRIVY_', 'GITLEAKS_', 'GIT_')

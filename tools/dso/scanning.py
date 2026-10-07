@@ -173,6 +173,7 @@ class Context:
         self.config_host = work / 'config' / plugin
         self.config_host.mkdir(mode=0o700)
         inside = engine == 'docker'
+        self.inside = inside
         self.source = ('/src' if inside else str(source)) if self.source_host else source
         self.config = f'/work/config/{plugin}' if inside else str(self.config_host)
         # A fresh directory per plugin: Docker Desktop's shared mounts can keep a stale entry for a
@@ -287,7 +288,7 @@ def run_plugins(report, names, selection, engine, work, source, timeout, cancel,
             extra = adapter.environment(ctx) if hasattr(adapter, 'environment') else {}
             args = [executable, *adapter.command(ctx)]
             if engine == 'docker':
-                prefix = container(docker, container_name, source if isinstance(source, Path) else None, work,
+                prefix = container(docker, container_name, ctx.source_host, work,
                                    spec['network'], caches[name])
                 for key, value in extra.items():
                     prefix += ['-e', f'{key}={value}']
@@ -300,7 +301,8 @@ def run_plugins(report, names, selection, engine, work, source, timeout, cancel,
                                   clear=tool_prefixes(), errors_on=getattr(adapter, 'ERRORS', ()))
             run['exit_code'] = code
             codes = spec['exit_codes']
-            if code not in (codes['clean'], codes['findings']):
+            local_errors = name == 'semgrep' and code == 3
+            if code not in (codes['clean'], codes['findings']) and not local_errors:
                 raise ScanError('execution', 'Scanner failed; exit code is recorded separately')
             try:
                 with result.open('rb') as stream:
@@ -309,6 +311,12 @@ def run_plugins(report, names, selection, engine, work, source, timeout, cancel,
                     raise ScanError('report_limit', f'Scanner output exceeds {runtime.REPORT_LIMIT >> 20} MiB; {runtime.LIMIT_HINT}')
                 data = ([loads(line) for line in raw.splitlines() if line.strip()]
                         if getattr(adapter, 'FORMAT', 'json') == 'jsonl' else loads(raw, runtime.REPORT_LIMIT))
+                if name == 'semgrep':
+                    errored = adapter.partial_paths(data, ctx.source)
+                    if local_errors and not errored:
+                        raise ValueError('Semgrep exited with target errors but named no files')
+                    if errored:
+                        ctx.incomplete_files = sorted(set(getattr(ctx, 'incomplete_files', [])) | set(errored))
                 records = normalize(name, data, ctx.source)
                 if len(report['findings']) + len(records) > runtime.MAX_FINDINGS:
                     raise ScanError('report_limit', f'Scan exceeds {runtime.MAX_FINDINGS} findings; raise max_findings in dso config or pass --max-findings')
@@ -319,7 +327,11 @@ def run_plugins(report, names, selection, engine, work, source, timeout, cancel,
             if codes['findings'] != codes['clean'] and bool(records) != (code == codes['findings']):
                 raise ScanError('report', 'Scanner exit status disagrees with its report')
             report['findings'].extend(records)
-            run.update(status='complete', finding_count=len(records))
+            run.update(status='partial' if getattr(ctx, 'incomplete_files', None) else 'complete',
+                       finding_count=len(records))
+            if getattr(ctx, 'incomplete_files', None):
+                run['incomplete_files'] = ctx.incomplete_files
+                report['complete'] = False
         except Cancelled:
             raise
         except ScanError as exc:

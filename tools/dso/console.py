@@ -461,7 +461,10 @@ class ScanView:
         self.spinner = None
         self.finished += 1
         ok = detail['status'] == 'complete'
-        if not ok:
+        partial = detail['status'] == 'partial'
+        if partial:
+            note, color = f'{plural(detail["finding_count"], "finding")} · {len(detail["incomplete_files"])} incomplete', 'warn'
+        elif not ok:
             note, color = safe(detail['error_code']), 'bad'
         elif step == 'snapshot':
             note, color = f'{plural(detail["files"], "file")} · {size(detail["bytes"])}', 'dim'
@@ -470,8 +473,9 @@ class ScanView:
         else:
             count = detail['finding_count']
             note, color = plural(count, 'finding'), 'warn' if count else 'ok'
-        text = self.line(number, style.symbol('✓', '+') if ok else style.symbol('✗', 'x'), 'ok' if ok else 'bad',
-                         step, 'DONE' if ok else 'FAILED', note, color, elapsed)
+        text = self.line(number, style.symbol('✓', '+') if ok else style.symbol('△', '!') if partial else style.symbol('✗', 'x'),
+                         'ok' if ok else 'warn' if partial else 'bad',
+                         step, 'DONE' if ok else 'PARTIAL' if partial else 'FAILED', note, color, elapsed)
         style.write(('\r\x1b[2K' if style.live else '') + text)
         if ok and step == 'snapshot' and detail.get('inventory'):
             parts = inventory.summary(detail['inventory'])
@@ -561,7 +565,11 @@ def scan_summary(style, report, output, result, fail_on='high'):
     if len(categories) > 1:
         style.write('  ' + style.paint(' · ', 'dim').join(f'{name} {count}' for name, count in sorted(categories.items())))
     for run in failed:
-        style.write(style.paint(f'  {run["plugin"]}: {safe(run["error_code"])} - {safe(run["error"])}', 'warn'))
+        if run['status'] == 'partial':
+            style.write(style.paint(f'  {run["plugin"]}: {len(run["incomplete_files"])} files incompletely analyzed; '
+                                    f'{plural(run["finding_count"], "finding")} retained', 'warn'))
+        else:
+            style.write(style.paint(f'  {run["plugin"]}: {safe(run["error_code"])} - {safe(run["error"])}', 'warn'))
     gap_lines(style, result['gaps'])
     blocking = len(result['blocking_issues'])
     style.write(f'  {style.paint("GATE", "dim")}    {gate_status(style, result)} at {fail_on} · '

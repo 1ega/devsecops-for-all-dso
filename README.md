@@ -34,13 +34,27 @@ cd devsecops-for-all-dso
 python3 tools/dso/dso.py  # interactive menu
 
 report="$(mktemp -d)/report.json"
-python3 tools/dso/dso.py scan ../your-project --engine docker --output "$report"
+python3 tools/dso/dso.py scan ../your-project --engine docker \
+  --profile ci-blocking --output "$report"
 python3 tools/dso/dso.py gate --input "$report" --fail-on high
 ```
 
-Replace `../your-project` with your project path; `scan` also accepts a GitHub URL or image. The default `ci-blocking` profile runs Gitleaks, Semgrep and Trivy. `gate` returns `0` for a pass, `1` for blocking findings and `2` for an incomplete scan. See the [DSO CLI](tools/dso/README.md) for the fuller `audit` profile, baselines and exclusions. YARA in `audit` currently requires native mode.
+Replace `../your-project` with your project path; `scan` also accepts a GitHub URL or image. The example's `ci-blocking` profile runs Gitleaks, Semgrep and Trivy. The interactive menu can select the fuller `audit` profile when all native scanners are installed. `gate` returns `0` for a pass, `1` for blocking findings and `2` for an incomplete scan. See the [DSO CLI](tools/dso/README.md) for profiles, baselines and exclusions. YARA in `audit` currently requires native mode.
 
 **Local database space:** Trivy's vulnerability database uses about **1.4 GB** on disk even with `ci-blocking`. The full `audit` profile adds Grype and OSV databases, reaching about **4.9 GB**; scanning JAR files may add about **1 GB**. The first full scan downloads about **565 MB** of compressed databases. DSO reuses them from `~/.cache/dso` (or `DSO_CACHE_DIR`) and refreshes them periodically. Select only Gitleaks and Semgrep with `--plugins gitleaks semgrep` to avoid vulnerability databases, which also skips dependency vulnerability checks. Run `python3 tools/dso/dso.py doctor --engine docker --profile audit` to see which databases are present.
+
+**Report limits:** DSO defaults to **20 MiB** for each scanner's output (including Trivy) and the saved report, plus **50,000 findings** per scan. A large repository can make `trivy-config` stop with `report_limit`. Raise both limits for scanning and reading the result:
+
+```bash
+python3 tools/dso/dso.py scan ../your-project --engine docker \
+  --profile audit --plugins gitleaks trufflehog semgrep trivy grype \
+  osv-scanner trivy-config poutine \
+  --max-report-mb 256 --max-findings 200000 --output "$report"
+python3 tools/dso/dso.py gate --input "$report" \
+  --max-report-mb 256 --max-findings 200000
+```
+
+Set `DSO_MAX_REPORT_MB=256` and `DSO_MAX_FINDINGS=200000`, or edit those settings in `~/.dso/config.json` (create it with `python3 tools/dso/dso.py config init`) to make this persistent. These limits do not reduce the vulnerability database size.
 
 ### Connect an AI agent over MCP
 
