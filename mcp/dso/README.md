@@ -16,8 +16,8 @@ mcp/dso/.venv/bin/python mcp/dso/server.py \
 ```
 
 The installer installs the hash-locked MCP/Semgrep packages
-(`requirements-standalone.lock`) plus SHA256-verified Gitleaks/Trivy binaries for
-Linux or macOS, amd64/arm64. It installs into `mcp/dso/.venv` by default; pass
+(`requirements-standalone.lock`) plus the SHA256-verified Gitleaks/Trivy binaries
+pinned in [plugins.json](../../tools/dso/plugins.json) for Linux or macOS, amd64/arm64. It installs into `mcp/dso/.venv` by default; pass
 another directory as its first argument and set `PYTHON=python3.12` to choose the
 interpreter. No sudo or global package changes. Both CLI and server find scanner
 binaries next to their Python interpreter, so activation is optional:
@@ -149,8 +149,8 @@ volume to uninstall the container option. Nothing is pushed to a registry.
 | Tool | Inputs | Result |
 | --- | --- | --- |
 | `dso_doctor` | None | Native versions and paths, or Docker daemon version and local pinned-image availability |
-| `dso_scan_repo` | `path`, `project`, optional `tools` | `report_id`, `complete`, `runs`, `coverage`, `input` and the first 50 findings |
-| `dso_read_report` | `path` | Imports a saved v2 report (at most 20 MiB) as `report_id` for inspection or as a baseline |
+| `dso_scan_repo` | `path`, `project`, optional `profile` (default `ci-blocking`) and `plugins` | `report_id`, `target`, `complete`, `runs`, `coverage`, `input` and the first 50 findings |
+| `dso_read_report` | `path` | Imports a saved v3 report (at most 20 MiB) as `report_id` for inspection or as a baseline |
 | `dso_get_findings` | `report_id`, optional `offset`, `limit` (1–100) | One page of findings |
 | `dso_gate` | `report_id` from `dso_scan_repo`, optional `baseline_id`, `fail_on` (default `high`), `offset`, `limit` | `exit_code`: 0 pass, 1 blocking, 2 incomplete or incomparable; paged `blocking`, `resolved` and `fix_changed` with totals |
 

@@ -14,6 +14,7 @@ import uuid
 from contextlib import asynccontextmanager
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'tools/dso'))
+import manifest
 import scanning
 import runtime
 import anyio
@@ -73,7 +74,7 @@ async def worker(function, *args, cancellable=False, **kwargs):
 
 def create_server(root, engine='docker', timeout=300, exclusions=()):
     root = validate_root(root)
-    server = Server('dso', version='0.2.0', instructions=WARNING)
+    server = Server('dso', version='0.3.0', instructions=WARNING)
     reports = OrderedDict()
     limiter = anyio.CapacityLimiter(1)
     string = {'type': 'string', 'minLength': 1, 'maxLength': 200}
@@ -83,9 +84,11 @@ def create_server(root, engine='docker', timeout=300, exclusions=()):
     declarations = [
         ('dso_doctor', 'Inspect actual native versions or local Docker image availability. ' + WARNING, schema({})),
         ('dso_scan_repo', 'Scan an isolated snapshot within the allowed root. Returns a server-owned report_id and first page. ' + WARNING,
-         schema({'path': path_schema, 'project': string, 'tools': {'type': 'array', 'minItems': 1, 'uniqueItems': True,
-                                                              'items': {'enum': sorted(scanning.TOOLS)}}}, ['path', 'project'])),
-        ('dso_read_report', 'Import a saved v2 report as a baseline or for inspection (not as a current scan). ' + WARNING,
+         schema({'path': path_schema, 'project': string,
+                 'profile': {'enum': sorted(manifest.profiles()), 'default': scanning.DEFAULT_PROFILE},
+                 'plugins': {'type': 'array', 'minItems': 1, 'uniqueItems': True,
+                             'items': {'enum': sorted(manifest.plugins())}}}, ['path', 'project'])),
+        ('dso_read_report', 'Import a saved v3 report as a baseline or for inspection (not as a current scan). ' + WARNING,
          schema({'path': path_schema}, ['path'])),
         ('dso_get_findings', 'Page through a stored report. ' + WARNING,
          schema({'report_id': string, **page_schema}, ['report_id'])),
@@ -115,7 +118,7 @@ def create_server(root, engine='docker', timeout=300, exclusions=()):
 
     def page(key, offset=0, limit=50):
         report, origin, _ = get(key)
-        return {'report_id': key, 'origin': origin, 'project': report['project'],
+        return {'report_id': key, 'origin': origin, 'project': report['project'], 'target': report['target'],
                 'complete': report['complete'], 'runs': report['runs'], 'coverage': report['coverage'],
                 'input': report['input'], 'total': len(report['findings']), 'offset': offset,
                 'findings': report['findings'][offset:offset + limit],
@@ -135,8 +138,9 @@ def create_server(root, engine='docker', timeout=300, exclusions=()):
             elif name == 'dso_scan_repo':
                 target = contained_path(args['path'], root, True)
                 async with limiter:
-                    report = await worker(scanning.scan_repo, target, args.get('tools'), engine, timeout,
-                                          args['project'], exclusions=exclusions, cancellable=True)
+                    report = await worker(scanning.scan_repo, target, args.get('plugins'), engine, timeout,
+                                          args['project'], exclusions=exclusions,
+                                          profile=args.get('profile', scanning.DEFAULT_PROFILE), cancellable=True)
                 scanning.validate_report(report)
                 result = page(store(report, 'scan'))
             elif name == 'dso_read_report':

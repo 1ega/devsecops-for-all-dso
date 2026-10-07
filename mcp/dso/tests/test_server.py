@@ -17,12 +17,13 @@ scanning = server.scanning
 
 
 def saved_report():
-    return {'schema_version': 2, 'project': 'fixture', 'created_at': '2026-10-02T00:00:00+00:00',
-            'coverage': {'tools': ['gitleaks'], 'policy_digest': 'a' * 64, 'profile': scanning.PROFILE,
-                         'engine': 'native', 'versions': {'gitleaks': scanning.TOOLS['gitleaks'][0]},
-                         'exclusions': [], 'default_exclusions': sorted(scanning.EXCLUDED)},
+    return {'schema_version': 3, 'project': 'fixture', 'target': {'type': 'repo'},
+            'created_at': '2026-10-02T00:00:00+00:00',
+            'coverage': {'profile': scanning.DEFAULT_PROFILE, 'plugins': ['gitleaks'],
+                         'versions': {'gitleaks': server.manifest.plugin('gitleaks')['version']}, 'engine': 'native',
+                         'policy_digest': 'a' * 64, 'exclusions': [], 'default_exclusions': sorted(scanning.EXCLUDED)},
             'input': {'files': 0, 'bytes': 0, 'sha256': 'b' * 64}, 'complete': True,
-            'runs': [{'tool': 'gitleaks', 'status': 'complete', 'finding_count': 0, 'exit_code': 0}],
+            'runs': [{'plugin': 'gitleaks', 'status': 'complete', 'finding_count': 0, 'exit_code': 0}],
             'findings': []}
 
 
@@ -68,7 +69,8 @@ class ProtocolTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual({t.name for t in tools.tools},
                                      {'dso_doctor', 'dso_scan_repo', 'dso_read_report', 'dso_get_findings', 'dso_gate'})
                     for name, arguments in [('dso_scan_repo', {'path': '..', 'project': 'fixture'}),
-                                            ('dso_scan_repo', {'path': '.', 'project': 'fixture', 'tools': ['sh']}),
+                                            ('dso_scan_repo', {'path': '.', 'project': 'fixture', 'plugins': ['sh']}),
+                                            ('dso_scan_repo', {'path': '.', 'project': 'fixture', 'profile': 'missing'}),
                                             ('dso_scan_repo', {'path': '.'}),
                                             ('dso_scan_repo', {'path': '.', 'project': 'fixture', 'pth': '/etc'}),
                                             ('dso_read_report', {'path': '/etc/hosts'}),
@@ -86,7 +88,7 @@ class ProtocolTests(unittest.IsolatedAsyncioTestCase):
                     self.assertTrue(result.isError)
                     if image:
                         result, scanned = await self.call(session, 'dso_scan_repo',
-                                                          {'path': '.', 'project': 'fixture', 'tools': ['gitleaks']})
+                                                          {'path': '.', 'project': 'fixture', 'plugins': ['gitleaks']})
                         self.assertFalse(result.isError)
                         self.assertTrue(scanned['complete'], scanned)
                         result, gated = await self.call(session, 'dso_gate', {'report_id': scanned['report_id'],

@@ -24,6 +24,6 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install Semgrep
-        run: python -m pip install semgrep==1.175.0
+        run: python -m pip install semgrep==1.179.0
       - name: Test rules
         run: semgrep test rules/semgrep/python/

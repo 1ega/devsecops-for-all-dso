@@ -48,8 +48,8 @@ DSO copies the target into a private temporary snapshot and scans only that copy
   files make Semgrep coverage incomplete until excluded explicitly. Syntax newer
   than the runner's Python is also rejected, so run DSO with a current Python.
 
-The default engine is `native`. Install Gitleaks **8.30.1**, Semgrep **1.179.0**
-and Trivy **0.75.0** (for example with [`mcp/dso/install.sh`](../../mcp/dso/README.md),
+The default engine is `native`. Install the scanner versions pinned in
+[plugins.json](plugins.json) (for example with [`mcp/dso/install.sh`](../../mcp/dso/README.md),
 which verifies hashes), then use `doctor`. Version mismatches fail the scan.
 Native scanners have the caller's permissions; Docker is preferred for untrusted
 repositories. Environment variables prefixed `SEMGREP_`, `GITLEAKS_`, `TRIVY_` and
@@ -58,24 +58,48 @@ Native Trivy reuses `DSO_CACHE_DIR` when it is writable, otherwise it downloads
 its database into the private run directory.
 
 Docker is required for `--engine docker`; images are pinned by digest in
-[scanning.py](scanning.py). Containers run as the caller's UID (root if DSO runs
+[plugins.json](plugins.json). Containers run as the caller's UID (root if DSO runs
 as root) with a read-only root filesystem, all capabilities dropped,
 `no-new-privileges`, 3 GiB memory and 256-process limits. Only the snapshot
 (read-only) and a private work directory with copied trusted rules are mounted.
-Gitleaks and Semgrep run without network; Trivy receives proxy variables and
-`SSL_CERT_FILE` for its database download. Before each scanner runs, a sentinel
+Plugins run without network unless the manifest marks them `network` (Trivy, for
+its database download); those receive proxy variables and `SSL_CERT_FILE`. Before each scanner runs, a sentinel
 check proves the daemon sees the same snapshot. Remote daemons, Docker-in-Docker
 and socket-mounted CI jobs need identical `TMPDIR` paths on client and daemon,
 otherwise the scan is incomplete with `mount_visibility`.
 
-Select tools with `--tools gitleaks semgrep` (default: all three). Set a per-tool
+Choose a profile with `--profile` (default `ci-blocking`) and run only some of its
+plugins with `--plugins gitleaks semgrep` (`--tools` is an alias). Set a per-plugin
 limit with `--timeout 300` (1–1800 seconds). Missing executables, failed version
 checks, timeouts, non-success exits, rate limiting, permission errors, full disks,
 malformed/missing reports and Semgrep analysis errors mark the scan incomplete;
 each failed run records an `error_code` and a safe description. Scanner
 diagnostics are not stored because they can contain source text.
 
+## Plugins and profiles
+
+[plugins.json](plugins.json) is the single source of DSO scanner pins and metadata.
+Each plugin names its tool, version, image digest, native install (release binary
+with SHA256 per platform, or a pip package from the hash-locked requirements),
+target types, category, network and credential needs, exit codes, severity
+mapping, CWE, manual and playbook. Each profile names a target type and the
+plugins it runs with their kit options, such as the Gitleaks config or the Semgrep
+rule directories. `doctor` and `mcp/dso/install_scanners.py` read the same file,
+and `tools/validation/check_repo.py` fails when a workflow, Dockerfile, manual,
+requirements file or `tools/versions.json` pins a different version or digest.
+
+Plugins only reference rules, policies and scanner configs in `rules/`,
+`policies/` and `scanners/`; those packages carry no DSO metadata and keep their
+own README with a command that works without DSO.
+
+To add a plugin, write an adapter in [plugins/](plugins/__init__.py) (`OPTIONS`,
+`policy_files`, `prepare`, `command`, `parse`), add its manifest entry, select it
+in a profile, and add adapter tests with a finding fixture and a clean one. The
+core runs, sandboxes, times out and validates every plugin the same way.
+
 ## Profile and coverage
+
+The `ci-blocking` profile:
 
 | Scanner | Scope | Severity mapping |
 | --- | --- | --- |

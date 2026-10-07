@@ -12,6 +12,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import manifest
 import scanning
 import runtime
 
@@ -215,6 +216,11 @@ def exceptions(input_path: Path, output_format: str) -> int:
 
 
 def main() -> int:
+    try:
+        plugins, profiles = sorted(manifest.plugins()), sorted(manifest.profiles())
+    except (ValueError, OSError) as exc:
+        print(f"dso: {exc}", file=sys.stderr)
+        return 2
     parser = argparse.ArgumentParser(prog="dso")
     commands = parser.add_subparsers(dest="command", required=True)
     assess_parser = commands.add_parser("assess", help="validate baseline evidence and show gaps")
@@ -233,7 +239,10 @@ def main() -> int:
     scan_commands = scan_parser.add_subparsers(dest="scan_type", required=True)
     repo_parser = scan_commands.add_parser("repo")
     repo_parser.add_argument("path")
-    repo_parser.add_argument("--tools", nargs="+", choices=sorted(scanning.TOOLS))
+    repo_parser.add_argument("--profile", choices=profiles, default=scanning.DEFAULT_PROFILE,
+                             help="plugin and rule selection from tools/dso/plugins.json; recorded in coverage")
+    repo_parser.add_argument("--plugins", "--tools", dest="plugins", nargs="+", choices=plugins,
+                             help="run only these plugins of the profile")
     repo_parser.add_argument("--engine", choices=("native", "docker"), default="native")
     repo_parser.add_argument("--timeout", type=int, default=300)
     repo_parser.add_argument("--project", required=True, help="explicit stable project ID")
@@ -251,7 +260,8 @@ def main() -> int:
             return 0 if report["ready"] else 2
         if args.command == "scan":
             scanning.prepare_output(args.output)
-            report = scanning.scan_repo(args.path, args.tools, args.engine, args.timeout, args.project, exclusions=args.exclude)
+            report = scanning.scan_repo(args.path, args.plugins, args.engine, args.timeout, args.project,
+                                        exclusions=args.exclude, profile=args.profile)
             scanning.write_report(args.output, report)
             print(json.dumps({"complete": report["complete"], "findings": len(report["findings"]),
                               "report": str(args.output)}))

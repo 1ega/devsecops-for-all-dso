@@ -31,7 +31,9 @@ RUN python -m pip install --no-cache-dir --require-hashes -r mcp/dso/requirement
     && python -m pip uninstall -y pip
 COPY --from=gitleaks /usr/bin/gitleaks /usr/local/bin/gitleaks
 COPY --from=trivy /usr/local/bin/trivy /usr/local/bin/trivy
-COPY tools/dso/dso.py tools/dso/scanning.py tools/dso/runtime.py tools/dso/publish_report.py tools/dso/
+COPY tools/dso/dso.py tools/dso/scanning.py tools/dso/runtime.py tools/dso/reports.py tools/dso/manifest.py \
+     tools/dso/plugins.json tools/dso/publish_report.py tools/dso/
+COPY tools/dso/plugins/ tools/dso/plugins/
 COPY baseline/controls.json baseline/controls.json
 COPY rules/semgrep/python/ rules/semgrep/python/
 COPY rules/secrets/gitleaks-default/ rules/secrets/gitleaks-default/

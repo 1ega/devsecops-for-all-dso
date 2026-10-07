@@ -1,7 +1,6 @@
 import hashlib
 import importlib.util
 import io
-import json
 from pathlib import Path
 import tarfile
 import tempfile
@@ -45,9 +44,11 @@ class InstallerTests(unittest.TestCase):
                                           'trivy', Path(folder))
 
     def test_all_platforms_have_reviewed_pins(self):
-        manifest = json.loads(installer.MANIFEST.read_text())['platforms']
-        self.assertEqual(set(manifest), {'linux/amd64', 'linux/arm64', 'darwin/amd64', 'darwin/arm64'})
-        for assets in manifest.values():
+        binaries = {spec['tool'] for spec in installer.manifest.plugins().values() if 'binaries' in spec['install']}
+        self.assertEqual(binaries, {'gitleaks', 'trivy'})
+        for platform in installer.manifest.PLATFORMS:
+            assets = installer.assets(platform)
+            self.assertEqual(set(assets), binaries, platform)
             for name, asset in assets.items():
                 self.assertRegex(asset['sha256'], '^[a-f0-9]{64}$')
                 self.assertTrue(asset['url'].startswith('https://github.com/'))
